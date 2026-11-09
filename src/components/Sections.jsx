@@ -1,7 +1,9 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
 import { ArrowUpRight, ArrowRight, X, ChevronLeft, ChevronRight, Plus, Minus, MessageCircle, Mail, Navigation, Star } from "lucide-react";
-import { P, CITY, SITE, GALLERY, AMENITIES, PLACES, SCORES, RULES, FAQ } from "../data";
+import { P, CITY, SITE, GALLERY, AMENITIES, PLACES, SCORES, FAQ } from "../data";
+import { useSettings, quote, euro, fmtDate } from "../lib/settings";
+import Calendar from "./Calendar";
 import { Img, MaskText, Reveal, Counter, Magnetic, Spotlight, Icon, EASE, EASE_IO } from "./ui";
 import { LINKS } from "./Chrome";
 
@@ -274,28 +276,34 @@ export function Reviews() {
 }
 
 /* ---------------- PRENOTA ---------------- */
-const fmt = (d) => d.toISOString().slice(0, 10);
-const euro = (n) => "€" + n.toLocaleString("it-IT");
+const STATUS = {
+  ok: { cls: "ok", text: "Disponibile per queste date" },
+  unavailable: { cls: "bad", text: "Alcune notti non sono disponibili" },
+  closed: { cls: "bad", text: "Al momento non accettiamo prenotazioni" },
+  past: { cls: "bad", text: "Le date sono nel passato" },
+};
 
 export function Booking() {
+  const { settings: s, loading } = useSettings();
   const ref = useRef(null);
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const bgY = useTransform(p, [0, 1], ["-15%", "15%"]);
-  const today = useMemo(() => new Date(), []);
-  const [inD, setIn] = useState(fmt(new Date(today.getTime() + 7 * 864e5)));
-  const [outD, setOut] = useState(fmt(new Date(today.getTime() + 10 * 864e5)));
+  const [from, setFrom] = useState(null);
+  const [to, setTo] = useState(null);
   const [guests, setGuests] = useState(2);
   const [name, setName] = useState("");
   const [pet, setPet] = useState(false);
 
-  const nights = Math.max(0, Math.round((new Date(outD) - new Date(inD)) / 864e5));
-  const subtotal = nights * SITE.pricePerNight;
-  const total = nights > 0 ? subtotal + SITE.cleaningFee : 0;
-  const valid = nights >= 1;
-  const it = (d) => new Date(d).toLocaleDateString("it-IT", { day: "numeric", month: "long" });
-  const msg = `Ciao! Sono ${name || "interessato/a"} e vorrei soggiornare a Flori's Home dal ${it(inD)} al ${it(outD)} (${nights} notti), ${guests} ospiti${pet ? " + un animale" : ""}. È disponibile?`;
-  const wa = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(msg)}`;
-  const mail = `mailto:${SITE.email}?subject=${encodeURIComponent("Richiesta Flori's Home")}&body=${encodeURIComponent(msg)}`;
+  const q = quote(from, to, s);
+  const st = q.status === "min" ? { cls: "bad", text: `Soggiorno minimo ${s.minNights} notti` } : STATUS[q.status];
+  const valid = q.status === "ok";
+  const maxG = Number(s.maxGuests) || 5;
+
+  const msg = from && to
+    ? `Ciao! Sono ${name || "interessato/a"} e vorrei soggiornare a Flori's Home dal ${fmtDate(from)} al ${fmtDate(to)} (${q.nights.length} notti), ${guests} ospiti${pet ? " + un animale" : ""}. Totale stimato ${euro(q.total)}. È disponibile?`
+    : "";
+  const wa = `https://wa.me/${s.whatsapp}?text=${encodeURIComponent(msg)}`;
+  const mail = `mailto:${s.email}?subject=${encodeURIComponent("Richiesta Flori's Home")}&body=${encodeURIComponent(msg)}`;
 
   return (
     <section className="book" id="prenota" ref={ref}>
@@ -308,64 +316,91 @@ export function Booking() {
           <span className="kicker light"><i>07</i>Prenota diretto</span>
           <h2 className="h2 big"><MaskText>Il tuo soggiorno</MaskText> <em><MaskText delay={0.12}>comincia qui</MaskText></em></h2>
           <Reveal as="p" className="lead">
-            Scegli le date, guarda subito il preventivo e mandaci la richiesta. Ti rispondiamo in pochi minuti, senza commissioni.
+            Scegli le date sul calendario: vedi subito disponibilità e prezzo. Poi mandaci la richiesta, ti rispondiamo in pochi minuti e senza commissioni.
           </Reveal>
+          {s.notice && <Reveal className="notice">{s.notice}</Reveal>}
           <Reveal className="book-contacts" delay={0.1}>
-            <a href={`tel:${SITE.phone.replace(/\s/g, "")}`}>{SITE.phone}</a>
-            <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+            <a href={`tel:${String(s.phone).replace(/\s/g, "")}`}>{s.phone}</a>
+            <a href={`mailto:${s.email}`}>{s.email}</a>
           </Reveal>
         </div>
 
         <Reveal className="glass" y={80}>
           <div className="glass-head">
-            <div><b>{euro(SITE.pricePerNight)}</b><span>/ notte</span></div>
-            <em>prezzo indicativo</em>
+            <div><span className="from">da</span><b>{euro(s.pricePerNight)}</b><span>/ notte</span></div>
+            <em className={loading ? "live loading" : "live"}><i /> {loading ? "aggiorno…" : "prezzi aggiornati"}</em>
           </div>
-          <div className="gfields">
-            <label>
-              <span>Arrivo</span>
-              <input type="date" value={inD} min={fmt(today)} onChange={(e) => {
-                setIn(e.target.value);
-                if (e.target.value >= outD) setOut(fmt(new Date(new Date(e.target.value).getTime() + 864e5)));
-              }} />
-            </label>
-            <label>
-              <span>Partenza</span>
-              <input type="date" value={outD} min={inD} onChange={(e) => setOut(e.target.value)} />
-            </label>
-            <div className="gfield full">
+
+          {!s.bookingOpen ? (
+            <div className="closed-box">
+              <b>Prenotazioni momentaneamente chiuse</b>
+              <span>Scrivici comunque: ti avvisiamo appena riapriamo.</span>
+            </div>
+          ) : (
+            <Calendar
+              settings={s}
+              mode="range"
+              from={from}
+              to={to}
+              onRange={(a, b) => { setFrom(a); setTo(b); }}
+              months={1}
+            />
+          )}
+
+          <div className="sel-row">
+            <div className={`sel ${from ? "on" : ""}`}><span>Arrivo</span><b>{from ? fmtDate(from, { day: "numeric", month: "short" }) : "—"}</b></div>
+            <div className={`sel ${to ? "on" : ""}`}><span>Partenza</span><b>{to ? fmtDate(to, { day: "numeric", month: "short" }) : "—"}</b></div>
+            <div className="sel guests">
               <span>Ospiti</span>
               <div className="stepper">
-                <button onClick={() => setGuests((g) => Math.max(1, g - 1))} aria-label="Meno"><Minus size={16} /></button>
+                <button onClick={() => setGuests((g) => Math.max(1, g - 1))} aria-label="Meno"><Minus size={14} /></button>
                 <AnimatePresence mode="popLayout">
-                  <motion.b key={guests} initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -14, opacity: 0 }}>{guests}</motion.b>
+                  <motion.b key={guests} initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -12, opacity: 0 }}>{guests}</motion.b>
                 </AnimatePresence>
-                <button onClick={() => setGuests((g) => Math.min(5, g + 1))} aria-label="Più"><Plus size={16} /></button>
+                <button onClick={() => setGuests((g) => Math.min(maxG, g + 1))} aria-label="Più"><Plus size={14} /></button>
               </div>
             </div>
-            <label className="full">
-              <span>Nome</span>
-              <input type="text" placeholder="Come ti chiami?" value={name} onChange={(e) => setName(e.target.value)} />
-            </label>
-            <label className="gcheck full">
-              <input type="checkbox" checked={pet} onChange={(e) => setPet(e.target.checked)} />
-              <i />
-              <span>Viaggio con un animale</span>
-            </label>
           </div>
+
+          <AnimatePresence mode="wait">
+            {st && (
+              <motion.div key={st.text} className={`avail ${st.cls}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                <i />{st.text}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <AnimatePresence>
             {valid && (
               <motion.div className="sum" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-                <div><span>{euro(SITE.pricePerNight)} × {nights} notti</span><span>{euro(subtotal)}</span></div>
-                <div><span>Pulizia finale</span><span>{euro(SITE.cleaningFee)}</span></div>
+                {q.groups.map((g, i) => (
+                  <div key={i}>
+                    <span>{euro(g.price)} × {g.count} {g.count === 1 ? "notte" : "notti"}{g.kind === "season" ? ` · ${g.label || "stagione"}` : g.kind === "weekend" ? " · weekend" : ""}</span>
+                    <span>{euro(g.price * g.count)}</span>
+                  </div>
+                ))}
+                {Number(s.cleaningFee) > 0 && <div><span>Pulizia finale</span><span>{euro(s.cleaningFee)}</span></div>}
                 <div className="tot">
                   <span>Totale stimato</span>
-                  <motion.b key={total} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>{euro(total)}</motion.b>
+                  <motion.b key={q.total} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>{euro(q.total)}</motion.b>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {valid && (
+            <div className="gfields one">
+              <label>
+                <span>Nome</span>
+                <input type="text" placeholder="Come ti chiami?" value={name} onChange={(e) => setName(e.target.value)} />
+              </label>
+              <label className="gcheck">
+                <input type="checkbox" checked={pet} onChange={(e) => setPet(e.target.checked)} />
+                <i />
+                <span>Viaggio con un animale</span>
+              </label>
+            </div>
+          )}
 
           <a className={`cta ${valid ? "" : "off"}`} href={valid ? wa : undefined} target="_blank" rel="noreferrer" data-cursor="Invia">
             <MessageCircle size={18} /> Richiedi su WhatsApp
@@ -373,7 +408,7 @@ export function Booking() {
           <a className={`cta ghost ${valid ? "" : "off"}`} href={valid ? mail : undefined}>
             <Mail size={16} /> oppure via email
           </a>
-          <p className="fine">Nessun pagamento ora · cauzione {euro(SITE.deposit)} in contanti, restituita al check-out</p>
+          <p className="fine">Nessun pagamento ora · cauzione {euro(s.deposit)} in contanti, restituita al check-out</p>
         </Reveal>
       </div>
     </section>
@@ -383,6 +418,16 @@ export function Booking() {
 /* ---------------- INFO: REGOLE + FAQ ---------------- */
 export function Info() {
   const [open, setOpen] = useState(0);
+  const { settings: st } = useSettings();
+  const RULES = [
+    ["Check-in", st.checkIn],
+    ["Check-out", st.checkOut],
+    ["Soggiorno minimo", `${st.minNights} ${Number(st.minNights) === 1 ? "notte" : "notti"}`],
+    ["Cauzione", `${euro(st.deposit)} in contanti, restituiti al check-out`],
+    ["Fumo", "Non si fuma in casa"],
+    ["Feste", "Non sono ammesse feste o addii al celibato"],
+    ["Animali", "Ammessi, avvisaci prima"],
+  ];
   return (
     <section className="info">
       <div className="wrap info-grid">
@@ -424,6 +469,7 @@ export function Info() {
 
 /* ---------------- FOOTER ---------------- */
 export function Footer() {
+  const { settings: st } = useSettings();
   const ref = useRef(null);
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start end", "end end"] });
   const y = useTransform(p, [0, 1], ["-40%", "0%"]);
@@ -443,7 +489,7 @@ export function Footer() {
         </div>
         <div>
           <span className="lbl">Contatti</span>
-          <p><a href={`mailto:${SITE.email}`}>{SITE.email}</a><br />{SITE.phone}</p>
+          <p><a href={`mailto:${st.email}`}>{st.email}</a><br />{st.phone}</p>
         </div>
         <div>
           <span className="lbl">Esplora</span>
