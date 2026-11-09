@@ -329,6 +329,7 @@ function Requests({ user, flash, onBlocked }) {
                 <a href={`mailto:${b.email}`}><Mail size={13} /> {b.email}</a>
               </div>
               {b.notes && <p className="req-notes">“{b.notes}”</p>}
+              {b.checkin?.guest && <CheckinData c={b.checkin} flash={flash} />}
               {b.status === "pending" && (
                 <div className="req-actions">
                   <button className="adm-btn sm ok" disabled={!!busy} onClick={() => decide(b, "accept")}><Check size={15} /> {busy === b.id + "accept" ? "Confermo…" : "Accetta"}</button>
@@ -340,6 +341,32 @@ function Requests({ user, flash, onBlocked }) {
         </AnimatePresence>
       </div>
     </>
+  );
+}
+
+function CheckinData({ c, flash }) {
+  const g = c.guest;
+  const birth = g.birthDate ? fmtDate(g.birthDate, { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
+  const rows = [
+    ["Nome", g.firstName], ["Cognome", g.lastName], ["Sesso", g.sex], ["Nato/a il", `${birth}${g.age != null ? ` (${g.age} anni)` : ""}`],
+    ["Luogo di nascita", g.birthPlace], ["Stato di nascita", g.birthCountry], ["Nazionalità", g.nationality],
+    ["Documento", g.docType], ["Numero", g.docNumber], ["Rilasciato da", g.docIssuedBy],
+  ];
+  const text = [
+    rows.map(([k, v]) => `${k}: ${v || "—"}`).join("\n"),
+    ...(c.others || []).map((o, i) => `Ospite ${i + 2}: ${o.firstName} ${o.lastName} · ${o.sex || "—"} · ${o.birthDate || "—"} · ${o.nationality || "—"}`),
+  ].join("\n");
+  return (
+    <details className="req-ci">
+      <summary>🪪 Dati per Alloggiati Web</summary>
+      <div className="ci-grid">{rows.map(([k, v]) => <div key={k}><span>{k}</span><b>{v || "—"}</b></div>)}</div>
+      {c.others?.length > 0 && (
+        <div className="ci-others">
+          {c.others.map((o, i) => <div key={i}><b>Ospite {i + 2}:</b> {o.firstName} {o.lastName} · {o.sex || "—"} · {o.birthDate ? fmtDate(o.birthDate, { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"} · {o.nationality || "—"}</div>)}
+        </div>
+      )}
+      <button className="adm-btn ghost sm ci-copy" onClick={() => navigator.clipboard?.writeText(text).then(() => flash("Dati copiati"))}>Copia i dati</button>
+    </details>
   );
 }
 

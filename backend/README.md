@@ -20,6 +20,13 @@ Tu premi ❌ Rifiuta
 
 Comandi WhatsApp: `si CODICE`, `no CODICE`, `lista`.
 
+### Dati per Alloggiati Web
+Il modulo raccoglie i dati obbligatori per la comunicazione alla Questura (art. 109 TULPS):
+ospite principale (nome, cognome, sesso, data e luogo di nascita, nazionalità, tipo/numero/rilascio documento; deve essere maggiorenne)
+e anagrafica degli altri ospiti. Sono salvati nella richiesta su Firestore (leggibili solo dall'admin) e **non** vengono
+inviati in WhatsApp, email o calendario. Nel pannello: Richieste → "🪪 Dati per Alloggiati Web" → *Copia i dati*.
+Consiglio: cancella le richieste vecchie dalla console Firebase quando non ti servono più.
+
 ---
 
 ## 1) Provalo subito in locale (senza configurare niente)

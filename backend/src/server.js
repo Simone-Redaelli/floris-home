@@ -52,7 +52,7 @@ app.post('/api/bookings', limiter, async (req, res) => {
   const body = req.body ?? {};
   if (body.website) return res.json({ ok: true, id: newCode(), status: 'pending' }); // honeypot anti-bot
 
-  const name = str(body.name, 80);
+  const name = str(body.name || `${body.guest?.firstName ?? ''} ${body.guest?.lastName ?? ''}`, 120);
   const email = str(body.email, 120).toLowerCase();
   const phone = normalizePhone(body.phone);
   const from = String(body.from ?? '');
@@ -64,8 +64,47 @@ app.post('/api/bookings', limiter, async (req, res) => {
   const flight = str(body.flight, 20).toUpperCase();
   const notes = String(body.notes ?? '').trim().slice(0, 600);
 
+  // Dati per Alloggiati Web (ospite principale completo, altri ospiti anagrafica)
+  const g = body.guest ?? {};
+  const isBirth = (d) => /^\d{4}-\d{2}-\d{2}$/.test(String(d ?? '')) && String(d) < today();
+  const ageOf = (d) => {
+    if (!isBirth(d)) return null;
+    const [y, m, dd] = d.split('-').map(Number);
+    const n = new Date();
+    let a = n.getFullYear() - y;
+    if (n.getMonth() + 1 < m || (n.getMonth() + 1 === m && n.getDate() < dd)) a--;
+    return a;
+  };
+  const DOCS = ["Carta d'identità", 'Passaporto', 'Patente di guida'];
+  const guest = {
+    firstName: str(g.firstName, 60),
+    lastName: str(g.lastName, 60),
+    sex: ['M', 'F'].includes(g.sex) ? g.sex : '',
+    birthDate: isBirth(g.birthDate) ? g.birthDate : '',
+    birthPlace: str(g.birthPlace, 80),
+    birthCountry: str(g.birthCountry, 60),
+    nationality: str(g.nationality, 60),
+    docType: DOCS.includes(g.docType) ? g.docType : '',
+    docNumber: str(g.docNumber, 30).toUpperCase().replace(/\s/g, ''),
+    docIssuedBy: str(g.docIssuedBy, 80),
+  };
+  const others = (Array.isArray(body.others) ? body.others : []).slice(0, 19).map((o) => ({
+    firstName: str(o?.firstName, 60),
+    lastName: str(o?.lastName, 60),
+    sex: ['M', 'F'].includes(o?.sex) ? o.sex : '',
+    birthDate: isBirth(o?.birthDate) ? o.birthDate : '',
+    nationality: str(o?.nationality, 60),
+  })).filter((o) => o.firstName || o.lastName);
+
   const errors = [];
-  if (name.length < 2) errors.push('nome');
+  if (name.length < 2 || !guest.firstName || !guest.lastName) errors.push('nome e cognome');
+  if (!guest.sex) errors.push('sesso');
+  const age = ageOf(guest.birthDate);
+  if (age === null) errors.push('data di nascita');
+  else if (age < 18) errors.push("età (l'ospite principale deve essere maggiorenne)");
+  if (!guest.birthPlace || !guest.birthCountry) errors.push('luogo di nascita');
+  if (!guest.nationality) errors.push('nazionalità');
+  if (!guest.docType || guest.docNumber.length < 5 || !guest.docIssuedBy) errors.push('documento');
   if (!EMAIL_RE.test(email)) errors.push('email');
   if (!phone) errors.push('numero WhatsApp');
   if (!isDay(from) || !isDay(to) || to <= from) errors.push('date');
@@ -86,6 +125,8 @@ app.post('/api/bookings', limiter, async (req, res) => {
     id: newCode(),
     status: 'pending',
     name, email, phone, guests, pet, notes,
+    // dati riservati: non compaiono in WhatsApp, email o calendario, solo nel pannello admin
+    checkin: { guest: { ...guest, age }, others },
     from, to,
     nights: q.nights.length,
     nightList: q.nights,
@@ -96,7 +137,6 @@ app.post('/api/bookings', limiter, async (req, res) => {
     transferFee: q.transferFee,
     total: q.total,
     createdAt: new Date().toISOString(),
-    ip: req.ip,
   };
 
   let saved;

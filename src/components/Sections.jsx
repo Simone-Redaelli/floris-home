@@ -3,7 +3,9 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import {
   ArrowUpRight, X, ChevronLeft, ChevronRight, Plus, Minus, MessageCircle, Mail, Navigation, Star,
   Maximize2, BedDouble, Users, Ruler, Check, Plane, Landmark, Theater, Trophy, Castle, Building2, Phone,
+  IdCard, BookOpen, Car, ShieldCheck,
 } from "lucide-react";
+import { COUNTRIES, DOC_TYPES, ageOf } from "../lib/countries";
 import { P, CITY, SITE, GALLERY, AMENITIES, PLACES, SCORES, FAQ, AUDIENCE, TOUR } from "../data";
 import { useSettings, quote, euro, fmtDate } from "../lib/settings";
 import { useBooking } from "../lib/booking";
@@ -216,7 +218,11 @@ export function Booking() {
   const { settings: s, loading } = useSettings();
   const { from, to, guests, transfer, setFrom, setTo, setGuests, setTransfer } = useBooking();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", notes: "", pet: false, arrivalTime: "", flight: "", consent: false, website: "" });
+  const [form, setForm] = useState({ email: "", phone: "", notes: "", pet: false, arrivalTime: "", flight: "", consent: false, website: "" });
+  const [main, setMain] = useState({ firstName: "", lastName: "", sex: "", birthDate: "", birthPlace: "", birthCountry: "Italia", nationality: "Italia", docType: "Carta d'identità", docNumber: "", docIssuedBy: "" });
+  const [others, setOthers] = useState([]);
+  const setM = (k) => (e) => setMain((m) => ({ ...m, [k]: e.target.value }));
+  const setO = (i, k) => (e) => setOthers((arr) => arr.map((o, j) => (j === i ? { ...o, [k]: e.target.value } : o)));
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(null);
@@ -237,16 +243,30 @@ export function Booking() {
     empty: ["idle", from ? "Ora scegli il giorno di partenza" : "Scegli il giorno di arrivo sul calendario"],
   }[q.status];
 
-  const formOk = form.name.trim().length > 1 && /\S+@\S+\.\S+/.test(form.email) && form.phone.replace(/\D/g, "").length >= 8 && form.consent;
+  // una riga per ogni ospite oltre al principale
+  useEffect(() => {
+    setOthers((arr) => Array.from({ length: Math.max(0, guests - 1) }, (_, i) => arr[i] || { firstName: "", lastName: "", sex: "", birthDate: "", nationality: "Italia" }));
+  }, [guests]);
+
+  const mainAge = ageOf(main.birthDate);
+  const fullName = `${main.firstName} ${main.lastName}`.trim();
+  const mainOk = main.firstName.trim() && main.lastName.trim() && main.sex && mainAge !== null && mainAge >= 18 &&
+    main.birthPlace.trim() && main.birthCountry.trim() && main.nationality.trim() && main.docType && main.docNumber.trim().length >= 5 && main.docIssuedBy.trim();
+  const formOk = mainOk && /\S+@\S+\.\S+/.test(form.email) && form.phone.replace(/\D/g, "").length >= 8 && form.consent;
 
   const waMsg = from && to
     ? [
-        `Ciao! Sono ${form.name || "interessato/a"} e vorrei soggiornare a Flori's Home dal ${fmtDate(from)} al ${fmtDate(to)} (${q.nights.length} notti), ${guests} ospiti${form.pet ? " + un animale" : ""}.`,
+        `Ciao! Sono ${fullName || "interessato/a"} e vorrei soggiornare a Flori's Home dal ${fmtDate(from)} al ${fmtDate(to)} (${q.nights.length} notti), ${guests} ospiti${form.pet ? " + un animale" : ""}.`,
         tfOn ? `Vorrei anche il transfer dall'aeroporto di Orio al Serio${form.arrivalTime ? ` (arrivo ${form.arrivalTime}${form.flight ? `, volo ${form.flight}` : ""})` : ""}.` : null,
         `Totale stimato ${euro(q.total)}. È disponibile?`,
         form.email ? `Email: ${form.email}` : null,
         form.notes ? `Note: ${form.notes}` : null,
-      ].filter(Boolean).join("\n")
+        "",
+        "Dati per il check-in:",
+        `${fullName} · ${main.sex} · nato/a il ${main.birthDate ? fmtDate(main.birthDate, { day: "numeric", month: "numeric", year: "numeric" }) : "-"} a ${main.birthPlace} (${main.birthCountry}) · nazionalità ${main.nationality}`,
+        `${main.docType} n. ${main.docNumber} rilasciato da ${main.docIssuedBy}`,
+        ...others.filter((o) => o.firstName).map((o, i) => `Ospite ${i + 2}: ${o.firstName} ${o.lastName} · ${o.sex || "-"} · ${o.birthDate || "-"} · ${o.nationality}`),
+      ].filter((l) => l !== null && l !== undefined).join("\n")
     : "";
 
   const submit = async () => {
@@ -261,7 +281,7 @@ export function Booking() {
     try {
       const r = await api("/api/bookings", {
         method: "POST",
-        body: { ...form, from, to, guests, transfer: tfOn, arrivalTime: tfOn ? form.arrivalTime : "", flight: tfOn ? form.flight : "" },
+        body: { ...form, name: fullName, guest: main, others, from, to, guests, transfer: tfOn, arrivalTime: tfOn ? form.arrivalTime : "", flight: tfOn ? form.flight : "" },
       });
       setDone(r);
       setStep(2);
@@ -332,15 +352,75 @@ export function Booking() {
                 <motion.div key="form" className="guest-form" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                   <h3>Chi viene a trovarci?</h3>
                   <p className="gf-sub">Ti scriviamo su WhatsApp ed email per confermare la disponibilità.</p>
+
+                  <div className="gf-block">
+                    <span className="gf-title"><i>1</i> Contatti</span>
+                    <div className="gf-grid">
+                      <label><span>Email</span><input type="email" value={form.email} onChange={set("email")} autoComplete="email" placeholder="mario@email.it" /></label>
+                      <label><span>Numero WhatsApp</span><input type="tel" value={form.phone} onChange={set("phone")} autoComplete="tel" placeholder="+39 333 123 4567" /></label>
+                    </div>
+                  </div>
+
+                  <div className="gf-block">
+                    <span className="gf-title"><i>2</i> Ospite principale <small>come sul documento</small></span>
+                    <div className="gf-grid">
+                      <label><span>Nome</span><input value={main.firstName} onChange={setM("firstName")} autoComplete="given-name" /></label>
+                      <label><span>Cognome</span><input value={main.lastName} onChange={setM("lastName")} autoComplete="family-name" /></label>
+                      <label><span>Sesso</span>
+                        <select value={main.sex} onChange={setM("sex")}><option value="">—</option><option>M</option><option>F</option></select>
+                      </label>
+                      <label><span>Data di nascita {mainAge !== null && <em className={mainAge < 18 ? "age bad" : "age"}>{mainAge} anni</em>}</span>
+                        <input type="date" value={main.birthDate} onChange={setM("birthDate")} max={new Date().toISOString().slice(0, 10)} autoComplete="bday" />
+                      </label>
+                      <label><span>Luogo di nascita</span><input value={main.birthPlace} onChange={setM("birthPlace")} placeholder="Città" /></label>
+                      <label><span>Stato di nascita</span><input list="countries" value={main.birthCountry} onChange={setM("birthCountry")} /></label>
+                      <label className="full"><span>Nazionalità</span><input list="countries" value={main.nationality} onChange={setM("nationality")} /></label>
+                    </div>
+                    {mainAge !== null && mainAge < 18 && <div className="status bad"><i /> L'ospite principale deve essere maggiorenne.</div>}
+                  </div>
+
+                  <div className="gf-block">
+                    <span className="gf-title"><i>3</i> Documento d'identità</span>
+                    <div className="doc-types">
+                      {DOC_TYPES.map((t) => (
+                        <button key={t} type="button" className={main.docType === t ? "on" : ""} onClick={() => setMain((m) => ({ ...m, docType: t }))}>
+                          {t === "Passaporto" ? <BookOpen size={16} /> : t === "Patente di guida" ? <Car size={16} /> : <IdCard size={16} />} {t}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="gf-grid">
+                      <label><span>Numero {main.docType === "Passaporto" ? "passaporto" : "documento"}</span><input value={main.docNumber} onChange={(e) => setMain((m) => ({ ...m, docNumber: e.target.value.toUpperCase() }))} placeholder={main.docType === "Passaporto" ? "es. YA1234567" : "es. CA12345AB"} autoComplete="off" /></label>
+                      <label><span>Rilasciato da</span><input value={main.docIssuedBy} onChange={setM("docIssuedBy")} placeholder="Comune o Stato" /></label>
+                    </div>
+                  </div>
+
+                  {others.length > 0 && (
+                    <div className="gf-block">
+                      <span className="gf-title"><i>4</i> Altri ospiti <small>puoi completarli anche all'arrivo</small></span>
+                      {others.map((o, i) => (
+                        <div className="other" key={i}>
+                          <b>Ospite {i + 2} {ageOf(o.birthDate) !== null && <em className="age">{ageOf(o.birthDate)} anni</em>}</b>
+                          <div className="gf-grid five">
+                            <input placeholder="Nome" value={o.firstName} onChange={setO(i, "firstName")} />
+                            <input placeholder="Cognome" value={o.lastName} onChange={setO(i, "lastName")} />
+                            <select value={o.sex} onChange={setO(i, "sex")}><option value="">Sesso</option><option>M</option><option>F</option></select>
+                            <input type="date" value={o.birthDate} onChange={setO(i, "birthDate")} max={new Date().toISOString().slice(0, 10)} aria-label="Data di nascita" />
+                            <input list="countries" placeholder="Nazionalità" value={o.nationality} onChange={setO(i, "nationality")} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <datalist id="countries">{COUNTRIES.map((c) => <option key={c} value={c} />)}</datalist>
+
                   <div className="gf-grid">
-                    <label className="full"><span>Nome e cognome</span><input value={form.name} onChange={set("name")} autoComplete="name" placeholder="Mario Rossi" /></label>
-                    <label><span>Email</span><input type="email" value={form.email} onChange={set("email")} autoComplete="email" placeholder="mario@email.it" /></label>
-                    <label><span>Numero WhatsApp</span><input type="tel" value={form.phone} onChange={set("phone")} autoComplete="tel" placeholder="+39 333 123 4567" /></label>
                     <label className="full"><span>Note (facoltative)</span><textarea rows={3} value={form.notes} onChange={set("notes")} placeholder="Orario di arrivo, richieste particolari…" /></label>
                     <input className="hp" tabIndex={-1} autoComplete="off" value={form.website} onChange={set("website")} aria-hidden="true" />
                   </div>
                   <label className="bs-pet"><input type="checkbox" checked={form.pet} onChange={set("pet")} /><i /> Viaggio con un animale</label>
-                  <label className="consent"><input type="checkbox" checked={form.consent} onChange={set("consent")} /> Accetto che i miei dati vengano usati solo per gestire questa richiesta.</label>
+                  <div className="law"><ShieldCheck size={18} /><span>Per legge (art. 109 TULPS) comunichiamo i dati degli ospiti alla Questura tramite il portale Alloggiati Web. Li usiamo solo per questo e per gestire il soggiorno: non vengono mai condivisi con altri.</span></div>
+                  <label className="consent"><input type="checkbox" checked={form.consent} onChange={set("consent")} /> Acconsento al trattamento dei miei dati e di quelli degli ospiti per la gestione della prenotazione e per gli obblighi di legge.</label>
                   {error && <div className="status bad"><i /> {error}</div>}
                   <button className="btn ghost back" onClick={() => setStep(0)}><ChevronLeft size={16} /> Cambia date</button>
                 </motion.div>
@@ -353,7 +433,7 @@ export function Booking() {
                   {done?.viaWhatsApp ? (
                     <p>Ti si è aperto WhatsApp con il messaggio già scritto: <b>premi invia</b> e la richiesta ci arriva. <a href={`https://wa.me/${s.whatsapp}?text=${encodeURIComponent(waMsg)}`} target="_blank" rel="noreferrer">WhatsApp non si è aperto?</a></p>
                   ) : (
-                    <p>Grazie {form.name.split(" ")[0]}! Ti abbiamo scritto su WhatsApp. Appena confermiamo, le date si bloccano e ti arrivano <b>email</b> e <b>invito nel calendario</b> con tutti i dettagli.</p>
+                    <p>Grazie {main.firstName}! Ti abbiamo scritto su WhatsApp. Appena confermiamo, le date si bloccano e ti arrivano <b>email</b> e <b>invito nel calendario</b> con tutti i dettagli.</p>
                   )}
                   {done?.id && <div className="done-code">codice <b>{done.id}</b></div>}
                   <button className="btn ghost" onClick={reset}>Nuova richiesta</button>
