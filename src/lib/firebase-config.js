@@ -8,12 +8,12 @@
 // ============================================================
 
 export const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyB0QJHXYmsLkk08uCa7_8rb6jNorsyggl4",
+  authDomain: "flori-cf1fc.firebaseapp.com",
+  projectId: "flori-cf1fc",
+  storageBucket: "flori-cf1fc.firebasestorage.app",
+  messagingSenderId: "570848539",
+  appId: "1:570848539:web:7382f0972caede756a4fbe",
 };
 
 export const ADMIN_EMAIL = "";
