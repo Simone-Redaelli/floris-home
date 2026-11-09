@@ -3,7 +3,9 @@ import "lenis/dist/lenis.css";
 import { Nav, MobileBar, useSmoothScroll } from "./components/Chrome";
 import { Hero, Trust } from "./components/Hero";
 import Tour from "./components/Tour";
-import { Bento, Audience, Amenities, Reviews, Bergamo, Booking, Faq, Footer } from "./components/Sections";
+import Door from "./components/Door";
+import { Stack, Wave } from "./components/Wow";
+import { Bento, Amenities, Reviews, Bergamo, Booking, Faq, Footer } from "./components/Sections";
 import { SettingsProvider } from "./lib/settings";
 import { BookingProvider } from "./lib/booking";
 
@@ -17,11 +19,14 @@ function Site() {
       <BookingProvider>
         <Nav />
         <main>
+          <Door />
           <Hero />
           <Trust />
           <Bento />
           <Tour />
-          <Audience />
+          <Wave from="var(--bg)" to="var(--bg-2)" />
+          <Stack />
+          <Wave from="var(--bg-2)" to="var(--bg)" flip />
           <Amenities />
           <Reviews />
           <Bergamo />

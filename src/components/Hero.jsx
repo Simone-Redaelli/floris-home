@@ -6,6 +6,7 @@ import { useSettings, quote, euro, fmtDate } from "../lib/settings";
 import { useBooking, scrollToId } from "../lib/booking";
 import Calendar from "./Calendar";
 import { Img, EASE } from "./ui";
+import { Sticker, Leaves } from "./Wow";
 
 /* parola che cambia nel titolo */
 function Rotator() {
@@ -168,6 +169,10 @@ export function Hero() {
   return (
     <section className="hero" id="top">
       <div className="hero-bg" />
+      <Leaves count={8} />
+      <motion.div className="hero-sticker" initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.9 }}>
+        <Sticker>€0</Sticker>
+      </motion.div>
       <div className="hero-top">
         <motion.div className="hero-chip" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
           <span className="dot" /> {s.bookingOpen ? "Prenotazioni aperte" : "Prenotazioni chiuse"} · da <b>{euro(s.pricePerNight)}</b> a notte

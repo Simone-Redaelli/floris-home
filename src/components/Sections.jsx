@@ -10,6 +10,7 @@ import { useBooking } from "../lib/booking";
 import Calendar from "./Calendar";
 import { Img, Reveal, Counter, Icon, EASE } from "./ui";
 import { LINKS } from "./Chrome";
+import { Polaroids, Skyline, Trail, Sticker } from "./Wow";
 
 function Head({ kicker, title, sub, center }) {
   return (
@@ -22,9 +23,9 @@ function Head({ kicker, title, sub, center }) {
 }
 
 /* ---------------- LIGHTBOX ---------------- */
-const ALL = [...TOUR.map((t) => ({ src: t.photo, label: t.title })), ...GALLERY];
+export const ALL = [...TOUR.map((t) => ({ src: t.photo, label: t.title })), ...GALLERY];
 
-function Lightbox({ idx, setIdx }) {
+export function Lightbox({ idx, setIdx }) {
   const go = (d) => setIdx((i) => (i + d + ALL.length) % ALL.length);
   useEffect(() => {
     if (idx === null) return;
@@ -62,54 +63,15 @@ function Lightbox({ idx, setIdx }) {
   );
 }
 
-/* ---------------- LA CASA: MOSAICO ---------------- */
+/* ---------------- LA CASA: POLAROID ---------------- */
 export function Bento() {
   const [idx, setIdx] = useState(null);
-  const at = (src) => Math.max(0, ALL.findIndex((a) => a.src === src));
-  const Photo = ({ src, label, cls, d = 0 }) => (
-    <Reveal className={`tile photo ${cls}`} delay={d}>
-      <button onClick={() => setIdx(at(src))} aria-label={label}>
-        <Img src={src} alt={label} />
-        <span className="tile-label">{label} <ArrowUpRight size={15} /></span>
-      </button>
-    </Reveal>
-  );
+  const open = (src) => setIdx(Math.max(0, ALL.findIndex((a) => a.src === src)));
   return (
-    <section className="sec" id="casa">
-      <div className="wrap">
-        <Head kicker="La casa" title="Tutto lo spazio che ti serve, <em>solo per te</em>" sub="L'intero appartamento è tuo: niente spazi condivisi, niente sorprese." />
-        <div className="bento">
-          <Photo src={P.living} label="Soggiorno" cls="b-big" />
-          <Reveal className="tile stat caramel" delay={0.05}>
-            <Ruler size={22} />
-            <b><Counter value={80} /><small>m²</small></b>
-            <span>appena ristrutturati</span>
-          </Reveal>
-          <Photo src={P.double} label="Camera matrimoniale" cls="b-tall" d={0.1} />
-          <Reveal className="tile stat sage" delay={0.12}>
-            <BedDouble size={22} />
-            <b><Counter value={2} /><small> camere</small></b>
-            <span>+ divano letto</span>
-          </Reveal>
-          <Photo src={P.kitchen} label="Cucina" cls="" d={0.15} />
-          <Photo src={P.bath} label="Bagno con vasca" cls="" d={0.2} />
-          <Reveal className="tile stat ink" delay={0.22}>
-            <Users size={22} />
-            <b><Counter value={5} /><small> ospiti</small></b>
-            <span>al massimo</span>
-          </Reveal>
-          <Photo src={P.balcony} label="Balcone" cls="b-wide" d={0.25} />
-          <Reveal className="tile more" delay={0.3}>
-            <button onClick={() => setIdx(0)}>
-              <Maximize2 size={22} />
-              <b>Tutte le foto</b>
-              <span>{ALL.length} immagini</span>
-            </button>
-          </Reveal>
-        </div>
-      </div>
+    <>
+      <Polaroids onOpen={open} />
       <Lightbox idx={idx} setIdx={setIdx} />
-    </section>
+    </>
   );
 }
 
@@ -166,6 +128,7 @@ export function Reviews() {
     <section className="sec soft" id="recensioni">
       <div className="wrap rev">
         <Reveal className="rev-card">
+          <Sticker className="rev-sticker" text="OSPITI FELICI • RECENSIONI VERE • ">★</Sticker>
           <span className="kicker light">Recensioni</span>
           <div className="rev-num"><Counter value={SITE.rating} decimals={1} duration={2.4} /></div>
           <div className="rev-stars">
@@ -210,6 +173,7 @@ export function Bergamo() {
   const map = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - d * 1.6}%2C${lat - d}%2C${lng + d * 1.6}%2C${lat + d}&layer=mapnik&marker=${lat}%2C${lng}`;
   return (
     <section className="sec" id="bergamo" ref={ref}>
+      <Skyline />
       <div className="wrap berg">
         <div className="berg-text">
           <Head kicker="Posizione" title="Bergamo <em>a portata di mano</em>" sub="Zona residenziale e tranquilla. In pochi minuti sei in aeroporto, in Fiera o in centro; in un quarto d'ora sulle mura di Città Alta." />
@@ -392,13 +356,13 @@ export function Footer() {
   return (
     <footer className="foot">
       <div className="wrap">
-        <Reveal className="foot-cta">
-          <div className="foot-photos">
-            <Img src={P.living2} alt="" /><Img src={P.double2} alt="" /><Img src={P.kitchen2} alt="" />
-          </div>
-          <h2>Ti aspettiamo <em>a Bergamo</em></h2>
-          <p>Scegli le date: in pochi minuti ti confermiamo la disponibilità.</p>
-          <a href="#prenota" className="btn light">Verifica disponibilità <ArrowUpRight size={18} /></a>
+        <Reveal>
+          <Trail className="foot-cta">
+            <span className="trail-hint">muovi il mouse qui ✨</span>
+            <h2>Ti aspettiamo <em>a Bergamo</em></h2>
+            <p>Scegli le date: in pochi minuti ti confermiamo la disponibilità.</p>
+            <a href="#prenota" className="btn light">Verifica disponibilità <ArrowUpRight size={18} /></a>
+          </Trail>
         </Reveal>
         <div className="foot-grid">
           <div>
