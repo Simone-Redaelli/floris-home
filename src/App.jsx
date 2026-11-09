@@ -1,37 +1,33 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useState } from "react";
+import "lenis/dist/lenis.css";
+import { Preloader, Cursor, Nav, useSmoothScroll } from "./components/Chrome";
+import { Hero, Stats, Manifesto } from "./components/Hero";
 import Tour from "./components/Tour";
-import { Nav, Hero, Marquee, Intro, Gallery, Amenities, Location, Reviews, Booking, Rules, Faq, Footer } from "./components/Sections";
-
-/* Alone luminoso che segue il cursore (solo desktop) */
-function CursorGlow() {
-  const ref = useRef(null);
-  useEffect(() => {
-    const m = (e) => {
-      if (ref.current) ref.current.style.transform = `translate(${e.clientX - 200}px, ${e.clientY - 200}px)`;
-    };
-    window.addEventListener("pointermove", m);
-    return () => window.removeEventListener("pointermove", m);
-  }, []);
-  return <div ref={ref} className="cursor-glow" />;
-}
+import { HGallery, Amenities, Marquee, Bergamo, Reviews, Booking, Info, Footer } from "./components/Sections";
 
 export default function App() {
+  const [ready, setReady] = useState(false);
+  const done = useCallback(() => setReady(true), []);
+  useSmoothScroll(ready);
+
   return (
     <>
-      <CursorGlow />
-      <Nav />
+      <Preloader onDone={done} />
+      <Cursor />
+      <div className="grain" />
+      <Nav ready={ready} />
       <main>
-        <Hero />
-        <Marquee />
-        <Intro />
+        <Hero ready={ready} />
+        <Stats />
+        <Manifesto />
         <Tour />
-        <Gallery />
+        <HGallery />
+        <Marquee items={["Wi-Fi gratuito", "Parcheggio incluso", "Pet friendly", "Aria condizionata", "Balcone sul verde", "Smart TV", "Fino a 5 ospiti"]} />
         <Amenities />
-        <Location />
+        <Bergamo />
         <Reviews />
         <Booking />
-        <Rules />
-        <Faq />
+        <Info />
       </main>
       <Footer />
     </>

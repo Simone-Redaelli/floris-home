@@ -1,137 +1,138 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, animate } from "framer-motion";
 import {
-  Wifi, Car, Snowflake, PawPrint, Tv, CookingPot, WashingMachine, Bath, Coffee, Laptop, Trees,
-  BedDouble, LogIn, LogOut, CigaretteOff, PartyPopper, ShieldCheck, Circle, ImageIcon,
+  Wifi, Car, Snowflake, PawPrint, Tv, CookingPot, WashingMachine, Laptop, Circle,
 } from "lucide-react";
 
-const Icons = {
-  Wifi, Car, Snowflake, PawPrint, Tv, CookingPot, WashingMachine, Bath, Coffee, Laptop, Trees,
-  BedDouble, LogIn, LogOut, CigaretteOff, PartyPopper, ShieldCheck, Circle, ImageIcon,
-};
-
-/* Icona per nome (stringa) */
+const ICONS = { Wifi, Car, Snowflake, PawPrint, Tv, CookingPot, WashingMachine, Laptop, Circle };
 export function Icon({ name, size = 22, ...rest }) {
-  const C = Icons[name] || Icons.Circle;
-  return <C size={size} strokeWidth={1.6} {...rest} />;
+  const C = ICONS[name] || Circle;
+  return <C size={size} strokeWidth={1.4} {...rest} />;
 }
 
-/* Foto con fallback a gradiente se il file non esiste */
-export function Photo({ photo, className = "", children, eager }) {
-  const [ok, setOk] = useState(true);
-  const [a, b] = photo.tone;
+export const EASE = [0.22, 1, 0.36, 1];
+export const EASE_IO = [0.76, 0, 0.24, 1];
+
+/* Immagine con fade-in al caricamento */
+export function Img({ src, alt = "", className = "", eager, ...rest }) {
+  const [loaded, setLoaded] = useState(false);
   return (
-    <div
-      className={`photo ${className}`}
-      style={{ background: `radial-gradient(120% 120% at 20% 10%, ${a}, ${b})` }}
+    <img
+      src={src}
+      alt={alt}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onLoad={() => setLoaded(true)}
+      className={`img ${loaded ? "is-loaded" : ""} ${className}`}
+      {...rest}
+    />
+  );
+}
+
+/* Parole che salgono da una maschera (si osserva il contenitore, non le parole) */
+export function MaskText({ children, delay = 0, as = "span", className = "", inView = true }) {
+  const words = String(children).split(" ");
+  const M = motion[as];
+  const show = { transition: { staggerChildren: 0.045, delayChildren: delay } };
+  const item = {
+    hidden: { y: "115%", rotate: 4 },
+    show: { y: 0, rotate: 0, transition: { duration: 1.1, ease: EASE } },
+  };
+  return (
+    <M
+      className={`mask-text ${className}`}
+      initial="hidden"
+      {...(inView ? { whileInView: "show", viewport: { once: true, amount: 0.2 } } : { animate: "show" })}
+      variants={{ hidden: {}, show }}
     >
-      {ok && (
-        <img
-          src={photo.src}
-          alt={photo.label}
-          loading={eager ? "eager" : "lazy"}
-          onError={() => setOk(false)}
-        />
-      )}
-      {!ok && (
-        <div className="photo-ph">
-          <Icons.ImageIcon size={28} strokeWidth={1.3} />
-          <span>{photo.label}</span>
-        </div>
-      )}
-      {children}
-    </div>
+      {words.map((w, i) => (
+        <span className="mt-word" key={i}>
+          <motion.span variants={item}>{w}</motion.span>
+        </span>
+      ))}
+    </M>
   );
 }
 
-/* Titoli di sezione */
-export function SectionHead({ kicker, title, sub, light }) {
-  return (
-    <Reveal className={`section-head ${light ? "light" : ""}`}>
-      <span className="kicker">{kicker}</span>
-      <h2 dangerouslySetInnerHTML={{ __html: title }} />
-      {sub && <p>{sub}</p>}
-    </Reveal>
-  );
-}
-
-/* Animazione all'ingresso nel viewport */
-export function Reveal({ children, delay = 0, y = 40, className = "", as = "div" }) {
+export function Reveal({ children, delay = 0, y = 50, className = "", as = "div", ...rest }) {
   const M = motion[as];
   return (
     <M
       className={className}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 1.1, delay, ease: EASE }}
+      {...rest}
     >
       {children}
     </M>
   );
 }
 
-/* Contatore animato */
-export function Counter({ value, decimals = 0, suffix = "" }) {
+export function Counter({ value, decimals = 0, suffix = "", duration = 2.2 }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
   const [v, setV] = useState(0);
   useEffect(() => {
     if (!inView) return;
-    const c = animate(0, value, {
-      duration: 2,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: (x) => setV(x),
-    });
+    const c = animate(0, value, { duration, ease: EASE, onUpdate: setV });
     return () => c.stop();
-  }, [inView, value]);
+  }, [inView, value, duration]);
   return (
-    <span ref={ref}>
+    <span ref={ref} className="counter">
       {v.toFixed(decimals).replace(".", ",")}
-      {suffix}
+      {suffix && <small>{suffix}</small>}
     </span>
   );
 }
 
-/* Testo che appare parola per parola */
-export function SplitWords({ text, delay = 0, className = "" }) {
-  return (
-    <span className={className}>
-      {text.split(" ").map((w, i) => (
-        <span className="word-wrap" key={i}>
-          <motion.span
-            className="word"
-            initial={{ y: "110%" }}
-            animate={{ y: 0 }}
-            transition={{ duration: 1, delay: delay + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {w}
-          </motion.span>
-          {" "}
-        </span>
-      ))}
-    </span>
-  );
-}
-
-/* Bottone magnetico */
-export function Magnetic({ children, className = "", ...rest }) {
+/* Elemento magnetico (segue leggermente il mouse) */
+export function Magnetic({ children, className = "", strength = 0.35, as = "a", ...rest }) {
   const ref = useRef(null);
   const [p, setP] = useState({ x: 0, y: 0 });
+  const M = motion[as];
   return (
-    <motion.a
+    <M
       ref={ref}
       className={className}
       animate={{ x: p.x, y: p.y }}
-      transition={{ type: "spring", stiffness: 200, damping: 15 }}
+      transition={{ type: "spring", stiffness: 180, damping: 14, mass: 0.4 }}
       onMouseMove={(e) => {
         const r = ref.current.getBoundingClientRect();
-        setP({ x: (e.clientX - r.left - r.width / 2) * 0.3, y: (e.clientY - r.top - r.height / 2) * 0.4 });
+        setP({ x: (e.clientX - r.left - r.width / 2) * strength, y: (e.clientY - r.top - r.height / 2) * strength });
       }}
       onMouseLeave={() => setP({ x: 0, y: 0 })}
       {...rest}
     >
       {children}
-    </motion.a>
+    </M>
+  );
+}
+
+/* Card con riflesso che segue il mouse */
+export function Spotlight({ children, className = "", ...rest }) {
+  return (
+    <div
+      className={`spotlight ${className}`}
+      onMouseMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+        e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+      }}
+      {...rest}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function Kicker({ children, n }) {
+  return (
+    <span className="kicker">
+      {n && <i>{n}</i>}
+      {children}
+    </span>
   );
 }

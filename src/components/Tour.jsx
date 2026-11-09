@@ -1,75 +1,59 @@
 import { useRef, useState } from "react";
-import { motion, useScroll, useSpring, useTransform, useMotionValueEvent } from "framer-motion";
-import { PHOTOS, TOUR } from "../data";
-import { Photo } from "./ui";
+import { motion, useScroll, useSpring, useTransform, useMotionValueEvent, AnimatePresence } from "framer-motion";
+import { TOUR } from "../data";
+import { Img } from "./ui";
 
 /*
-  TOUR A SCORRIMENTO
-  La sezione è alta N schermi; il contenuto resta "sticky".
-  Lo scroll fa avanzare la telecamera dentro ogni stanza (zoom + pan)
-  e la stanza successiva si apre attraverso una porta ad arco.
+  TOUR IMMERSIVO
+  La sezione resta ferma a schermo: scorrendo la "telecamera" avanza nella stanza,
+  in fondo appare una porta ad arco che si avvicina e si apre sulla stanza successiva.
 */
-
-const DOOR_FAR = "inset(40% 45% 26% 45% round 260px 260px 4px 4px)";
-const DOOR_CLOSED = "inset(30% 37% 16% 37% round 260px 260px 4px 4px)";
+const DOOR_FAR = "inset(41% 46% 24% 46% round 400px 400px 6px 6px)";
+const DOOR_CLOSED = "inset(26% 38% 12% 38% round 400px 400px 6px 6px)";
 const DOOR_OPEN = "inset(0% 0% 0% 0% round 0px 0px 0px 0px)";
 
 function Room({ room, i, n, p }) {
   const seg = 1 / n;
   const s = i * seg;
   const e = s + seg;
-  const enterA = s - seg * 0.45;
+  const enterA = s - seg * 0.42;
+  const farA = enterA - seg * 0.22;
+  const first = i === 0;
   const dir = i % 2 ? -1 : 1;
 
-  // apertura porta (non per la prima stanza)
-  const farA = enterA - seg * 0.2;
-  const clip = useTransform(
-    p,
-    [farA, enterA, s],
-    i === 0 ? [DOOR_OPEN, DOOR_OPEN, DOOR_OPEN] : [DOOR_FAR, DOOR_CLOSED, DOOR_OPEN]
-  );
-  // la porta compare solo quando ti avvicini
-  const visible = useTransform(p, [farA - seg * 0.02, farA + seg * 0.06], i === 0 ? [1, 1] : [0, 1]);
-  // la telecamera avanza sempre: scala crescente
-  const scale = useTransform(p, [farA, s, e + seg * 0.45], [0.95, 1.1, 1.55]);
-  const x = useTransform(p, [s, e + seg * 0.45], ["0%", `${dir * 4}%`]);
-  // mentre si avvicina alla porta successiva la stanza si scurisce
-  const shade = useTransform(p, [e - seg * 0.5, e], [0, 0.65]);
-  // bagliore della cornice della porta
-  const frame = useTransform(p, [enterA, enterA + seg * 0.1, s - seg * 0.08, s], [0, 1, 1, 0]);
+  const clip = useTransform(p, [farA, enterA, s], first ? [DOOR_OPEN, DOOR_OPEN, DOOR_OPEN] : [DOOR_FAR, DOOR_CLOSED, DOOR_OPEN]);
+  const visible = useTransform(p, [farA - seg * 0.02, farA + seg * 0.06], first ? [1, 1] : [0, 1]);
+  const scale = useTransform(p, [farA, s, e + seg * 0.4], [0.9, 1.08, 1.6]);
+  const x = useTransform(p, [s, e + seg * 0.4], ["0%", `${dir * 5}%`]);
+  const rot = useTransform(p, [s, e + seg * 0.4], [0, dir * 1.2]);
+  const shade = useTransform(p, [e - seg * 0.55, e], [0, 0.7]);
+  const blur = useTransform(p, [e - seg * 0.4, e], ["blur(0px)", "blur(6px)"]);
+  const glow = useTransform(p, [farA, enterA, s - seg * 0.06, s], [0, 1, 1, 0]);
 
-  // testi
-  const tIn = s + seg * 0.04;
-  const tOut = i === n - 1 ? 2 : e - seg * 0.3;
-  const tOpacity = useTransform(p, [tIn, tIn + seg * 0.18, tOut, tOut + seg * 0.12], [0, 1, 1, 0]);
-  const tY = useTransform(p, [tIn, tIn + seg * 0.18, tOut, tOut + seg * 0.12], [60, 0, 0, -50]);
-  const numX = useTransform(p, [s, e], ["0%", "-30%"]);
+  const tIn = s + seg * 0.02;
+  const tOut = i === n - 1 ? 2 : e - seg * 0.32;
+  const o = useTransform(p, [tIn, tIn + seg * 0.16, tOut, tOut + seg * 0.1], [0, 1, 1, 0]);
+  const y = useTransform(p, [tIn, tIn + seg * 0.16, tOut, tOut + seg * 0.1], [80, 0, 0, -60]);
+  const titleX = useTransform(p, [s, e], ["0%", "-8%"]);
 
   return (
     <motion.div className="room" style={{ zIndex: i + 1, opacity: visible }}>
       <motion.div className="room-door" style={{ clipPath: clip, WebkitClipPath: clip }}>
-        <motion.div className="room-cam" style={{ scale, x }}>
-          <Photo photo={PHOTOS[room.photo]} />
+        <motion.div className="room-cam" style={{ scale, x, rotate: rot, filter: blur }}>
+          <Img src={room.photo} alt={room.title} />
         </motion.div>
         <motion.div className="room-shade" style={{ opacity: shade }} />
         <div className="room-veil" />
       </motion.div>
+      {!first && <motion.div className="door-glow" style={{ opacity: glow, clipPath: clip, WebkitClipPath: clip }} />}
 
-      {i > 0 && <motion.div className="door-frame" style={{ opacity: frame, clipPath: clip }} />}
-
-      <motion.span className="room-num" style={{ opacity: tOpacity, x: numX }}>
-        0{i + 1}
-      </motion.span>
-
-      <motion.div className="room-text" style={{ opacity: tOpacity, y: tY }}>
-        <span className="kicker">{room.kicker}</span>
-        <h3>{room.title}</h3>
+      <motion.div className="room-text" style={{ opacity: o, y }}>
+        <span className="room-kicker"><i>0{i + 1}</i>{room.kicker}</span>
+        <motion.h3 style={{ x: titleX }}>{room.title}</motion.h3>
         <p>{room.text}</p>
-        {room.tags && (
-          <div className="tags">
-            {room.tags.map((t) => <span key={t}>{t}</span>)}
-          </div>
-        )}
+        <div className="chips">
+          {room.tags.map((t) => <span key={t}>{t}</span>)}
+        </div>
       </motion.div>
     </motion.div>
   );
@@ -79,56 +63,61 @@ export default function Tour() {
   const ref = useRef(null);
   const n = TOUR.length;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const p = useSpring(scrollYProgress, { stiffness: 110, damping: 28, mass: 0.35 });
+  const p = useSpring(scrollYProgress, { stiffness: 100, damping: 26, mass: 0.35 });
   const [active, setActive] = useState(0);
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setActive(Math.min(n - 1, Math.max(0, Math.floor(v * n + 0.15))));
+    setActive(Math.min(n - 1, Math.max(0, Math.floor(v * n + 0.12))));
   });
 
   const bar = useTransform(p, [0, 1], ["0%", "100%"]);
-  const hint = useTransform(p, [0, 0.06], [1, 0]);
+  const hint = useTransform(p, [0, 0.05], [1, 0]);
 
   const jump = (i) => {
     const el = ref.current;
-    const top = el.offsetTop + (el.offsetHeight - window.innerHeight) * ((i + 0.12) / n);
-    window.scrollTo({ top, behavior: "smooth" });
+    const top = el.offsetTop + (el.offsetHeight - innerHeight) * ((i + 0.1) / n);
+    window.__lenis ? window.__lenis.scrollTo(top, { duration: 1.6 }) : scrollTo({ top, behavior: "smooth" });
   };
 
   return (
-    <section ref={ref} className="tour" id="tour" style={{ height: `${n * 130}vh` }}>
+    <section ref={ref} className="tour" id="tour" style={{ height: `${n * 140}vh` }}>
       <div className="tour-sticky">
-        {TOUR.map((r, i) => (
-          <Room key={r.id} room={r} i={i} n={n} p={p} />
-        ))}
+        {TOUR.map((r, i) => <Room key={r.id} room={r} i={i} n={n} p={p} />)}
 
-        {/* HUD */}
-        <div className="tour-hud">
-          <div className="tour-rail">
-            <motion.i style={{ height: bar }} />
+        <div className="tour-top">
+          <span className="kicker light"><i>02</i>Il tour</span>
+          <div className="tour-count">
+            <AnimatePresence mode="popLayout">
+              <motion.b
+                key={active}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "-100%" }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                0{active + 1}
+              </motion.b>
+            </AnimatePresence>
+            <span>/ 0{n}</span>
           </div>
-          <ul>
-            {TOUR.map((r, i) => (
-              <li key={r.id} className={i === active ? "on" : i < active ? "done" : ""}>
-                <button onClick={() => jump(i)}>
-                  <b>0{i + 1}</b>
-                  <span>{r.title}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
         </div>
 
-        <div className="tour-count">
-          <motion.b key={active} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            0{active + 1}
-          </motion.b>
-          <span>/ 0{n}</span>
+        <div className="tour-nav">
+          {TOUR.map((r, i) => (
+            <button
+              key={r.id}
+              className={i === active ? "on" : i < active ? "done" : ""}
+              onClick={() => jump(i)}
+              data-cursor="Vai"
+            >
+              <span>{r.title}</span>
+            </button>
+          ))}
+          <div className="tour-bar"><motion.i style={{ width: bar }} /></div>
         </div>
 
         <motion.div className="tour-hint" style={{ opacity: hint }}>
-          <span className="mouse"><i /></span>
-          Scorri per entrare in casa
+          Scorri per entrare in casa <i />
         </motion.div>
       </div>
     </section>
