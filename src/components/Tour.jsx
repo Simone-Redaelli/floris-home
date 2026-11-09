@@ -27,7 +27,11 @@ function Room({ room, i, n, p }) {
   const x = useTransform(p, [s, e + seg * 0.4], ["0%", `${dir * 5}%`]);
   const rot = useTransform(p, [s, e + seg * 0.4], [0, dir * 1.2]);
   const shade = useTransform(p, [e - seg * 0.55, e], [0, 0.7]);
-  const blur = useTransform(p, [e - seg * 0.4, e], ["blur(0px)", "blur(6px)"]);
+  const last = i === n - 1;
+  // le stanze lontane o già superate non vengono proprio disegnate
+  const vis = useTransform(p, (v) =>
+    (!first && v < farA - seg * 0.03) || (!last && v > e + seg * 0.15) ? "hidden" : "visible"
+  );
   const glow = useTransform(p, [farA, enterA, s - seg * 0.06, s], [0, 1, 1, 0]);
 
   const tIn = s + seg * 0.02;
@@ -37,9 +41,9 @@ function Room({ room, i, n, p }) {
   const titleX = useTransform(p, [s, e], ["0%", "-8%"]);
 
   return (
-    <motion.div className="room" style={{ zIndex: i + 1, opacity: visible }}>
+    <motion.div className="room" style={{ zIndex: i + 1, opacity: visible, visibility: vis }}>
       <motion.div className="room-door" style={{ clipPath: clip, WebkitClipPath: clip }}>
-        <motion.div className="room-cam" style={{ scale, x, rotate: rot, filter: blur }}>
+        <motion.div className="room-cam" style={{ scale, x, rotate: rot }}>
           <Img src={room.photo} alt={room.title} />
         </motion.div>
         <motion.div className="room-shade" style={{ opacity: shade }} />
