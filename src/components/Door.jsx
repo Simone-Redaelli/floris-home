@@ -3,6 +3,7 @@ import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import { BellRing, ChevronDown } from "lucide-react";
 import { P } from "../data";
 import { Img, EASE } from "./ui";
+import { useLang } from "../i18n";
 
 /* Pianta in vaso disegnata in SVG */
 function Plant({ className, flip }) {
@@ -36,6 +37,8 @@ function Leaf({ side }) {
 }
 
 export default function Door() {
+  const { t } = useLang();
+  const d = t.door;
   const ref = useRef(null);
   const [rang, setRang] = useState(false);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
@@ -68,10 +71,10 @@ export default function Door() {
         <div className="wall" />
         <motion.div className="door-text" style={{ opacity: textO, y: textY }}>
           <motion.span className="door-eyebrow" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: EASE }}>
-            Via San Pio X, 16 · Bergamo
+            {d.eyebrow}
           </motion.span>
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.35, ease: EASE }}>
-            Benvenuti a <em>casa</em>
+            {d.title1} <em>{d.title2}</em>
           </motion.h1>
         </motion.div>
 
@@ -83,7 +86,7 @@ export default function Door() {
           <div className="door-frame">
             <div className="door-inside">
               <motion.div className="door-photo" style={{ scale: insideScale }}>
-                <Img src={P.living} alt="Il soggiorno di Flori's Home" eager />
+                <Img src={P.living} alt={d.photoAlt} eager />
               </motion.div>
               <motion.div className="door-light" style={{ opacity: light }} />
             </div>
@@ -93,7 +96,7 @@ export default function Door() {
           </div>
 
           <motion.div className="step" style={{ opacity: decoO }} />
-          <motion.div className="mat" style={{ opacity: decoO }}>Benvenuti</motion.div>
+          <motion.div className="mat" style={{ opacity: decoO }}>{d.mat}</motion.div>
           <motion.div style={{ opacity: decoO }}>
             <Plant className="plant pl" />
             <Plant className="plant pr" flip />
@@ -103,16 +106,16 @@ export default function Door() {
             className={`bell ${rang ? "ring" : ""}`}
             style={{ opacity: decoO }}
             onClick={ring}
-            aria-label="Suona il campanello e apri la porta"
-            data-cursor="Suona"
+            aria-label={d.bellAria}
+            data-cursor={d.cursor}
           >
             <BellRing size={16} />
           </motion.button>
         </motion.div>
 
         <motion.div className="door-hint" style={{ opacity: textO }}>
-          <button onClick={ring}>Suona il campanello</button>
-          <span>oppure scorri per entrare <ChevronDown size={16} /></span>
+          <button onClick={ring}>{d.bell}</button>
+          <span>{d.scroll} <ChevronDown size={16} /></span>
         </motion.div>
       </motion.div>
     </section>

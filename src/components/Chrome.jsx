@@ -5,6 +5,7 @@ import { Star, X, Menu, CalendarDays } from "lucide-react";
 import { useSettings, euro } from "../lib/settings";
 import { scrollToId } from "../lib/booking";
 import { EASE } from "./ui";
+import { useLang, LANGS } from "../i18n";
 
 /* ---------------- SCROLL FLUIDO ---------------- */
 export function useSmoothScroll() {
@@ -24,16 +25,59 @@ export function useSmoothScroll() {
   }, []);
 }
 
-export const LINKS = [
-  ["La casa", "#casa"],
-  ["Tour", "#tour"],
-  ["Servizi", "#servizi"],
-  ["Recensioni", "#recensioni"],
-  ["Bergamo", "#bergamo"],
-];
+const HREFS = ["#casa", "#tour", "#servizi", "#recensioni", "#bergamo"];
+export const useLinks = () => {
+  const { t } = useLang();
+  return HREFS.map((h, i) => [t.nav.links[i], h]);
+};
+
+/* ---------------- SELETTORE LINGUA ---------------- */
+export function LangSwitch({ big }) {
+  const { lang, setLang, t } = useLang();
+  const [open, setOpen] = useState(false);
+  const cur = LANGS.find((l) => l.code === lang);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => !e.target.closest(".lang") && setOpen(false);
+    addEventListener("pointerdown", close);
+    return () => removeEventListener("pointerdown", close);
+  }, [open]);
+  if (big) {
+    return (
+      <div className="lang-row" aria-label={t.nav.lang}>
+        {LANGS.map((l) => (
+          <button key={l.code} className={l.code === lang ? "on" : ""} onClick={() => setLang(l.code)}>
+            <span>{l.flag}</span>{l.code.toUpperCase()}
+          </button>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div className="lang">
+      <button className="lang-btn" onClick={() => setOpen(!open)} aria-label={t.nav.lang} aria-expanded={open}>
+        <span className="flag">{cur.flag}</span>{cur.code.toUpperCase()}
+        <motion.i animate={{ rotate: open ? 180 : 0 }}>▾</motion.i>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div className="lang-menu" initial={{ opacity: 0, y: -8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.96 }} transition={{ duration: 0.2 }}>
+            {LANGS.map((l) => (
+              <button key={l.code} className={l.code === lang ? "on" : ""} onClick={() => { setLang(l.code); setOpen(false); }}>
+                <span className="flag">{l.flag}</span>{l.label}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 /* ---------------- NAV FLOTTANTE ---------------- */
 export function Nav() {
+  const { t } = useLang();
+  const LINKS = useLinks();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { scrollYProgress } = useScroll();
@@ -66,15 +110,16 @@ export function Nav() {
         <nav className="nav-links">
           {LINKS.map(([l, h]) => <a key={h} href={h}>{l}</a>)}
         </nav>
-        <a href="#prenota" className="nav-cta">Prenota</a>
-        <button className="burger" onClick={() => setOpen(true)} aria-label="Menu"><Menu size={22} /></button>
+        <LangSwitch />
+        <a href="#prenota" className="nav-cta">{t.nav.book}</a>
+        <button className="burger" onClick={() => setOpen(true)} aria-label={t.nav.menu}><Menu size={22} /></button>
       </motion.header>
 
       <AnimatePresence>
         {open && (
           <motion.div className="menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <button className="menu-close" onClick={() => setOpen(false)} aria-label="Chiudi"><X size={26} /></button>
-            {[...LINKS, ["Prenota", "#prenota"]].map(([l, h], i) => (
+            <button className="menu-close" onClick={() => setOpen(false)} aria-label={t.nav.close}><X size={26} /></button>
+            {[...LINKS, [t.nav.book, "#prenota"]].map(([l, h], i) => (
               <motion.a
                 key={h}
                 href={h}
@@ -86,6 +131,7 @@ export function Nav() {
                 {l}
               </motion.a>
             ))}
+            <LangSwitch big />
           </motion.div>
         )}
       </AnimatePresence>
@@ -95,6 +141,7 @@ export function Nav() {
 
 /* ---------------- BARRA PRENOTA (mobile) ---------------- */
 export function MobileBar() {
+  const { t } = useLang();
   const { settings: s } = useSettings();
   const [show, setShow] = useState(false);
   useEffect(() => {
@@ -112,10 +159,10 @@ export function MobileBar() {
       {show && (
         <motion.div className="mbar" initial={{ y: 120 }} animate={{ y: 0 }} exit={{ y: 120 }} transition={{ type: "spring", stiffness: 260, damping: 28 }}>
           <div>
-            <b>{euro(s.pricePerNight)}</b> <span>/ notte</span>
-            <small><Star size={11} fill="currentColor" /> 9,1 · Superbo</small>
+            <b>{euro(s.pricePerNight)}</b> <span>{t.mbar.perNight}</span>
+            <small><Star size={11} fill="currentColor" /> 9,1 · {t.mbar.superb}</small>
           </div>
-          <button onClick={() => scrollToId("prenota")}><CalendarDays size={17} /> Scegli le date</button>
+          <button onClick={() => scrollToId("prenota")}><CalendarDays size={17} /> {t.mbar.cta}</button>
         </motion.div>
       )}
     </AnimatePresence>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { firebaseConfig, isConfigured } from "./firebase-config";
 import { SITE } from "../data";
+import { currentLocale } from "../i18n";
 
 /* Valori usati finché l'admin non salva le sue impostazioni */
 export const DEFAULTS = {
@@ -45,7 +46,7 @@ export const nightsBetween = (from, to) => {
   return out;
 };
 export const fmtDate = (s, opts = { day: "numeric", month: "long" }) =>
-  parse(s).toLocaleDateString("it-IT", opts);
+  parse(s).toLocaleDateString(currentLocale(), opts);
 export const euro = (n) => "€" + Math.round(n).toLocaleString("it-IT");
 
 /* ---------- prezzi ---------- */

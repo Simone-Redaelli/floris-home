@@ -8,6 +8,7 @@ import { Stack, Wave } from "./components/Wow";
 import { Bento, Amenities, Reviews, Bergamo, Booking, Faq, Footer } from "./components/Sections";
 import { SettingsProvider } from "./lib/settings";
 import { BookingProvider } from "./lib/booking";
+import { LangProvider } from "./i18n";
 
 // Il pannello admin viene scaricato solo da chi apre #admin
 const Admin = lazy(() => import("./admin/Admin"));
@@ -15,6 +16,7 @@ const Admin = lazy(() => import("./admin/Admin"));
 function Site() {
   useSmoothScroll();
   return (
+    <LangProvider>
     <SettingsProvider>
       <BookingProvider>
         <Nav />
@@ -37,6 +39,7 @@ function Site() {
         <MobileBar />
       </BookingProvider>
     </SettingsProvider>
+    </LangProvider>
   );
 }
 

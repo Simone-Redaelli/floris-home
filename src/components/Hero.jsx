@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Star, CalendarDays, Users, Search, Minus, Plus, MapPin, Sparkles } from "lucide-react";
-import { P, ROTATE, TRUST } from "../data";
+import { P } from "../data";
+import { useLang } from "../i18n";
 import { useSettings, quote, euro, fmtDate } from "../lib/settings";
 import { useBooking, scrollToId } from "../lib/booking";
 import Calendar from "./Calendar";
@@ -10,16 +11,19 @@ import { Sticker, Leaves } from "./Wow";
 
 /* parola che cambia nel titolo */
 function Rotator() {
+  const { t, lang } = useLang();
+  const ROTATE = t.hero.rotate;
   const [i, setI] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setI((x) => (x + 1) % ROTATE.length), 2300);
-    return () => clearInterval(t);
-  }, []);
+    setI(0);
+    const id = setInterval(() => setI((x) => (x + 1) % ROTATE.length), 2300);
+    return () => clearInterval(id);
+  }, [lang]);
   return (
     <span className="rotator">
       <AnimatePresence mode="wait">
         <motion.em
-          key={i}
+          key={lang + i}
           initial={{ y: "100%", opacity: 0, rotate: 3 }}
           animate={{ y: 0, opacity: 1, rotate: 0 }}
           exit={{ y: "-100%", opacity: 0 }}
@@ -34,6 +38,8 @@ function Rotator() {
 
 /* ---------------- BARRA DATE ---------------- */
 function SearchBar() {
+  const { t } = useLang();
+  const h = t.hero;
   const { settings: s } = useSettings();
   const { from, to, guests, transfer, setFrom, setTo, setGuests } = useBooking();
   const [open, setOpen] = useState(null); // "dates" | "guests" | null
@@ -55,35 +61,35 @@ function SearchBar() {
       <button className={`sf ${open === "dates" ? "on" : ""}`} onClick={() => setOpen(open === "dates" ? null : "dates")}>
         <CalendarDays size={18} />
         <div>
-          <span>Arrivo</span>
-          <b>{from ? fmtDate(from, { day: "numeric", month: "short" }) : "Aggiungi data"}</b>
+          <span>{h.arrival}</span>
+          <b>{from ? fmtDate(from, { day: "numeric", month: "short" }) : h.addDate}</b>
         </div>
       </button>
       <i className="sdiv" />
       <button className={`sf ${open === "dates" ? "on" : ""}`} onClick={() => setOpen(open === "dates" ? null : "dates")}>
         <div>
-          <span>Partenza</span>
-          <b>{to ? fmtDate(to, { day: "numeric", month: "short" }) : "Aggiungi data"}</b>
+          <span>{h.departure}</span>
+          <b>{to ? fmtDate(to, { day: "numeric", month: "short" }) : h.addDate}</b>
         </div>
       </button>
       <i className="sdiv" />
       <button className={`sf ${open === "guests" ? "on" : ""}`} onClick={() => setOpen(open === "guests" ? null : "guests")}>
         <Users size={18} />
         <div>
-          <span>Ospiti</span>
-          <b>{guests} {guests === 1 ? "ospite" : "ospiti"}</b>
+          <span>{h.guests}</span>
+          <b>{h.guestsN(guests)}</b>
         </div>
       </button>
       <button className="sgo" onClick={() => { setOpen(null); scrollToId("prenota"); }}>
-        {ok ? <span>{euro(q.total)} · Prenota</span> : <><Search size={18} /><span>Verifica</span></>}
+        {ok ? <span>{euro(q.total)} · {h.book}</span> : <><Search size={18} /><span>{h.check}</span></>}
       </button>
 
       <AnimatePresence>
         {open === "dates" && (
           <motion.div className="pop pop-dates" initial={{ opacity: 0, y: 10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.25 }}>
             <div className="pop-head">
-              <b>{from && to ? `${q.nights.length} notti · ${fmtDate(from, { day: "numeric", month: "short" })} – ${fmtDate(to, { day: "numeric", month: "short" })}` : from ? "Scegli la partenza" : "Scegli l'arrivo"}</b>
-              {(from || to) && <button onClick={() => { setFrom(null); setTo(null); }}>Cancella</button>}
+              <b>{from && to ? `${h.nightsN(q.nights.length)} · ${fmtDate(from, { day: "numeric", month: "short" })} – ${fmtDate(to, { day: "numeric", month: "short" })}` : from ? h.pickDeparture : h.pickArrival}</b>
+              {(from || to) && <button onClick={() => { setFrom(null); setTo(null); }}>{h.clear}</button>}
             </div>
             <Calendar settings={s} mode="range" from={from} to={to} months={months}
               onRange={(a, b) => { setFrom(a); setTo(b); if (b) setTimeout(() => setOpen(null), 350); }} />
@@ -92,7 +98,7 @@ function SearchBar() {
         {open === "guests" && (
           <motion.div className="pop pop-guests" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.25 }}>
             <div className="g-row">
-              <div><b>Ospiti</b><span>Massimo {max}</span></div>
+              <div><b>{h.guests}</b><span>{h.max(max)}</span></div>
               <div className="stepper">
                 <button onClick={() => setGuests(Math.max(1, guests - 1))} aria-label="Meno"><Minus size={15} /></button>
                 <b>{guests}</b>
@@ -116,6 +122,7 @@ const FAN = [
 ];
 
 function Fan() {
+  const { t } = useLang();
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
   const rx = useSpring(useTransform(my, [-1, 1], [8, -8]), { stiffness: 120, damping: 18 });
@@ -150,13 +157,13 @@ function Fan() {
           </motion.div>
         ))}
         <motion.div className="fan-tag t1" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.4, type: "spring" }}>
-          <Star size={14} fill="currentColor" /> <b>9,1</b> Superbo
+          <Star size={14} fill="currentColor" /> <b>9,1</b> {t.hero.superb}
         </motion.div>
         <motion.div className="fan-tag t2" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.6, type: "spring" }}>
-          <MapPin size={14} /> 4 km da Orio al Serio
+          <MapPin size={14} /> {t.hero.airport}
         </motion.div>
         <motion.div className="fan-tag t3" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.8, type: "spring" }}>
-          <Sparkles size={14} /> Appena ristrutturato
+          <Sparkles size={14} /> {t.hero.renovated}
         </motion.div>
       </motion.div>
     </div>
@@ -166,22 +173,24 @@ function Fan() {
 /* ---------------- HERO ---------------- */
 export function Hero() {
   const { settings: s } = useSettings();
+  const { t } = useLang();
+  const h = t.hero;
   return (
     <section className="hero" id="top">
       <div className="hero-bg" />
       <Leaves count={8} />
       <motion.div className="hero-sticker" initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.9 }}>
-        <Sticker>€0</Sticker>
+        <Sticker text={h.sticker}>€0<small className="st-small">{h.stickerSmall}</small></Sticker>
       </motion.div>
       <div className="hero-top">
         <motion.div className="hero-chip" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
-          <span className="dot" /> {s.bookingOpen ? "Prenotazioni aperte" : "Prenotazioni chiuse"} · da <b>{euro(s.pricePerNight)}</b> a notte
+          <span className="dot" /> {s.bookingOpen ? h.open : h.closed} · {h.from} <b>{euro(s.pricePerNight)}</b> {h.perNight}
         </motion.div>
         <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.1, ease: EASE }}>
-          La tua casa a Bergamo,<br />perfetta per <Rotator />
+          {h.title1}<br />{h.title2} <Rotator />
         </motion.h1>
         <motion.p className="hero-sub" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.25, ease: EASE }}>
-          80 m² appena ristrutturati, due camere, balcone sul verde e parcheggio gratuito.
+          {h.sub}
         </motion.p>
         <motion.div className="search-wrap" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.4, ease: EASE }}>
           <SearchBar />
@@ -194,7 +203,8 @@ export function Hero() {
 
 /* ---------------- STRISCIA FIDUCIA ---------------- */
 export function Trust() {
-  const row = [...TRUST, ...TRUST];
+  const { t } = useLang();
+  const row = [...t.trust, ...t.trust];
   return (
     <div className="trust">
       <div className="trust-row">

@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { motion, useScroll, useSpring, useTransform, useMotionValueEvent, AnimatePresence } from "framer-motion";
-import { TOUR } from "../data";
+import { TOUR as TOUR_DATA } from "../data";
+import { useLang } from "../i18n";
 import { Img } from "./ui";
 
 /*
@@ -65,6 +66,8 @@ function Room({ room, i, n, p }) {
 
 export default function Tour() {
   const ref = useRef(null);
+  const { t } = useLang();
+  const TOUR = TOUR_DATA.map((r, i) => ({ ...r, ...t.tour.rooms[i] }));
   const n = TOUR.length;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const p = useSpring(scrollYProgress, { stiffness: 100, damping: 26, mass: 0.35 });
@@ -89,7 +92,7 @@ export default function Tour() {
         {TOUR.map((r, i) => <Room key={r.id} room={r} i={i} n={n} p={p} />)}
 
         <div className="tour-top">
-          <span className="kicker">Il tour</span>
+          <span className="kicker">{t.tour.kicker}</span>
           <div className="tour-count">
             <AnimatePresence mode="popLayout">
               <motion.b
@@ -112,7 +115,7 @@ export default function Tour() {
               key={r.id}
               className={i === active ? "on" : i < active ? "done" : ""}
               onClick={() => jump(i)}
-              data-cursor="Vai"
+              data-cursor={t.tour.go}
             >
               <span>{r.title}</span>
             </button>
@@ -121,7 +124,7 @@ export default function Tour() {
         </div>
 
         <motion.div className="tour-hint" style={{ opacity: hint }}>
-          Scorri per entrare in casa <i />
+          {t.tour.scroll} <i />
         </motion.div>
       </div>
     </section>

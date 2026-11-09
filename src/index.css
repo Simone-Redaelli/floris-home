@@ -417,7 +417,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var
 .cal-nav button:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
 .cal-nav button:disabled { opacity: .25; }
 .cal-months { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
-.cal-title { font-family: var(--serif); font-size: 1.35rem; text-transform: capitalize; height: 30px; margin-bottom: 10px; }
+.cal-title { font-family: var(--serif); font-size: 1.35rem; height: 30px; margin-bottom: 10px; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 .cal-wd { text-align: center; font-size: .66rem; letter-spacing: .14em; color: var(--dim); padding: 6px 0; }
 .cal-day { position: relative; aspect-ratio: 1 / 1.05; border-radius: 10px; display: grid; place-content: center; gap: 1px; text-align: center; transition: background .25s, color .25s, transform .25s; }
@@ -671,7 +671,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var
 .sticker text { font-size: 10px; font-weight: 700; letter-spacing: .18em; fill: var(--gold-d); font-family: var(--sans); }
 .sticker::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #fff; box-shadow: var(--shadow); }
 .sticker-in { position: relative; width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; background: var(--gold); color: #fff; font-family: var(--serif); font-size: 1.3rem; font-weight: 600; }
-.hero-sticker .sticker-in::after { content: "commissioni"; position: absolute; bottom: 9px; font-family: var(--sans); font-size: .42rem; letter-spacing: .06em; text-transform: uppercase; }
+.st-small { position: absolute; bottom: 9px; left: 0; right: 0; text-align: center; font-family: var(--sans); font-size: .42rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
 .hero-sticker .sticker-in { font-size: 1.1rem; padding-bottom: 8px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -907,3 +907,21 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var
 .ci-others { padding: 0 14px 14px; display: grid; gap: 6px; font-size: .88rem; }
 .ci-others div { padding: 8px 12px; border-radius: 10px; background: var(--bg); }
 .ci-copy { margin: 0 14px 14px; }
+
+/* ---------- selettore lingua ---------- */
+.lang { position: relative; margin-left: auto; }
+.nav-links + .lang { margin-left: 4px; }
+.lang-btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line); font-weight: 600; font-size: .85rem; transition: border-color .25s, box-shadow .25s; }
+.lang-btn:hover { border-color: var(--gold); box-shadow: 0 8px 20px -12px rgba(181,121,74,.6); }
+.lang-btn i { font-style: normal; font-size: .7rem; color: var(--muted); display: inline-block; }
+.flag { font-size: 1.05rem; line-height: 1; }
+.lang-menu { position: absolute; right: 0; top: calc(100% + 10px); min-width: 180px; padding: 6px; border-radius: 18px; background: #fff; border: 1px solid var(--line); box-shadow: 0 24px 50px -20px rgba(60,40,20,.4); display: grid; gap: 2px; z-index: 50; transform-origin: top right; }
+.lang-menu button { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; text-align: left; font-size: .92rem; transition: background .2s; }
+.lang-menu button:hover { background: var(--bg-2); }
+.lang-menu button.on { background: var(--soft); color: var(--gold-d); font-weight: 600; }
+.lang-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 26px; }
+.lang-row button { display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line); font-weight: 600; font-size: .85rem; }
+.lang-row button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.lang-row span { font-size: 1.05rem; }
+@media (max-width: 1080px) { .lang { margin-left: auto; } .nav-cta { margin-left: 0; } }
+@media (max-width: 720px) { .lang-btn { padding: 9px 11px; } .nav { gap: 8px; } }

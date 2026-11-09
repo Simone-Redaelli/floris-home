@@ -2,6 +2,7 @@ import { useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
 import { Hand, Plane, MapPin, ArrowUpRight } from "lucide-react";
 import { P, AUDIENCE } from "../data";
+import { useLang } from "../i18n";
 import { Img, Counter, Reveal, EASE } from "./ui";
 
 const isTouch = () => typeof window !== "undefined" && window.matchMedia("(hover: none)").matches;
@@ -68,6 +69,8 @@ const SHOTS = [
 ];
 
 function Polaroid({ s, i, bounds, onOpen, top, bump }) {
+  const { t } = useLang();
+  const cap = t.casa.caps[i];
   const dragged = useRef(false);
   const touch = isTouch();
   const small = typeof window !== "undefined" && window.innerWidth < 720;
@@ -89,13 +92,15 @@ function Polaroid({ s, i, bounds, onOpen, top, bump }) {
       onClick={() => !dragged.current && onOpen(s.src)}
     >
       <span className="tape" />
-      <div className="pol-img"><Img src={s.src} alt={s.cap} draggable={false} /></div>
-      <p>{s.cap}</p>
+      <div className="pol-img"><Img src={s.src} alt={cap} draggable={false} /></div>
+      <p>{cap}</p>
     </motion.div>
   );
 }
 
 export function Polaroids({ onOpen }) {
+  const { t } = useLang();
+  const c = t.casa;
   const bounds = useRef(null);
   const [z, setZ] = useState(() => SHOTS.map((_, i) => i + 1));
   const topRef = useRef(SHOTS.length);
@@ -110,11 +115,11 @@ export function Polaroids({ onOpen }) {
       <div className="wrap">
         <div className="pol-head">
           <Reveal className="head">
-            <span className="kicker">La casa</span>
-            <h2>Sfoglia la casa <em>come un album</em></h2>
-            <p>L'intero appartamento è tuo: 80 m², due camere, cucina, bagno con vasca e un balcone sul verde.</p>
+            <span className="kicker">{c.kicker}</span>
+            <h2>{c.title1} <em>{c.title2}</em></h2>
+            <p>{c.sub}</p>
           </Reveal>
-          <Reveal className="pol-hint" delay={0.2}><Hand size={18} /> {isTouch() ? "Tocca una foto per ingrandirla" : "Trascina le foto, cliccale per ingrandirle"}</Reveal>
+          <Reveal className="pol-hint" delay={0.2}><Hand size={18} /> {isTouch() ? c.hintTouch : c.hintDrag}</Reveal>
         </div>
         <div className="table" ref={bounds}>
           {SHOTS.map((s, i) => (
@@ -124,12 +129,12 @@ export function Polaroids({ onOpen }) {
             <b><Counter value={80} /></b><span>m²</span>
           </motion.div>
           <motion.div className="tsticker t-b" initial={{ scale: 0, rotate: 40 }} whileInView={{ scale: 1, rotate: 8 }} viewport={{ once: true }} transition={{ type: "spring", delay: 1.1 }}>
-            <b>2</b><span>camere</span>
+            <b>2</b><span>{c.rooms}</span>
           </motion.div>
           <motion.div className="tsticker t-c" initial={{ scale: 0 }} whileInView={{ scale: 1, rotate: -6 }} viewport={{ once: true }} transition={{ type: "spring", delay: 1.3 }}>
-            <b>5</b><span>ospiti</span>
+            <b>5</b><span>{c.guests}</span>
           </motion.div>
-          <span className="scribble">appena ristrutturato! ✨</span>
+          <span className="scribble">{c.scribble}</span>
         </div>
       </div>
     </section>
@@ -155,17 +160,19 @@ function StackCard({ a, i, n, p }) {
 }
 
 export function Stack() {
+  const { t } = useLang();
+  const items = AUDIENCE.map((a, i) => ({ ...a, ...t.stack.items[i] }));
   const ref = useRef(null);
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end end"] });
   return (
     <section className="sec soft stack-sec">
       <div className="wrap">
         <Reveal className="head center">
-          <span className="kicker">Perfetto per</span>
-          <h2>Una casa, <em>tanti viaggi</em></h2>
+          <span className="kicker">{t.stack.kicker}</span>
+          <h2>{t.stack.title1} <em>{t.stack.title2}</em></h2>
         </Reveal>
         <div className="stack" ref={ref}>
-          {AUDIENCE.map((a, i) => <StackCard key={a.title} a={a} i={i} n={AUDIENCE.length} p={p} />)}
+          {items.map((a, i) => <StackCard key={i} a={a} i={i} n={items.length} p={p} />)}
         </div>
       </div>
     </section>
@@ -177,6 +184,7 @@ const SKY = "M0 200 L60 196 C120 190 150 170 210 168 L260 168 L262 150 L284 150 
 const FLIGHT = "M40 60 C 300 10, 520 120, 760 70 S 1150 20, 1240 150";
 
 export function Skyline() {
+  const { t } = useLang();
   const ref = useRef(null);
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start 0.9", "end 0.3"] });
   const s = useSpring(p, { stiffness: 80, damping: 24 });
@@ -193,8 +201,8 @@ export function Skyline() {
       <motion.div className="plane" style={{ offsetPath: `path('${FLIGHT}')`, offsetDistance: fly }}>
         <Plane size={22} />
       </motion.div>
-      <motion.div className="sky-pin" style={{ scale: pinS }}><MapPin size={14} /> Orio al Serio · 4 km</motion.div>
-      <span className="sky-label">Città Alta</span>
+      <motion.div className="sky-pin" style={{ scale: pinS }}><MapPin size={14} /> {t.berg.skyPin}</motion.div>
+      <span className="sky-label">{t.berg.alta}</span>
     </div>
   );
 }

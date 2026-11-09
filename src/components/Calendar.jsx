@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { iso, parse, today, nightPrice } from "../lib/settings";
+import { useLang } from "../i18n";
 
-const WD = ["L", "M", "M", "G", "V", "S", "D"];
 
 function monthDays(y, m) {
   const first = new Date(y, m, 1);
@@ -19,6 +19,8 @@ function monthDays(y, m) {
   mode="admin": l'admin trascina sui giorni per bloccarli/sbloccarli
 */
 export default function Calendar({ settings, mode = "range", from, to, onRange, onToggle, months = 2 }) {
+  const { t, locale } = useLang();
+  const WD = t.cal.wd;
   const t0 = today();
   const now = parse(t0);
   const [base, setBase] = useState({ y: now.getFullYear(), m: now.getMonth() });
@@ -107,8 +109,8 @@ export default function Calendar({ settings, mode = "range", from, to, onRange, 
       }}
     >
       <div className="cal-nav">
-        <button onClick={() => shift(-1)} disabled={!canPrev} aria-label="Mese precedente"><ChevronLeft size={18} /></button>
-        <button onClick={() => shift(1)} aria-label="Mese successivo"><ChevronRight size={18} /></button>
+        <button onClick={() => shift(-1)} disabled={!canPrev} aria-label={t.cal.prev}><ChevronLeft size={18} /></button>
+        <button onClick={() => shift(1)} aria-label={t.cal.next}><ChevronRight size={18} /></button>
       </div>
       <AnimatePresence mode="popLayout" initial={false} custom={dir}>
         <motion.div
@@ -125,7 +127,7 @@ export default function Calendar({ settings, mode = "range", from, to, onRange, 
             const cells = monthDays(dt.getFullYear(), dt.getMonth());
             return (
               <div className="cal-month" key={k}>
-                <div className="cal-title">{dt.toLocaleDateString("it-IT", { month: "long", year: "numeric" })}</div>
+                <div className="cal-title">{((x) => x.charAt(0).toUpperCase() + x.slice(1))(dt.toLocaleDateString(locale, { month: "long", year: "numeric" }))}</div>
                 <div className="cal-grid">
                   {WD.map((w, i) => <span key={i} className="cal-wd">{w}</span>)}
                   {cells.map((d, i) => {
@@ -157,7 +159,7 @@ export default function Calendar({ settings, mode = "range", from, to, onRange, 
                         onPointerDown={() => down(d)}
                         onPointerEnter={() => enter(d)}
                         disabled={mode === "range" && dis}
-                        title={isB ? "Non disponibile" : `€${np.price} / notte`}
+                        title={isB ? t.cal.unavailable : `€${np.price} ${t.cal.perNight}`}
                       >
                         <b>{parse(d).getDate()}</b>
                         {d >= t0 && <small>{isB ? "—" : np.price}</small>}
