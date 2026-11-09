@@ -5,7 +5,7 @@ export default {
   door: {
     eyebrow: "Via San Pio X, 16 · Bergamo", title1: "Benvenuti a", title2: "casa", mat: "Benvenuti",
     bell: "Suona il campanello", scroll: "oppure scorri per entrare", bellAria: "Suona il campanello e apri la porta",
-    photoAlt: "Il soggiorno di Flori's Home", cursor: "Suona",
+    skip: "Salta", photoAlt: "Il soggiorno di Flori's Home", cursor: "Suona",
   },
   hero: {
     open: "Prenotazioni aperte", closed: "Prenotazioni chiuse", from: "da", perNight: "a notte",

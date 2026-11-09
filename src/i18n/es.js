@@ -5,7 +5,7 @@ export default {
   door: {
     eyebrow: "Via San Pio X, 16 · Bérgamo", title1: "Bienvenidos a", title2: "casa", mat: "Bienvenidos",
     bell: "Toca el timbre", scroll: "o desplázate para entrar", bellAria: "Tocar el timbre y abrir la puerta",
-    photoAlt: "El salón de Flori's Home", cursor: "Tocar",
+    skip: "Saltar", photoAlt: "El salón de Flori's Home", cursor: "Tocar",
   },
   hero: {
     open: "Reservas abiertas", closed: "Reservas cerradas", from: "desde", perNight: "por noche",

@@ -5,7 +5,7 @@ export default {
   door: {
     eyebrow: "Via San Pio X, 16 · Bergame", title1: "Bienvenue", title2: "chez vous", mat: "Bienvenue",
     bell: "Sonnez à la porte", scroll: "ou faites défiler pour entrer", bellAria: "Sonner et ouvrir la porte",
-    photoAlt: "Le séjour de Flori's Home", cursor: "Sonner",
+    skip: "Passer", photoAlt: "Le séjour de Flori's Home", cursor: "Sonner",
   },
   hero: {
     open: "Réservations ouvertes", closed: "Réservations fermées", from: "dès", perNight: "la nuit",

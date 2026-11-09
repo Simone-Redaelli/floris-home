@@ -5,7 +5,7 @@ export default {
   door: {
     eyebrow: "Via San Pio X, 16 · Bergamo", title1: "Welcome", title2: "home", mat: "Welcome",
     bell: "Ring the bell", scroll: "or scroll to step inside", bellAria: "Ring the bell and open the door",
-    photoAlt: "The living room at Flori's Home", cursor: "Ring",
+    skip: "Skip", photoAlt: "The living room at Flori's Home", cursor: "Ring",
   },
   hero: {
     open: "Now taking bookings", closed: "Bookings closed", from: "from", perNight: "per night",

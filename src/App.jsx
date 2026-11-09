@@ -3,7 +3,7 @@ import "lenis/dist/lenis.css";
 import { Nav, MobileBar, useSmoothScroll } from "./components/Chrome";
 import { Hero, Trust } from "./components/Hero";
 import Tour from "./components/Tour";
-import Door from "./components/Door";
+import Door, { shouldPlayIntro } from "./components/Door";
 import { Stack, Wave } from "./components/Wow";
 import { Bento, Amenities, Reviews, Bergamo, Booking, Faq, Footer } from "./components/Sections";
 import { SettingsProvider } from "./lib/settings";
@@ -15,14 +15,27 @@ const Admin = lazy(() => import("./admin/Admin"));
 
 function Site() {
   useSmoothScroll();
+  const [intro, setIntro] = useState(shouldPlayIntro);
+  const [revealed, setRevealed] = useState(!intro);
+  useEffect(() => {
+    const l = window.__lenis;
+    if (intro) {
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+      l?.stop();
+      document.documentElement.classList.add("intro-on");
+    } else {
+      l?.start();
+      document.documentElement.classList.remove("intro-on");
+    }
+  }, [intro]);
   return (
     <LangProvider>
     <SettingsProvider>
       <BookingProvider>
         <Nav />
         <main>
-          <Door />
-          <Hero />
+          {intro && <Door onReveal={() => setRevealed(true)} onDone={() => setIntro(false)} />}
+          <Hero key={revealed ? "hero" : "hero-wait"} />
           <Trust />
           <Bento />
           <Tour />

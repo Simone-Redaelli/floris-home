@@ -925,3 +925,12 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var
 .lang-row span { font-size: 1.05rem; }
 @media (max-width: 1080px) { .lang { margin-left: auto; } .nav-cta { margin-left: 0; } }
 @media (max-width: 720px) { .lang-btn { padding: 9px 11px; } .nav { gap: 8px; } }
+
+/* ---------- INTRO: la porta si apre da sola ---------- */
+.door-intro { position: fixed; inset: 0; z-index: 950; pointer-events: auto; }
+.door-intro .door-sticky { position: absolute; inset: 0; height: auto; }
+html.intro-on, html.intro-on body { overflow: hidden; }
+html.intro-on .nav, html.intro-on .progress, html.intro-on .mbar { opacity: 0; pointer-events: none; }
+.nav { transition: background .4s, box-shadow .4s, border-color .4s, opacity .8s; }
+.door-skip { position: absolute; z-index: 6; right: max(18px, 4vw); bottom: 4vh; display: inline-flex; align-items: center; gap: 6px; padding: 11px 18px; border-radius: 999px; background: rgba(255,255,255,.8); backdrop-filter: blur(8px); border: 1px solid var(--line); font-weight: 600; font-size: .88rem; color: var(--muted); transition: background .25s, color .25s; }
+.door-skip:hover { background: var(--ink); color: #fff; }

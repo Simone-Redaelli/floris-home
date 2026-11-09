@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { BellRing, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useMotionValueEvent, useTransform, animate } from "framer-motion";
+import { BellRing, ChevronsRight } from "lucide-react";
 import { P } from "../data";
 import { Img, EASE } from "./ui";
 import { useLang } from "../i18n";
@@ -36,13 +36,23 @@ function Leaf({ side }) {
   );
 }
 
-export default function Door() {
+export const shouldPlayIntro = () =>
+  typeof window !== "undefined" &&
+  !window.location.hash &&
+  !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/*
+  INTRO: all'apertura del sito la porta si apre da sola e ti porta nella home.
+  onReveal → la home comincia ad apparire (mentre la porta svanisce)
+  onDone   → intro finita, si può scorrere
+*/
+export default function Door({ onReveal, onDone }) {
   const { t } = useLang();
   const d = t.door;
-  const ref = useRef(null);
   const [rang, setRang] = useState(false);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const p = useSpring(scrollYProgress, { stiffness: 80, damping: 22, mass: 0.4 });
+  const p = useMotionValue(0);
+  const anim = useRef(null);
+  const revealed = useRef(false);
 
   const lRot = useTransform(p, [0.06, 0.42], [0, -108]);
   const rRot = useTransform(p, [0.06, 0.42], [0, 108]);
@@ -53,20 +63,32 @@ export default function Door() {
   const textO = useTransform(p, [0, 0.12], [1, 0]);
   const textY = useTransform(p, [0, 0.12], [0, -40]);
   const decoO = useTransform(p, [0.35, 0.6], [1, 0]);
-  const fade = useTransform(p, [0.6, 0.86], [1, 0]);
+  const fade = useTransform(p, [0.62, 0.92], [1, 0]);
 
-  const ring = () => {
-    setRang(true);
-    setTimeout(() => setRang(false), 700);
-    const el = ref.current;
-    const target = el.offsetTop + (el.offsetHeight - innerHeight) * 0.5;
-    setTimeout(() => {
-      window.__lenis ? window.__lenis.scrollTo(target, { duration: 2.4 }) : scrollTo({ top: target, behavior: "smooth" });
-    }, 350);
+  useMotionValueEvent(p, "change", (v) => {
+    if (v > 0.6 && !revealed.current) {
+      revealed.current = true;
+      onReveal?.();
+    }
+  });
+
+  const play = (delay, duration) => {
+    anim.current?.stop();
+    anim.current = animate(p, 1, { delay, duration, ease: [0.65, 0, 0.35, 1], onComplete: () => onDone?.() });
   };
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // il campanello suona da solo, poi la porta si apre
+    const t1 = setTimeout(() => { setRang(true); setTimeout(() => setRang(false), 700); }, 700);
+    play(1.5, 3.4);
+    return () => { clearTimeout(t1); anim.current?.stop(); };
+  }, []);
+
+  const skip = () => play(0, Math.max(0.6, (1 - p.get()) * 1.6));
+
   return (
-    <section className="door-sec" ref={ref} id="porta">
+    <section className="door-intro" id="porta" aria-hidden="true">
       <motion.div className="door-sticky" style={{ opacity: fade }}>
         <div className="wall" />
         <motion.div className="door-text" style={{ opacity: textO, y: textY }}>
@@ -105,7 +127,7 @@ export default function Door() {
           <motion.button
             className={`bell ${rang ? "ring" : ""}`}
             style={{ opacity: decoO }}
-            onClick={ring}
+            onClick={skip}
             aria-label={d.bellAria}
             data-cursor={d.cursor}
           >
@@ -113,10 +135,9 @@ export default function Door() {
           </motion.button>
         </motion.div>
 
-        <motion.div className="door-hint" style={{ opacity: textO }}>
-          <button onClick={ring}>{d.bell}</button>
-          <span>{d.scroll} <ChevronDown size={16} /></span>
-        </motion.div>
+        <motion.button className="door-skip" onClick={skip} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
+          {d.skip} <ChevronsRight size={16} />
+        </motion.button>
       </motion.div>
     </section>
   );

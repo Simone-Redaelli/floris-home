@@ -5,7 +5,7 @@ export default {
   door: {
     eyebrow: "Via San Pio X, 16 · Bergamo", title1: "Willkommen", title2: "zu Hause", mat: "Willkommen",
     bell: "Klingeln", scroll: "oder scrollen, um einzutreten", bellAria: "Klingeln und die Tür öffnen",
-    photoAlt: "Das Wohnzimmer von Flori's Home", cursor: "Klingeln",
+    skip: "Überspringen", photoAlt: "Das Wohnzimmer von Flori's Home", cursor: "Klingeln",
   },
   hero: {
     open: "Jetzt buchbar", closed: "Buchungen geschlossen", from: "ab", perNight: "pro Nacht",
