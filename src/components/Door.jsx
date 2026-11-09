@@ -36,10 +36,13 @@ function Leaf({ side }) {
   );
 }
 
-export const shouldPlayIntro = () =>
-  typeof window !== "undefined" &&
-  !window.location.hash &&
-  !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// la porta parte sempre all'apertura; si salta solo con un link diretto a una sezione (es. #prenota)
+export const shouldPlayIntro = () => {
+  if (typeof window === "undefined") return false;
+  const h = window.location.hash.replace("#", "");
+  if (!h || h === "top" || h === "porta") return true;
+  return !["casa", "tour", "servizi", "recensioni", "bergamo", "prenota", "faq"].includes(h) && !h.startsWith("admin");
+};
 
 /*
   INTRO: all'apertura del sito la porta si apre da sola e ti porta nella home.
