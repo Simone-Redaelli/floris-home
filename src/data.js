@@ -3,14 +3,17 @@
 // ============================================================
 
 // Foto ufficiali dell'annuncio (CDN Booking)
+// Foto caricate nel progetto (public/images)
+const loc = (f) => `${import.meta.env.BASE_URL}images/${f}`;
+
 const bk = (id, k, size = "max1280x900") =>
   `https://cf.bstatic.com/xdata/images/hotel/${size}/${id}.jpg?k=${k}&o=`;
 
 export const P = {
-  living:    bk("549907859", "ea13e4a8c2f415e4e67b070b9d2827b418df3de88184a13f617f2c0f2db8de5e"),
+  living: loc("soggiorno.jpg"),
   living2:   bk("674872214", "cffe37dc146cdf9c39cc5cb21b0c5a84048dd186eed0776053b280a12af56ecc"),
-  dining:    bk("934306171", "4e029d840e78422322ccffe6a88f89003404b1ae174deb75e5db6786efc0b852"),
-  sofa:      bk("934308576", "02eb39f9f346326ae1d809ac59bf6a7107a18e5ae8ab9e85f6be67d7f2d44144"),
+  dining: loc("pranzo.jpg"),
+  sofa: bk("549907859", "ea13e4a8c2f415e4e67b070b9d2827b418df3de88184a13f617f2c0f2db8de5e"),
   tv:        bk("674872244", "8ae6b361b3c972b1846919f53ad9c6ac77c5c341d6faae361e20c7596c6399be"),
   living3:   bk("559417766", "b56ef07a9b87a2faf5ad79b2f8cdcb48a467b819778e0b2f231ce22443aa3f14"),
   living4:   bk("674872187", "c5f01ada86467575ab470e49e4ce25c754a32675995fe52fe84944dfbae5049f"),
@@ -18,12 +21,12 @@ export const P = {
   balcony:   bk("549908086", "7958d878d57e1cf247c0ff0eb3d7ec41e48020893e74b659a988d41f1e83249c"),
   twin:      bk("674872464", "0a11cdb3c6638428ee833c3729b48181a1fc380fcb57a3e3f91657e8ce06db44"),
   twin2:     bk("549908182", "c9840af931483dd7f0592c7091d2c810fc55119ef936c81aa3b6df724a5c70b4"),
-  double:    bk("674871963", "f7aeb11017e1c522ba463ce9a36f889c880a74e794e11c67650f897016b6cb7b"),
+  double: loc("matrimoniale.jpg"),
   double2:   bk("674872272", "3fd3d1ccea49778ae7700a735a882ecc46d4f5b2fad91095a11f9e50b15230da"),
-  kitchen:   bk("674872549", "561011ffad06fb0ab7a24a5d1e971de270d7a388dea63908929ecc154c4e07b5"),
+  kitchen: loc("cucina.jpg"),
   kitchen2:  bk("791235933", "fd86076a6b838040963ab2885b4a1c642135fbc120ffe192a4cdbb606146aa43"),
-  bath:      bk("674872618", "d4ef7f60bfdd7c9000812c8322ae4170ec41001e85c6a406ccd9808e8e5a2cfb"),
-  bath2:     bk("934308202", "9dcdd8076cfb2fa773250ecb7afce334ce1fe996143985e41a2d31207339ee81"),
+  bath: loc("bagno.jpg"),
+  bath2: loc("vasca.jpg"),
   bath3:     bk("934308358", "7fc62ff04b29b8f67e7ad1fb643c6033f75000bd44eabfbda92929dbd97fc233"),
   details:   bk("648241537", "7302c1fe983bbb0fec1b394f71d1c8f16f62d8945513df96124b2ee7da73231a"),
   entrance:  bk("674872692", "4600e5315093795a9ef8eabe36bbe92e0e5468cec2dca221cf14efb9cb508b64"),
@@ -42,9 +45,9 @@ export const SITE = {
   coords: { lat: 45.69282, lng: 9.70946 },
 
   // ⚠️ Inserisci i contatti reali
-  whatsapp: "390000000000",
+  whatsapp: "393496299929",
   email: "info@floris-home.it",
-  phone: "+39 000 000 0000",
+  phone: "+39 349 629 9929",
 
   pricePerNight: 130,   // indicativo
   cleaningFee: 40,
