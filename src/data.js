@@ -149,3 +149,14 @@ export const FAQ = [
   { q: "Posso portare il mio cane?", a: "Certo, Flori's Home è pet friendly. Avvisaci al momento della richiesta." },
   { q: "Va bene per lavorare da remoto?", a: "Sì: Wi-Fi gratuito, scrivania e ambienti silenziosi." },
 ];
+
+export const ROTATE = ["famiglie", "smart worker", "chi vola da Orio", "un weekend in due", "chi ha un cane"];
+
+export const AUDIENCE = [
+  { title: "Famiglie", text: "Due camere, divano letto e cucina completa: c'è spazio per tutti, fino a 5 ospiti.", photo: P.twin, tag: "Fino a 5 ospiti" },
+  { title: "Smart working", text: "Wi-Fi veloce, scrivania e silenzio. Per trasferte di lavoro o soggiorni lunghi.", photo: P.living3, tag: "Wi-Fi gratuito" },
+  { title: "Voli da Orio", text: "L'aeroporto è a 4 km: arrivi la sera tardi o riparti all'alba senza stress.", photo: P.entrance, tag: "4 km dall'aeroporto" },
+  { title: "Con il tuo cane", text: "Gli amici a quattro zampe sono i benvenuti, e c'è un balcone sul verde.", photo: P.balcony, tag: "Pet friendly" },
+];
+
+export const TRUST = ["9,1 Superbo su Booking", "Parcheggio gratuito", "4 km da Orio al Serio", "Animali ammessi", "Aria condizionata", "Appena ristrutturato", "Wi-Fi veloce", "Check-in flessibile"];

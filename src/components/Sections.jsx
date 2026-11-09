@@ -1,49 +1,31 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
-import { ArrowUpRight, ArrowRight, X, ChevronLeft, ChevronRight, Plus, Minus, MessageCircle, Mail, Navigation, Star } from "lucide-react";
-import { P, CITY, SITE, GALLERY, AMENITIES, PLACES, SCORES, FAQ } from "../data";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import {
+  ArrowUpRight, X, ChevronLeft, ChevronRight, Plus, Minus, MessageCircle, Mail, Navigation, Star,
+  Maximize2, BedDouble, Users, Ruler, Check, Plane, Landmark, Theater, Trophy, Castle, Building2, Phone,
+} from "lucide-react";
+import { P, CITY, SITE, GALLERY, AMENITIES, PLACES, SCORES, FAQ, AUDIENCE, TOUR } from "../data";
 import { useSettings, quote, euro, fmtDate } from "../lib/settings";
+import { useBooking } from "../lib/booking";
 import Calendar from "./Calendar";
-import { Img, MaskText, Reveal, Counter, Magnetic, Spotlight, Icon, EASE, EASE_IO } from "./ui";
+import { Img, Reveal, Counter, Icon, EASE } from "./ui";
 import { LINKS } from "./Chrome";
 
-/* ---------------- GALLERIA ORIZZONTALE ---------------- */
-function GCard({ g, i, p, onOpen }) {
-  const inner = useTransform(p, [0, 1], ["-12%", "12%"]);
+function Head({ kicker, title, sub, center }) {
   return (
-    <button className={`gcard g${i % 3}`} onClick={() => onOpen(i)} data-cursor="Apri">
-      <div className="gcard-img">
-        <motion.div style={{ x: inner }} className="gcard-par">
-          <Img src={g.src} alt={g.label} />
-        </motion.div>
-      </div>
-      <div className="gcard-cap">
-        <span>{String(i + 1).padStart(2, "0")}</span>
-        <b>{g.label}</b>
-      </div>
-    </button>
+    <Reveal className={`head ${center ? "center" : ""}`}>
+      <span className="kicker">{kicker}</span>
+      <h2 dangerouslySetInnerHTML={{ __html: title }} />
+      {sub && <p>{sub}</p>}
+    </Reveal>
   );
 }
 
-export function HGallery() {
-  const ref = useRef(null);
-  const track = useRef(null);
-  const [dist, setDist] = useState(0);
-  const [idx, setIdx] = useState(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const p = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
-  const x = useTransform(p, [0, 1], [0, -dist]);
-  const bar = useTransform(p, [0, 1], ["0%", "100%"]);
+/* ---------------- LIGHTBOX ---------------- */
+const ALL = [...TOUR.map((t) => ({ src: t.photo, label: t.title })), ...GALLERY];
 
-  useLayoutEffect(() => {
-    const m = () => track.current && setDist(track.current.scrollWidth - innerWidth);
-    m();
-    addEventListener("resize", m);
-    const t = setTimeout(m, 800);
-    return () => (removeEventListener("resize", m), clearTimeout(t));
-  }, []);
-
-  const go = (d) => setIdx((i) => (i + d + GALLERY.length) % GALLERY.length);
+function Lightbox({ idx, setIdx }) {
+  const go = (d) => setIdx((i) => (i + d + ALL.length) % ALL.length);
   useEffect(() => {
     if (idx === null) return;
     window.__lenis?.stop();
@@ -55,217 +37,95 @@ export function HGallery() {
     addEventListener("keydown", k);
     return () => (removeEventListener("keydown", k), window.__lenis?.start());
   }, [idx]);
-
   return (
-    <section className="hgal" id="galleria" ref={ref} style={{ height: `${Math.max(250, GALLERY.length * 55)}vh` }}>
-      <div className="hgal-sticky">
-        <div className="hgal-head">
-          <span className="kicker"><i>03</i>Galleria</span>
-          <h2 className="h2"><MaskText>Ogni angolo,</MaskText> <em><MaskText delay={0.15}>una luce diversa</MaskText></em></h2>
-        </div>
-        <motion.div className="hgal-track" ref={track} style={{ x }}>
-          {GALLERY.map((g, i) => <GCard key={g.src} g={g} i={i} p={p} onOpen={setIdx} />)}
-          <div className="gcard-end">
-            <p>Vuoi vederla dal vivo?</p>
-            <Magnetic href="#prenota" className="big-link" data-cursor="Prenota">
-              Prenota <ArrowUpRight size={40} strokeWidth={1.2} />
-            </Magnetic>
+    <AnimatePresence>
+      {idx !== null && (
+        <motion.div className="lightbox" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIdx(null)}>
+          <button className="lb-close" aria-label="Chiudi"><X size={24} /></button>
+          <button className="lb-nav l" onClick={(e) => (e.stopPropagation(), go(-1))} aria-label="Precedente"><ChevronLeft /></button>
+          <AnimatePresence mode="wait">
+            <motion.figure key={idx} className="lb-fig" onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.3 }}>
+              <Img src={ALL[idx].src} alt={ALL[idx].label} eager />
+              <figcaption><b>{ALL[idx].label}</b><span>{idx + 1} / {ALL.length}</span></figcaption>
+            </motion.figure>
+          </AnimatePresence>
+          <button className="lb-nav r" onClick={(e) => (e.stopPropagation(), go(1))} aria-label="Successiva"><ChevronRight /></button>
+          <div className="lb-thumbs" onClick={(e) => e.stopPropagation()}>
+            {ALL.map((a, i) => (
+              <button key={i} className={i === idx ? "on" : ""} onClick={() => setIdx(i)}><Img src={a.src} alt="" /></button>
+            ))}
           </div>
         </motion.div>
-        <div className="hgal-bar"><motion.i style={{ width: bar }} /></div>
-      </div>
-
-      <AnimatePresence>
-        {idx !== null && (
-          <motion.div className="lightbox" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIdx(null)}>
-            <button className="lb-close" aria-label="Chiudi" data-cursor="Chiudi"><X size={28} strokeWidth={1.3} /></button>
-            <button className="lb-nav l" onClick={(e) => (e.stopPropagation(), go(-1))} aria-label="Precedente"><ChevronLeft /></button>
-            <AnimatePresence mode="wait">
-              <motion.figure
-                key={idx}
-                className="lb-fig"
-                onClick={(e) => e.stopPropagation()}
-                initial={{ clipPath: "inset(10% 10% 10% 10% round 20px)", opacity: 0 }}
-                animate={{ clipPath: "inset(0% 0% 0% 0% round 14px)", opacity: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ duration: 0.6, ease: EASE_IO }}
-              >
-                <Img src={GALLERY[idx].src} alt={GALLERY[idx].label} eager />
-                <figcaption>{String(idx + 1).padStart(2, "0")} / {GALLERY.length} — {GALLERY[idx].label}</figcaption>
-              </motion.figure>
-            </AnimatePresence>
-            <button className="lb-nav r" onClick={(e) => (e.stopPropagation(), go(1))} aria-label="Successiva"><ChevronRight /></button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </section>
+      )}
+    </AnimatePresence>
   );
 }
 
-/* ---------------- SERVIZI ---------------- */
-export function Amenities() {
-  const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const clip = useTransform(p, [0.05, 0.4], ["inset(18% 22% 18% 22% round 30px)", "inset(0% 0% 0% 0% round 24px)"]);
-  const sc = useTransform(p, [0.05, 0.6], [1.4, 1]);
+/* ---------------- LA CASA: MOSAICO ---------------- */
+export function Bento() {
+  const [idx, setIdx] = useState(null);
+  const at = (src) => Math.max(0, ALL.findIndex((a) => a.src === src));
+  const Photo = ({ src, label, cls, d = 0 }) => (
+    <Reveal className={`tile photo ${cls}`} delay={d}>
+      <button onClick={() => setIdx(at(src))} aria-label={label}>
+        <Img src={src} alt={label} />
+        <span className="tile-label">{label} <ArrowUpRight size={15} /></span>
+      </button>
+    </Reveal>
+  );
   return (
-    <section className="amen" id="servizi" ref={ref}>
+    <section className="sec" id="casa">
       <div className="wrap">
-        <div className="amen-head">
-          <span className="kicker"><i>04</i>Servizi</span>
-          <h2 className="h2"><MaskText>Tutto incluso,</MaskText> <em><MaskText delay={0.12}>niente pensieri</MaskText></em></h2>
-        </div>
-        <div className="amen-grid">
-          <motion.div className="amen-photo" style={{ clipPath: clip }}>
-            <motion.div style={{ scale: sc }} className="fill">
-              <Img src={P.living3} alt="Soggiorno" />
-            </motion.div>
-            <div className="amen-photo-tag">
-              <b>80 m²</b> appena ristrutturati
-            </div>
-          </motion.div>
-          <div className="amen-cards">
-            {AMENITIES.map((a, i) => (
-              <Reveal key={a.label} delay={(i % 2) * 0.08 + Math.floor(i / 2) * 0.05}>
-                <Spotlight className="acard">
-                  <div className="acard-ico"><Icon name={a.icon} size={24} /></div>
-                  <div>
-                    <b>{a.label}</b>
-                    <span>{a.text}</span>
-                  </div>
-                </Spotlight>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- MARQUEE ---------------- */
-export function Marquee({ items, reverse }) {
-  const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const x = useTransform(p, [0, 1], reverse ? ["-30%", "0%"] : ["0%", "-30%"]);
-  const row = [...items, ...items, ...items];
-  return (
-    <div className="marquee" ref={ref}>
-      <motion.div className="marquee-row" style={{ x }}>
-        {row.map((t, i) => (
-          <span key={i}>{t}<i>✦</i></span>
-        ))}
-      </motion.div>
-    </div>
-  );
-}
-
-/* ---------------- BERGAMO ---------------- */
-export function Bergamo() {
-  const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const y1 = useTransform(p, [0, 1], [140, -140]);
-  const y2 = useTransform(p, [0, 1], [260, -200]);
-  const y3 = useTransform(p, [0, 1], [60, -60]);
-  const { lat, lng } = SITE.coords;
-  const d = 0.014;
-  const map = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - d * 1.6}%2C${lat - d}%2C${lng + d * 1.6}%2C${lat + d}&layer=mapnik&marker=${lat}%2C${lng}`;
-  const max = Math.max(...PLACES.map((x) => x.km));
-
-  return (
-    <section className="berg" id="bergamo" ref={ref}>
-      <div className="wrap berg-grid">
-        <div className="berg-collage">
-          <motion.div className="bc bc1" style={{ y: y3 }}><Img src={CITY.alta} alt="Bergamo Città Alta" /></motion.div>
-          <motion.div className="bc bc2" style={{ y: y1 }}><Img src={CITY.porta} alt="Porta San Giacomo" /></motion.div>
-          <motion.div className="bc bc3" style={{ y: y2 }}><Img src={CITY.monti} alt="Bergamo e le montagne" /></motion.div>
-        </div>
-        <div className="berg-text">
-          <span className="kicker"><i>05</i>Posizione</span>
-          <h2 className="h2"><MaskText>Bergamo</MaskText> <em><MaskText delay={0.1}>a portata di mano</MaskText></em></h2>
-          <Reveal as="p" className="lead">
-            Zona residenziale e silenziosa, con parcheggio gratuito. Pochi minuti per l'aeroporto, la Fiera e il centro; un quarto d'ora per le mura veneziane di Città Alta.
+        <Head kicker="La casa" title="Tutto lo spazio che ti serve, <em>solo per te</em>" sub="L'intero appartamento è tuo: niente spazi condivisi, niente sorprese." />
+        <div className="bento">
+          <Photo src={P.living} label="Soggiorno" cls="b-big" />
+          <Reveal className="tile stat caramel" delay={0.05}>
+            <Ruler size={22} />
+            <b><Counter value={80} /><small>m²</small></b>
+            <span>appena ristrutturati</span>
           </Reveal>
-          <div className="places">
-            {PLACES.map((pl, i) => (
-              <Reveal key={pl.name} delay={i * 0.06} className="place">
-                <div className="place-row">
-                  <span>{pl.name}</span>
-                  <em>{pl.min}</em>
-                  <b>{String(pl.km).replace(".", ",")} km</b>
-                </div>
-                <div className="pbar">
-                  <motion.i
-                    initial={{ scaleX: 0 }}
-                    whileInView={{ scaleX: pl.km / max }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1.4, delay: 0.2 + i * 0.07, ease: EASE }}
-                  />
-                </div>
-              </Reveal>
-            ))}
-          </div>
+          <Photo src={P.double} label="Camera matrimoniale" cls="b-tall" d={0.1} />
+          <Reveal className="tile stat sage" delay={0.12}>
+            <BedDouble size={22} />
+            <b><Counter value={2} /><small> camere</small></b>
+            <span>+ divano letto</span>
+          </Reveal>
+          <Photo src={P.kitchen} label="Cucina" cls="" d={0.15} />
+          <Photo src={P.bath} label="Bagno con vasca" cls="" d={0.2} />
+          <Reveal className="tile stat ink" delay={0.22}>
+            <Users size={22} />
+            <b><Counter value={5} /><small> ospiti</small></b>
+            <span>al massimo</span>
+          </Reveal>
+          <Photo src={P.balcony} label="Balcone" cls="b-wide" d={0.25} />
+          <Reveal className="tile more" delay={0.3}>
+            <button onClick={() => setIdx(0)}>
+              <Maximize2 size={22} />
+              <b>Tutte le foto</b>
+              <span>{ALL.length} immagini</span>
+            </button>
+          </Reveal>
         </div>
       </div>
-      <Reveal className="wrap map-wrap" y={80}>
-        <iframe title="Mappa Flori's Home" src={map} loading="lazy" />
-        <div className="map-card">
-          <span className="brand-mark">F</span>
-          <div>
-            <b>Flori's Home</b>
-            <span>{SITE.address}</span>
-          </div>
-          <a href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`} target="_blank" rel="noreferrer" data-cursor="Vai">
-            <Navigation size={16} /> Indicazioni
-          </a>
-        </div>
-      </Reveal>
+      <Lightbox idx={idx} setIdx={setIdx} />
     </section>
   );
 }
 
-/* ---------------- RECENSIONI ---------------- */
-export function Reviews() {
+/* ---------------- PERFETTO PER ---------------- */
+export function Audience() {
   return (
-    <section className="rev" id="recensioni">
-      <div className="wrap rev-grid">
-        <div className="rev-left">
-          <span className="kicker"><i>06</i>Recensioni</span>
-          <div className="rev-score">
-            <Counter value={SITE.rating} decimals={1} duration={2.6} />
-          </div>
-          <div className="rev-stars">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <motion.span
-                key={i}
-                initial={{ scale: 0, rotate: -90 }}
-                whileInView={{ scale: 1, rotate: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4 + i * 0.1, type: "spring", stiffness: 260, damping: 14 }}
-              >
-                <Star size={22} fill="currentColor" strokeWidth={0} />
-              </motion.span>
-            ))}
-          </div>
-          <p>Superbo — media di {SITE.reviewsCount} recensioni verificate su Booking.com</p>
-          <a className="ulink" href={SITE.bookingUrl} target="_blank" rel="noreferrer" data-cursor="Leggi">
-            Leggi le recensioni <ArrowUpRight size={18} />
-          </a>
-        </div>
-        <div className="rev-bars">
-          {SCORES.map((s, i) => (
-            <Reveal key={s.label} delay={i * 0.07} className="rbar">
-              <div className="rbar-row">
-                <span>{s.label}</span>
-                <b><Counter value={s.value} decimals={1} /></b>
-              </div>
-              <div className="pbar thick">
-                <motion.i
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: s.value / 10 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.6, delay: 0.2 + i * 0.08, ease: EASE }}
-                />
+    <section className="sec soft">
+      <div className="wrap">
+        <Head kicker="Perfetto per" title="Pensato per <em>il tuo viaggio</em>" center />
+        <div className="aud">
+          {AUDIENCE.map((a, i) => (
+            <Reveal key={a.title} delay={i * 0.08} className="aud-card">
+              <div className="aud-img"><Img src={a.photo} alt={a.title} /><span>{a.tag}</span></div>
+              <div className="aud-body">
+                <h3>{a.title}</h3>
+                <p>{a.text}</p>
               </div>
             </Reveal>
           ))}
@@ -275,186 +135,245 @@ export function Reviews() {
   );
 }
 
-/* ---------------- PRENOTA ---------------- */
-const STATUS = {
-  ok: { cls: "ok", text: "Disponibile per queste date" },
-  unavailable: { cls: "bad", text: "Alcune notti non sono disponibili" },
-  closed: { cls: "bad", text: "Al momento non accettiamo prenotazioni" },
-  past: { cls: "bad", text: "Le date sono nel passato" },
-};
-
-export function Booking() {
-  const { settings: s, loading } = useSettings();
-  const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const bgY = useTransform(p, [0, 1], ["-15%", "15%"]);
-  const [from, setFrom] = useState(null);
-  const [to, setTo] = useState(null);
-  const [guests, setGuests] = useState(2);
-  const [name, setName] = useState("");
-  const [pet, setPet] = useState(false);
-
-  const q = quote(from, to, s);
-  const st = q.status === "min" ? { cls: "bad", text: `Soggiorno minimo ${s.minNights} notti` } : STATUS[q.status];
-  const valid = q.status === "ok";
-  const maxG = Number(s.maxGuests) || 5;
-
-  const msg = from && to
-    ? `Ciao! Sono ${name || "interessato/a"} e vorrei soggiornare a Flori's Home dal ${fmtDate(from)} al ${fmtDate(to)} (${q.nights.length} notti), ${guests} ospiti${pet ? " + un animale" : ""}. Totale stimato ${euro(q.total)}. È disponibile?`
-    : "";
-  const wa = `https://wa.me/${s.whatsapp}?text=${encodeURIComponent(msg)}`;
-  const mail = `mailto:${s.email}?subject=${encodeURIComponent("Richiesta Flori's Home")}&body=${encodeURIComponent(msg)}`;
-
+/* ---------------- SERVIZI ---------------- */
+export function Amenities() {
   return (
-    <section className="book" id="prenota" ref={ref}>
-      <motion.div className="book-bg" style={{ y: bgY }}>
-        <Img src={P.double2} alt="" />
-      </motion.div>
-      <div className="book-veil" />
-      <div className="wrap book-grid">
-        <div className="book-copy">
-          <span className="kicker light"><i>07</i>Prenota diretto</span>
-          <h2 className="h2 big"><MaskText>Il tuo soggiorno</MaskText> <em><MaskText delay={0.12}>comincia qui</MaskText></em></h2>
-          <Reveal as="p" className="lead">
-            Scegli le date sul calendario: vedi subito disponibilità e prezzo. Poi mandaci la richiesta, ti rispondiamo in pochi minuti e senza commissioni.
-          </Reveal>
-          {s.notice && <Reveal className="notice">{s.notice}</Reveal>}
-          <Reveal className="book-contacts" delay={0.1}>
-            <a href={`tel:${String(s.phone).replace(/\s/g, "")}`}>{s.phone}</a>
-            <a href={`mailto:${s.email}`}>{s.email}</a>
+    <section className="sec" id="servizi">
+      <div className="wrap amen">
+        <div className="amen-left">
+          <Head kicker="Servizi" title="Tutto incluso, <em>niente pensieri</em>" sub="Arrivi, posi le valigie e sei a casa. Biancheria, asciugamani e pulizie sono già pensati." />
+          <Reveal className="amen-photo">
+            <Img src={P.sofa} alt="Soggiorno" />
           </Reveal>
         </div>
-
-        <Reveal className="glass" y={80}>
-          <div className="glass-head">
-            <div><span className="from">da</span><b>{euro(s.pricePerNight)}</b><span>/ notte</span></div>
-            <em className={loading ? "live loading" : "live"}><i /> {loading ? "aggiorno…" : "prezzi aggiornati"}</em>
-          </div>
-
-          {!s.bookingOpen ? (
-            <div className="closed-box">
-              <b>Prenotazioni momentaneamente chiuse</b>
-              <span>Scrivici comunque: ti avvisiamo appena riapriamo.</span>
-            </div>
-          ) : (
-            <Calendar
-              settings={s}
-              mode="range"
-              from={from}
-              to={to}
-              onRange={(a, b) => { setFrom(a); setTo(b); }}
-              months={1}
-            />
-          )}
-
-          <div className="sel-row">
-            <div className={`sel ${from ? "on" : ""}`}><span>Arrivo</span><b>{from ? fmtDate(from, { day: "numeric", month: "short" }) : "—"}</b></div>
-            <div className={`sel ${to ? "on" : ""}`}><span>Partenza</span><b>{to ? fmtDate(to, { day: "numeric", month: "short" }) : "—"}</b></div>
-            <div className="sel guests">
-              <span>Ospiti</span>
-              <div className="stepper">
-                <button onClick={() => setGuests((g) => Math.max(1, g - 1))} aria-label="Meno"><Minus size={14} /></button>
-                <AnimatePresence mode="popLayout">
-                  <motion.b key={guests} initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -12, opacity: 0 }}>{guests}</motion.b>
-                </AnimatePresence>
-                <button onClick={() => setGuests((g) => Math.min(maxG, g + 1))} aria-label="Più"><Plus size={14} /></button>
-              </div>
-            </div>
-          </div>
-
-          <AnimatePresence mode="wait">
-            {st && (
-              <motion.div key={st.text} className={`avail ${st.cls}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <i />{st.text}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence>
-            {valid && (
-              <motion.div className="sum" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-                {q.groups.map((g, i) => (
-                  <div key={i}>
-                    <span>{euro(g.price)} × {g.count} {g.count === 1 ? "notte" : "notti"}{g.kind === "season" ? ` · ${g.label || "stagione"}` : g.kind === "weekend" ? " · weekend" : ""}</span>
-                    <span>{euro(g.price * g.count)}</span>
-                  </div>
-                ))}
-                {Number(s.cleaningFee) > 0 && <div><span>Pulizia finale</span><span>{euro(s.cleaningFee)}</span></div>}
-                <div className="tot">
-                  <span>Totale stimato</span>
-                  <motion.b key={q.total} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>{euro(q.total)}</motion.b>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {valid && (
-            <div className="gfields one">
-              <label>
-                <span>Nome</span>
-                <input type="text" placeholder="Come ti chiami?" value={name} onChange={(e) => setName(e.target.value)} />
-              </label>
-              <label className="gcheck">
-                <input type="checkbox" checked={pet} onChange={(e) => setPet(e.target.checked)} />
-                <i />
-                <span>Viaggio con un animale</span>
-              </label>
-            </div>
-          )}
-
-          <a className={`cta ${valid ? "" : "off"}`} href={valid ? wa : undefined} target="_blank" rel="noreferrer" data-cursor="Invia">
-            <MessageCircle size={18} /> Richiedi su WhatsApp
-          </a>
-          <a className={`cta ghost ${valid ? "" : "off"}`} href={valid ? mail : undefined}>
-            <Mail size={16} /> oppure via email
-          </a>
-          <p className="fine">Nessun pagamento ora · cauzione {euro(s.deposit)} in contanti, restituita al check-out</p>
-        </Reveal>
+        <div className="amen-grid">
+          {AMENITIES.map((a, i) => (
+            <Reveal key={a.label} delay={i * 0.05} className="amen-card">
+              <div className="amen-ico"><Icon name={a.icon} size={24} /></div>
+              <b>{a.label}</b>
+              <span>{a.text}</span>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
-/* ---------------- INFO: REGOLE + FAQ ---------------- */
-export function Info() {
-  const [open, setOpen] = useState(0);
-  const { settings: st } = useSettings();
-  const RULES = [
-    ["Check-in", st.checkIn],
-    ["Check-out", st.checkOut],
-    ["Soggiorno minimo", `${st.minNights} ${Number(st.minNights) === 1 ? "notte" : "notti"}`],
-    ["Cauzione", `${euro(st.deposit)} in contanti, restituiti al check-out`],
-    ["Fumo", "Non si fuma in casa"],
-    ["Feste", "Non sono ammesse feste o addii al celibato"],
-    ["Animali", "Ammessi, avvisaci prima"],
-  ];
+/* ---------------- RECENSIONI ---------------- */
+export function Reviews() {
   return (
-    <section className="info">
-      <div className="wrap info-grid">
-        <div>
-          <span className="kicker"><i>08</i>Da sapere</span>
-          <h2 className="h2"><MaskText>Le regole</MaskText> <em><MaskText delay={0.1}>della casa</MaskText></em></h2>
-          <div className="rules">
-            {RULES.map(([k, v], i) => (
-              <Reveal key={k} delay={i * 0.05} className="rule">
-                <span>{k}</span>
-                <b>{v}</b>
+    <section className="sec soft" id="recensioni">
+      <div className="wrap rev">
+        <Reveal className="rev-card">
+          <span className="kicker light">Recensioni</span>
+          <div className="rev-num"><Counter value={SITE.rating} decimals={1} duration={2.4} /></div>
+          <div className="rev-stars">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <motion.span key={i} initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 + i * 0.08, type: "spring", stiffness: 300, damping: 14 }}>
+                <Star size={22} fill="currentColor" strokeWidth={0} />
+              </motion.span>
+            ))}
+          </div>
+          <b className="rev-label">Superbo</b>
+          <p>Media di {SITE.reviewsCount} recensioni verificate di ospiti reali su Booking.com</p>
+          <a href={SITE.bookingUrl} target="_blank" rel="noreferrer" className="rev-link">Leggi le recensioni <ArrowUpRight size={16} /></a>
+        </Reveal>
+        <div className="rev-right">
+          <Head kicker="Cosa dicono gli ospiti" title="Pulizia e comfort <em>da 9,7</em>" />
+          <div className="bars">
+            {SCORES.map((s, i) => (
+              <Reveal key={s.label} delay={i * 0.06} className="bar">
+                <div className="bar-row"><span>{s.label}</span><b>{String(s.value).replace(".", ",")}</b></div>
+                <div className="bar-track">
+                  <motion.i initial={{ scaleX: 0 }} whileInView={{ scaleX: s.value / 10 }} viewport={{ once: true }} transition={{ duration: 1.4, delay: 0.2 + i * 0.07, ease: EASE }} />
+                </div>
               </Reveal>
             ))}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- BERGAMO ---------------- */
+const PLACE_ICON = [Plane, Building2, Landmark, Theater, Trophy, Castle];
+
+export function Bergamo() {
+  const ref = useRef(null);
+  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y1 = useTransform(p, [0, 1], [60, -60]);
+  const y2 = useTransform(p, [0, 1], [120, -100]);
+  const { lat, lng } = SITE.coords;
+  const d = 0.014;
+  const map = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - d * 1.6}%2C${lat - d}%2C${lng + d * 1.6}%2C${lat + d}&layer=mapnik&marker=${lat}%2C${lng}`;
+  return (
+    <section className="sec" id="bergamo" ref={ref}>
+      <div className="wrap berg">
+        <div className="berg-text">
+          <Head kicker="Posizione" title="Bergamo <em>a portata di mano</em>" sub="Zona residenziale e tranquilla. In pochi minuti sei in aeroporto, in Fiera o in centro; in un quarto d'ora sulle mura di Città Alta." />
+          <div className="places">
+            {PLACES.map((pl, i) => {
+              const I = PLACE_ICON[i] || Landmark;
+              return (
+                <Reveal key={pl.name} delay={i * 0.05} className="place">
+                  <span className="place-ico"><I size={18} /></span>
+                  <span className="place-name">{pl.name}</span>
+                  <span className="place-min">{pl.min}</span>
+                  <b>{String(pl.km).replace(".", ",")} km</b>
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+        <div className="berg-pics">
+          <motion.div className="bp bp1" style={{ y: y1 }}><Img src={CITY.alta} alt="Città Alta" /><span>Città Alta</span></motion.div>
+          <motion.div className="bp bp2" style={{ y: y2 }}><Img src={CITY.porta} alt="Porta San Giacomo" /><span>Porta San Giacomo</span></motion.div>
+        </div>
+      </div>
+      <Reveal className="wrap map">
+        <iframe title="Mappa Flori's Home" src={map} loading="lazy" />
+        <div className="map-card">
+          <span className="brand-mark">F</span>
+          <div><b>Flori's Home</b><span>{SITE.address}</span></div>
+          <a href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`} target="_blank" rel="noreferrer"><Navigation size={15} /> Indicazioni</a>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+/* ---------------- PRENOTA ---------------- */
+export function Booking() {
+  const { settings: s, loading } = useSettings();
+  const { from, to, guests, setFrom, setTo, setGuests } = useBooking();
+  const [name, setName] = useState("");
+  const [pet, setPet] = useState(false);
+  const q = quote(from, to, s);
+  const valid = q.status === "ok";
+  const maxG = Number(s.maxGuests) || 5;
+  const months = typeof window !== "undefined" && innerWidth > 980 ? 2 : 1;
+
+  const status = {
+    ok: ["ok", "Disponibile! Mandaci la richiesta"],
+    unavailable: ["bad", "Alcune notti sono già occupate"],
+    closed: ["bad", "Al momento non accettiamo prenotazioni"],
+    past: ["bad", "Le date sono nel passato"],
+    min: ["bad", `Soggiorno minimo ${s.minNights} notti`],
+    empty: ["idle", from ? "Ora scegli il giorno di partenza" : "Scegli il giorno di arrivo sul calendario"],
+  }[q.status];
+
+  const msg = from && to
+    ? `Ciao! Sono ${name || "interessato/a"} e vorrei soggiornare a Flori's Home dal ${fmtDate(from)} al ${fmtDate(to)} (${q.nights.length} notti), ${guests} ospiti${pet ? " + un animale" : ""}. Totale stimato ${euro(q.total)}. È disponibile?`
+    : "";
+
+  return (
+    <section className="sec book" id="prenota">
+      <div className="wrap">
+        <Head kicker="Prenota diretto" title="Scegli le date, <em>il resto è facile</em>" sub="Prezzi e disponibilità aggiornati in tempo reale. Nessuna commissione, nessun pagamento online." center />
+        {s.notice && <Reveal className="notice">{s.notice}</Reveal>}
+        <div className="book-grid">
+          <Reveal className="book-cal">
+            {s.bookingOpen ? (
+              <Calendar settings={s} mode="range" from={from} to={to} months={months} onRange={(a, b) => { setFrom(a); setTo(b); }} />
+            ) : (
+              <div className="closed-box"><b>Prenotazioni momentaneamente chiuse</b><span>Scrivici comunque: ti avvisiamo appena riapriamo.</span></div>
+            )}
+            <div className="cal-legend">
+              <span><i className="lg-sel" /> Selezionate</span>
+              <span><i className="lg-off" /> Occupate</span>
+              <span><i className="lg-sp" /> Prezzo speciale</span>
+            </div>
+          </Reveal>
+
+          <Reveal className="book-sum" delay={0.1}>
+            <div className="bs-price">
+              <div><b>{euro(s.pricePerNight)}</b><span> / notte</span></div>
+              <small className={loading ? "live wait" : "live"}><i /> {loading ? "aggiorno" : "aggiornato"}</small>
+            </div>
+            <div className="bs-fields">
+              <div className={from ? "on" : ""}><span>Arrivo</span><b>{from ? fmtDate(from, { day: "numeric", month: "short" }) : "—"}</b></div>
+              <div className={to ? "on" : ""}><span>Partenza</span><b>{to ? fmtDate(to, { day: "numeric", month: "short" }) : "—"}</b></div>
+              <div className="full">
+                <span>Ospiti</span>
+                <div className="stepper">
+                  <button onClick={() => setGuests(Math.max(1, guests - 1))} aria-label="Meno"><Minus size={14} /></button>
+                  <b>{guests}</b>
+                  <button onClick={() => setGuests(Math.min(maxG, guests + 1))} aria-label="Più"><Plus size={14} /></button>
+                </div>
+              </div>
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div key={status[1]} className={`status ${status[0]}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                {status[0] === "ok" ? <Check size={16} /> : <i />} {status[1]}
+              </motion.div>
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {valid && (
+                <motion.div className="bs-lines" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                  {q.groups.map((g, i) => (
+                    <div key={i}>
+                      <span>{euro(g.price)} × {g.count} {g.count === 1 ? "notte" : "notti"}{g.kind === "season" ? ` · ${g.label || "stagione"}` : g.kind === "weekend" ? " · weekend" : ""}</span>
+                      <span>{euro(g.price * g.count)}</span>
+                    </div>
+                  ))}
+                  {Number(s.cleaningFee) > 0 && <div><span>Pulizia finale</span><span>{euro(s.cleaningFee)}</span></div>}
+                  <div className="tot"><span>Totale</span><motion.b key={q.total} initial={{ scale: 1.15 }} animate={{ scale: 1 }}>{euro(q.total)}</motion.b></div>
+                  <input className="bs-name" placeholder="Il tuo nome" value={name} onChange={(e) => setName(e.target.value)} />
+                  <label className="bs-pet"><input type="checkbox" checked={pet} onChange={(e) => setPet(e.target.checked)} /><i /> Viaggio con un animale</label>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <a className={`btn ${valid ? "" : "off"}`} href={valid ? `https://wa.me/${s.whatsapp}?text=${encodeURIComponent(msg)}` : undefined} target="_blank" rel="noreferrer">
+              <MessageCircle size={18} /> Richiedi su WhatsApp
+            </a>
+            <a className={`btn ghost ${valid ? "" : "off"}`} href={valid ? `mailto:${s.email}?subject=${encodeURIComponent("Richiesta Flori's Home")}&body=${encodeURIComponent(msg)}` : undefined}>
+              <Mail size={16} /> Invia per email
+            </a>
+            <p className="fine">Nessun pagamento ora · cauzione {euro(s.deposit)} in contanti, restituita al check-out</p>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- FAQ ---------------- */
+export function Faq() {
+  const [open, setOpen] = useState(0);
+  const { settings: st } = useSettings();
+  const facts = [
+    ["Check-in", st.checkIn],
+    ["Check-out", st.checkOut],
+    ["Minimo", `${st.minNights} ${Number(st.minNights) === 1 ? "notte" : "notti"}`],
+    ["Cauzione", euro(st.deposit)],
+  ];
+  return (
+    <section className="sec soft">
+      <div className="wrap faq-wrap">
+        <div>
+          <Head kicker="Da sapere" title="Domande <em>frequenti</em>" />
+          <div className="facts">
+            {facts.map(([k, v], i) => (
+              <Reveal key={k} delay={i * 0.05} className="fact"><span>{k}</span><b>{v}</b></Reveal>
+            ))}
+          </div>
+          <Reveal className="rules-note">Non si fuma in casa · niente feste · animali ammessi, avvisaci prima</Reveal>
         </div>
         <div className="faq">
           {FAQ.map((f, i) => (
             <Reveal key={f.q} delay={i * 0.05} className={`faq-i ${open === i ? "open" : ""}`}>
               <button onClick={() => setOpen(open === i ? -1 : i)}>
                 <span>{f.q}</span>
-                <motion.i animate={{ rotate: open === i ? 135 : 0 }} transition={{ duration: 0.5, ease: EASE }}>
-                  <Plus size={20} strokeWidth={1.4} />
-                </motion.i>
+                <motion.i animate={{ rotate: open === i ? 45 : 0 }}><Plus size={18} /></motion.i>
               </button>
               <AnimatePresence initial={false}>
                 {open === i && (
-                  <motion.div className="faq-a" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.5, ease: EASE }}>
+                  <motion.div className="faq-a" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35 }}>
                     <p>{f.a}</p>
                   </motion.div>
                 )}
@@ -470,38 +389,35 @@ export function Info() {
 /* ---------------- FOOTER ---------------- */
 export function Footer() {
   const { settings: st } = useSettings();
-  const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start end", "end end"] });
-  const y = useTransform(p, [0, 1], ["-40%", "0%"]);
-  const sc = useTransform(p, [0, 1], [0.85, 1]);
   return (
-    <footer className="foot" ref={ref}>
-      <div className="wrap foot-top">
-        <h3 className="foot-cta"><MaskText>Ti aspettiamo</MaskText> <em><MaskText delay={0.1}>a Bergamo.</MaskText></em></h3>
-        <Magnetic href="#prenota" className="round-cta solid" data-cursor="Prenota">
-          <ArrowRight size={28} strokeWidth={1.3} />
-        </Magnetic>
-      </div>
-      <div className="wrap foot-mid">
-        <div>
-          <span className="lbl">Indirizzo</span>
-          <p>{SITE.address}</p>
+    <footer className="foot">
+      <div className="wrap">
+        <Reveal className="foot-cta">
+          <div className="foot-photos">
+            <Img src={P.living2} alt="" /><Img src={P.double2} alt="" /><Img src={P.kitchen2} alt="" />
+          </div>
+          <h2>Ti aspettiamo <em>a Bergamo</em></h2>
+          <p>Scegli le date: in pochi minuti ti confermiamo la disponibilità.</p>
+          <a href="#prenota" className="btn light">Verifica disponibilità <ArrowUpRight size={18} /></a>
+        </Reveal>
+        <div className="foot-grid">
+          <div>
+            <a href="#top" className="brand"><span className="brand-mark">F</span><span className="brand-name">Flori's <em>Home</em></span></a>
+            <p>{SITE.address}</p>
+          </div>
+          <div>
+            <span className="lbl">Contatti</span>
+            <p><a href={`mailto:${st.email}`}>{st.email}</a><br /><a href={`tel:${String(st.phone).replace(/\s/g, "")}`}>{st.phone}</a></p>
+          </div>
+          <div>
+            <span className="lbl">Esplora</span>
+            <p className="foot-links">{LINKS.map(([l, h]) => <a key={h} href={h}>{l}</a>)}</p>
+          </div>
         </div>
-        <div>
-          <span className="lbl">Contatti</span>
-          <p><a href={`mailto:${st.email}`}>{st.email}</a><br />{st.phone}</p>
+        <div className="foot-bottom">
+          <span>© {new Date().getFullYear()} Flori's Home · Appartamento ad uso turistico</span>
+          <span>Foto città: Unsplash</span>
         </div>
-        <div>
-          <span className="lbl">Esplora</span>
-          <p className="foot-links">{LINKS.map(([l, h]) => <a key={h} href={h}>{l}</a>)}</p>
-        </div>
-      </div>
-      <motion.div className="foot-giant" style={{ y, scale: sc }}>
-        Flori's <em>Home</em>
-      </motion.div>
-      <div className="wrap foot-bottom">
-        <span>© {new Date().getFullYear()} Flori's Home</span>
-        <span>Foto città: Unsplash</span>
       </div>
     </footer>
   );

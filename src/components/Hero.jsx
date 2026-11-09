@@ -1,176 +1,200 @@
-import { useRef } from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { Star, ArrowDownRight } from "lucide-react";
-import { P, SITE, STATS, MANIFESTO } from "../data";
-import { Img, Counter, Magnetic, EASE, EASE_IO } from "./ui";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { Star, CalendarDays, Users, Search, Minus, Plus, MapPin, Sparkles } from "lucide-react";
+import { P, ROTATE, TRUST } from "../data";
+import { useSettings, quote, euro, fmtDate } from "../lib/settings";
+import { useBooking, scrollToId } from "../lib/booking";
+import Calendar from "./Calendar";
+import { Img, EASE } from "./ui";
 
-/* ---------------- HERO ---------------- */
-function Chars({ text, delay, ready, className }) {
+/* parola che cambia nel titolo */
+function Rotator() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((x) => (x + 1) % ROTATE.length), 2300);
+    return () => clearInterval(t);
+  }, []);
   return (
-    <span className={`chars ${className || ""}`}>
-      {text.split("").map((c, i) => (
-        <span className="ch-wrap" key={i}>
-          <motion.span
-            initial={{ y: "105%" }}
-            animate={ready ? { y: 0 } : {}}
-            transition={{ duration: 1.2, delay: delay + i * 0.05, ease: EASE }}
-          >
-            {c === " " ? " " : c}
-          </motion.span>
-        </span>
-      ))}
+    <span className="rotator">
+      <AnimatePresence mode="wait">
+        <motion.em
+          key={i}
+          initial={{ y: "100%", opacity: 0, rotate: 3 }}
+          animate={{ y: 0, opacity: 1, rotate: 0 }}
+          exit={{ y: "-100%", opacity: 0 }}
+          transition={{ duration: 0.55, ease: EASE }}
+        >
+          {ROTATE[i]}
+        </motion.em>
+      </AnimatePresence>
     </span>
   );
 }
 
-export function Hero({ ready }) {
+/* ---------------- BARRA DATE ---------------- */
+function SearchBar() {
+  const { settings: s } = useSettings();
+  const { from, to, guests, setFrom, setTo, setGuests } = useBooking();
+  const [open, setOpen] = useState(null); // "dates" | "guests" | null
   const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const s = useSpring(p, { stiffness: 120, damping: 30, mass: 0.3 });
-  const mobile = typeof window !== "undefined" && window.innerWidth < 720;
+  const q = quote(from, to, s);
+  const ok = q.status === "ok";
 
-  // zoom leggero: le foto originali sono piccole, non vanno ingrandite troppo
-  const scale = useTransform(s, [0, 1], [1, 1.08]);
-  const imgY = useTransform(s, [0, 1], ["0%", "6%"]);
-  const frameY = useTransform(s, [0, 1], ["0%", "-8%"]);
-  const titleY = useTransform(s, [0, 1], ["0%", "-30%"]);
-  const homeX = useTransform(s, [0, 1], ["0%", "18%"]);
-  const titleO = useTransform(s, [0, 0.6], [1, 0]);
-  const infoO = useTransform(s, [0, 0.4], [1, 0]);
+  useEffect(() => {
+    const close = (e) => ref.current && !ref.current.contains(e.target) && setOpen(null);
+    addEventListener("pointerdown", close);
+    return () => removeEventListener("pointerdown", close);
+  }, []);
 
-  const from = mobile ? "inset(30% 30% 50% 30% round 24px)" : "inset(35% 20% 35% 62% round 28px)";
-  const to = mobile ? "inset(0% 0% 0% 0% round 24px)" : "inset(0% 0% 0% 0% round 28px)";
+  const months = typeof window !== "undefined" && innerWidth > 820 ? 2 : 1;
+  const max = Number(s.maxGuests) || 5;
 
   return (
-    <section className="hero" id="top" ref={ref}>
-      <div className="hero-stage">
-        <motion.div className="hero-frame" style={{ y: frameY }}
-          initial={{ clipPath: from }}
-          animate={ready ? { clipPath: to } : {}}
-          transition={{ duration: 1.7, ease: EASE_IO }}
-        >
-          <motion.div className="hero-img" style={{ scale, y: imgY }}>
-            <motion.div
-              className="hero-img-in"
-              initial={{ scale: 1.25 }}
-              animate={ready ? { scale: 1 } : {}}
-              transition={{ duration: 2.2, ease: EASE_IO }}
-            >
-              <Img src={P.living} alt="Soggiorno di Flori's Home" eager />
-            </motion.div>
-          </motion.div>
-          <div className="hero-shade" />
-          <motion.div
-            className="hero-badge"
-            initial={{ opacity: 0, y: 20 }}
-            animate={ready ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 1, delay: 1.7, ease: EASE }}
-          >
-            <Star size={14} fill="currentColor" />
-            <b>{String(SITE.rating).replace(".", ",")}</b> Superbo · {SITE.reviewsCount} recensioni
-          </motion.div>
-        </motion.div>
+    <div className="search" ref={ref}>
+      <button className={`sf ${open === "dates" ? "on" : ""}`} onClick={() => setOpen(open === "dates" ? null : "dates")}>
+        <CalendarDays size={18} />
+        <div>
+          <span>Arrivo</span>
+          <b>{from ? fmtDate(from, { day: "numeric", month: "short" }) : "Aggiungi data"}</b>
+        </div>
+      </button>
+      <i className="sdiv" />
+      <button className={`sf ${open === "dates" ? "on" : ""}`} onClick={() => setOpen(open === "dates" ? null : "dates")}>
+        <div>
+          <span>Partenza</span>
+          <b>{to ? fmtDate(to, { day: "numeric", month: "short" }) : "Aggiungi data"}</b>
+        </div>
+      </button>
+      <i className="sdiv" />
+      <button className={`sf ${open === "guests" ? "on" : ""}`} onClick={() => setOpen(open === "guests" ? null : "guests")}>
+        <Users size={18} />
+        <div>
+          <span>Ospiti</span>
+          <b>{guests} {guests === 1 ? "ospite" : "ospiti"}</b>
+        </div>
+      </button>
+      <button className="sgo" onClick={() => { setOpen(null); scrollToId("prenota"); }}>
+        {ok ? <span>{euro(q.total)} · Prenota</span> : <><Search size={18} /><span>Verifica</span></>}
+      </button>
 
-        <motion.div className="hero-left" style={{ opacity: titleO, y: titleY }}>
-          <motion.span
-            className="hero-eyebrow"
-            initial={{ opacity: 0, y: 20 }}
-            animate={ready ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 1, delay: 0.9, ease: EASE }}
-          >
-            Appartamento · Bergamo
-          </motion.span>
-          <h1 className="hero-title">
-            <Chars text="Flori's" delay={1.0} ready={ready} />
-            <motion.span style={{ x: homeX }} className="ht-r">
-              <Chars text="Home" delay={1.25} ready={ready} className="italic" />
-            </motion.span>
-          </h1>
-          <motion.div className="hero-info" style={{ opacity: infoO }}>
-            <motion.p
-              className="hero-lead"
-              initial={{ opacity: 0, y: 30 }}
-              animate={ready ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 1, delay: 1.8, ease: EASE }}
-            >
-              80 m² di luce, due camere e un balcone sul verde. A quattro chilometri dal tuo volo.
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={ready ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 1, delay: 2, ease: EASE }}
-            >
-              <Magnetic href="#prenota" className="round-cta" data-cursor="Prenota">
-                <ArrowDownRight size={26} strokeWidth={1.3} />
-                <svg viewBox="0 0 100 100" className="round-text">
-                  <defs>
-                    <path id="circ" d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
-                  </defs>
-                  <text>
-                    <textPath href="#circ">VERIFICA DISPONIBILITÀ • PRENOTA •</textPath>
-                  </text>
-                </svg>
-              </Magnetic>
-            </motion.div>
+      <AnimatePresence>
+        {open === "dates" && (
+          <motion.div className="pop pop-dates" initial={{ opacity: 0, y: 10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.25 }}>
+            <div className="pop-head">
+              <b>{from && to ? `${q.nights.length} notti · ${fmtDate(from, { day: "numeric", month: "short" })} – ${fmtDate(to, { day: "numeric", month: "short" })}` : from ? "Scegli la partenza" : "Scegli l'arrivo"}</b>
+              {(from || to) && <button onClick={() => { setFrom(null); setTo(null); }}>Cancella</button>}
+            </div>
+            <Calendar settings={s} mode="range" from={from} to={to} months={months}
+              onRange={(a, b) => { setFrom(a); setTo(b); if (b) setTimeout(() => setOpen(null), 350); }} />
           </motion.div>
+        )}
+        {open === "guests" && (
+          <motion.div className="pop pop-guests" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.25 }}>
+            <div className="g-row">
+              <div><b>Ospiti</b><span>Massimo {max}</span></div>
+              <div className="stepper">
+                <button onClick={() => setGuests(Math.max(1, guests - 1))} aria-label="Meno"><Minus size={15} /></button>
+                <b>{guests}</b>
+                <button onClick={() => setGuests(Math.min(max, guests + 1))} aria-label="Più"><Plus size={15} /></button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ---------------- VENTAGLIO DI FOTO ---------------- */
+const FAN = [
+  { src: P.double, r: -16, x: -330, y: 40 },
+  { src: P.kitchen, r: -8, x: -170, y: 6 },
+  { src: P.living, r: 0, x: 0, y: -10 },
+  { src: P.bath, r: 8, x: 170, y: 6 },
+  { src: P.balcony, r: 16, x: 330, y: 40 },
+];
+
+function Fan() {
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rx = useSpring(useTransform(my, [-1, 1], [8, -8]), { stiffness: 120, damping: 18 });
+  const ry = useSpring(useTransform(mx, [-1, 1], [-10, 10]), { stiffness: 120, damping: 18 });
+  const ref = useRef(null);
+  const small = typeof window !== "undefined" && innerWidth < 720;
+  const k = small ? 0.42 : 1;
+
+  return (
+    <div
+      className="fan"
+      ref={ref}
+      onPointerMove={(e) => {
+        const r = ref.current.getBoundingClientRect();
+        mx.set(((e.clientX - r.left) / r.width) * 2 - 1);
+        my.set(((e.clientY - r.top) / r.height) * 2 - 1);
+      }}
+      onPointerLeave={() => { mx.set(0); my.set(0); }}
+    >
+      <motion.div className="fan-inner" style={{ rotateX: rx, rotateY: ry }}>
+        {FAN.map((c, i) => (
+          <motion.div
+            key={i}
+            className={`fan-card ${i === 2 ? "main" : ""}`}
+            style={{ zIndex: 10 - Math.abs(i - 2) }}
+            initial={{ x: 0, y: 160, rotate: 0, opacity: 0, scale: 0.8 }}
+            animate={{ x: c.x * k, y: c.y * k, rotate: c.r, opacity: 1, scale: 1 }}
+            whileHover={{ y: c.y * k - 24, scale: 1.04, rotate: c.r * 0.6, zIndex: 20 }}
+            transition={{ type: "spring", stiffness: 90, damping: 16, delay: 0.5 + Math.abs(i - 2) * 0.12 }}
+          >
+            <Img src={c.src} alt="" eager={i === 2} />
+          </motion.div>
+        ))}
+        <motion.div className="fan-tag t1" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.4, type: "spring" }}>
+          <Star size={14} fill="currentColor" /> <b>9,1</b> Superbo
+        </motion.div>
+        <motion.div className="fan-tag t2" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.6, type: "spring" }}>
+          <MapPin size={14} /> 4 km da Orio al Serio
+        </motion.div>
+        <motion.div className="fan-tag t3" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.8, type: "spring" }}>
+          <Sparkles size={14} /> Appena ristrutturato
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ---------------- HERO ---------------- */
+export function Hero() {
+  const { settings: s } = useSettings();
+  return (
+    <section className="hero" id="top">
+      <div className="hero-bg" />
+      <div className="hero-top">
+        <motion.div className="hero-chip" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
+          <span className="dot" /> {s.bookingOpen ? "Prenotazioni aperte" : "Prenotazioni chiuse"} · da <b>{euro(s.pricePerNight)}</b> a notte
+        </motion.div>
+        <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.1, ease: EASE }}>
+          La tua casa a Bergamo,<br />perfetta per <Rotator />
+        </motion.h1>
+        <motion.p className="hero-sub" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.25, ease: EASE }}>
+          80 m² appena ristrutturati, due camere, balcone sul verde e parcheggio gratuito.
+        </motion.p>
+        <motion.div className="search-wrap" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.4, ease: EASE }}>
+          <SearchBar />
         </motion.div>
       </div>
+      <Fan />
     </section>
   );
 }
 
-/* ---------------- STATS ---------------- */
-export function Stats() {
+/* ---------------- STRISCIA FIDUCIA ---------------- */
+export function Trust() {
+  const row = [...TRUST, ...TRUST];
   return (
-    <section className="stats-band">
-      {STATS.map((s, i) => (
-        <motion.div
-          key={s.label}
-          className="stat"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, delay: i * 0.1, ease: EASE }}
-        >
-          <Counter value={s.value} suffix={s.suffix} />
-          <span>{s.label}</span>
-        </motion.div>
-      ))}
-    </section>
-  );
-}
-
-/* ---------------- MANIFESTO (parole che si accendono) ---------------- */
-function Word({ w, i, n, p }) {
-  const start = i / n;
-  const o = useTransform(p, [start * 0.85, start * 0.85 + 0.12], [0.13, 1]);
-  const accent = /luce|verde|te,|Bergamo\./.test(w);
-  return (
-    <motion.span style={{ opacity: o }} className={accent ? "acc" : ""}>
-      {w}{" "}
-    </motion.span>
-  );
-}
-
-export function Manifesto() {
-  const ref = useRef(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start 0.75", "end 0.55"] });
-  const words = MANIFESTO.split(" ");
-  const imgY = useTransform(p, [0, 1], [120, -120]);
-  const imgR = useTransform(p, [0, 1], [-6, 4]);
-  const img2Y = useTransform(p, [0, 1], [200, -200]);
-  return (
-    <section className="manifesto" ref={ref}>
-      <motion.div className="mf-float f1" style={{ y: imgY, rotate: imgR }}>
-        <Img src={P.details} alt="" />
-      </motion.div>
-      <motion.div className="mf-float f2" style={{ y: img2Y }}>
-        <Img src={P.view} alt="" />
-      </motion.div>
-      <span className="kicker"><i>01</i>La casa</span>
-      <p className="mf-text">
-        {words.map((w, i) => <Word key={i} w={w} i={i} n={words.length} p={p} />)}
-      </p>
-    </section>
+    <div className="trust">
+      <div className="trust-row">
+        {row.map((t, i) => <span key={i}><i>✦</i>{t}</span>)}
+      </div>
+    </div>
   );
 }

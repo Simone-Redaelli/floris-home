@@ -89,7 +89,7 @@ export default function Tour() {
         {TOUR.map((r, i) => <Room key={r.id} room={r} i={i} n={n} p={p} />)}
 
         <div className="tour-top">
-          <span className="kicker light"><i>02</i>Il tour</span>
+          <span className="kicker">Il tour</span>
           <div className="tour-count">
             <AnimatePresence mode="popLayout">
               <motion.b
