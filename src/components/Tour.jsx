@@ -8,9 +8,9 @@ import { Img } from "./ui";
   La sezione resta ferma a schermo: scorrendo la "telecamera" avanza nella stanza,
   in fondo appare una porta ad arco che si avvicina e si apre sulla stanza successiva.
 */
-const DOOR_FAR = "inset(41% 46% 24% 46% round 400px 400px 6px 6px)";
-const DOOR_CLOSED = "inset(26% 38% 12% 38% round 400px 400px 6px 6px)";
-const DOOR_OPEN = "inset(0% 0% 0% 0% round 0px 0px 0px 0px)";
+const DOOR_FAR = "inset(36% 42% 18% 42% round 400px 400px 8px 8px)";
+const DOOR_CLOSED = "inset(18% 32% 6% 32% round 400px 400px 8px 8px)";
+const DOOR_OPEN = "inset(0% 0% 0% 0% round 26px 26px 26px 26px)";
 
 function Room({ room, i, n, p }) {
   const seg = 1 / n;
@@ -23,10 +23,10 @@ function Room({ room, i, n, p }) {
 
   const clip = useTransform(p, [farA, enterA, s], first ? [DOOR_OPEN, DOOR_OPEN, DOOR_OPEN] : [DOOR_FAR, DOOR_CLOSED, DOOR_OPEN]);
   const visible = useTransform(p, [farA - seg * 0.02, farA + seg * 0.06], first ? [1, 1] : [0, 1]);
-  const scale = useTransform(p, [farA, s, e + seg * 0.4], [0.9, 1.08, 1.6]);
-  const x = useTransform(p, [s, e + seg * 0.4], ["0%", `${dir * 5}%`]);
-  const rot = useTransform(p, [s, e + seg * 0.4], [0, dir * 1.2]);
-  const shade = useTransform(p, [e - seg * 0.55, e], [0, 0.7]);
+  const scale = useTransform(p, [farA, s, e + seg * 0.4], [0.96, 1.02, 1.14]);
+  const x = useTransform(p, [s, e + seg * 0.4], ["0%", `${dir * 1.5}%`]);
+  const rot = useTransform(p, [s, e + seg * 0.4], [0, dir * 0.4]);
+  const shade = useTransform(p, [e - seg * 0.55, e], [0, 0.35]);
   const last = i === n - 1;
   // le stanze lontane o già superate non vengono proprio disegnate
   const vis = useTransform(p, (v) =>
@@ -38,7 +38,7 @@ function Room({ room, i, n, p }) {
   const tOut = i === n - 1 ? 2 : e - seg * 0.32;
   const o = useTransform(p, [tIn, tIn + seg * 0.16, tOut, tOut + seg * 0.1], [0, 1, 1, 0]);
   const y = useTransform(p, [tIn, tIn + seg * 0.16, tOut, tOut + seg * 0.1], [80, 0, 0, -60]);
-  const titleX = useTransform(p, [s, e], ["0%", "-8%"]);
+  const titleX = useTransform(p, [s, e], ["0%", "-2%"]);
 
   return (
     <motion.div className="room" style={{ zIndex: i + 1, opacity: visible, visibility: vis }}>

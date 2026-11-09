@@ -18,7 +18,6 @@ function Site() {
     <SettingsProvider>
       <Preloader onDone={done} />
       <Cursor />
-      <div className="grain" />
       <Nav ready={ready} />
       <main>
         <Hero ready={ready} />
