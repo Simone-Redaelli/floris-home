@@ -2,14 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, onSnapshot } from "firebase/firestore";
 import {
   LayoutDashboard, CalendarDays, Euro, Info, LogOut, Save, Plus, Trash2, Lock, ExternalLink,
-  Check, AlertTriangle, Eye, EyeOff, RotateCcw,
+  Check, AlertTriangle, Eye, EyeOff, RotateCcw, Inbox, Plane, PawPrint, Phone, Mail, X,
 } from "lucide-react";
 import { firebaseConfig, ADMIN_EMAIL, isConfigured } from "../lib/firebase-config";
 import { DEFAULTS, DOC_PATH, today, addDays, nightsBetween, euro, fmtDate, quote } from "../lib/settings";
 import Calendar from "../components/Calendar";
+import { api, hasApi } from "../lib/api";
 
 let fb = null;
 function getFb() {
@@ -22,6 +23,7 @@ function getFb() {
 
 const TABS = [
   { id: "home", label: "Panoramica", icon: LayoutDashboard },
+  { id: "req", label: "Richieste", icon: Inbox },
   { id: "cal", label: "Disponibilità", icon: CalendarDays },
   { id: "price", label: "Prezzi", icon: Euro },
   { id: "info", label: "Info e contatti", icon: Info },
@@ -169,6 +171,8 @@ function Dashboard({ user }) {
         cleaningFee: Number(draft.cleaningFee) || 0,
         deposit: Number(draft.deposit) || 0,
         minNights: Math.max(1, Number(draft.minNights) || 1),
+        transferPrice: Number(draft.transferPrice) || 0,
+        transferEnabled: draft.transferEnabled !== false,
         maxGuests: Math.max(1, Number(draft.maxGuests) || 1),
         seasons: (draft.seasons || []).map((x) => ({ ...x, price: Number(x.price) || 0 })),
         blocked: [...new Set(draft.blocked || [])].filter((d) => d >= addDays(today(), -1)).sort(),
@@ -214,6 +218,10 @@ function Dashboard({ user }) {
         <AnimatePresence mode="wait">
           <motion.div key={tab} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
             {tab === "home" && <Overview d={draft} set={set} go={setTab} />}
+            {tab === "req" && <Requests user={user} flash={flash} onBlocked={(nights) => {
+              const add = (x) => ({ ...x, blocked: [...new Set([...(x.blocked || []), ...nights])].sort() });
+              setSaved((x) => x && add(x)); setDraft((x) => x && add(x));
+            }} />}
             {tab === "cal" && <Availability d={draft} set={set} />}
             {tab === "price" && <Prices d={draft} set={set} />}
             {tab === "info" && <InfoTab d={draft} set={set} />}
@@ -239,6 +247,99 @@ function Dashboard({ user }) {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/* ---------------- tab: richieste ---------------- */
+const ST = {
+  pending: ["In attesa", "wait"],
+  processing: ["In corso…", "wait"],
+  confirmed: ["Confermata", "ok"],
+  rejected: ["Rifiutata", "no"],
+  expired: ["Scaduta", "no"],
+};
+
+function Requests({ user, flash, onBlocked }) {
+  const [list, setList] = useState(null);
+  const [filter, setFilter] = useState("pending");
+  const [busy, setBusy] = useState(null);
+
+  useEffect(() => {
+    return onSnapshot(
+      collection(getFb().db, "bookings"),
+      (snap) => setList(snap.docs.map((x) => x.data()).sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))),
+      () => setList([]),
+    );
+  }, []);
+
+  const decide = async (b, action) => {
+    if (!hasApi()) return flash("Il server delle richieste non è ancora online: rispondi dal messaggio WhatsApp.", "err");
+    setBusy(b.id + action);
+    try {
+      const token = await user.getIdToken();
+      const r = await api(`/api/admin/bookings/${b.id}/${action}`, { method: "POST", token });
+      if (action === "accept") onBlocked(b.nightList || []);
+      flash(action === "accept" ? "Confermata: ospite avvisato e notti bloccate" : "Rifiutata: ospite avvisato");
+      if (r.message?.includes("⚠️")) flash(r.message, "err");
+    } catch (e) {
+      flash(e.message, "err");
+    }
+    setBusy(null);
+  };
+
+  const shown = (list || []).filter((b) => filter === "all" || b.status === filter);
+  const count = (k) => (list || []).filter((b) => b.status === k).length;
+
+  return (
+    <>
+      <Head title="Richieste" sub="Le richieste di soggiorno arrivate dal sito. Puoi rispondere da qui o dai bottoni su WhatsApp." />
+      <div className="adm-filters">
+        {[["pending", "In attesa"], ["confirmed", "Confermate"], ["rejected", "Rifiutate"], ["all", "Tutte"]].map(([k, l]) => (
+          <button key={k} className={filter === k ? "on" : ""} onClick={() => setFilter(k)}>
+            {l}{k !== "all" && <b>{count(k)}</b>}
+          </button>
+        ))}
+      </div>
+      {!hasApi() && (
+        <div className="adm-note"><AlertTriangle size={16} /> Il server delle richieste automatiche non è ancora collegato al sito: per ora le richieste arrivano come messaggio WhatsApp.</div>
+      )}
+      {list === null && <div className="adm-loading small"><span /></div>}
+      {list && shown.length === 0 && <div className="adm-empty"><Inbox size={30} /><b>Nessuna richiesta qui</b><span>Quando un ospite invia una richiesta dal sito la vedi comparire subito.</span></div>}
+      <div className="req-list">
+        <AnimatePresence initial={false}>
+          {shown.map((b) => (
+            <motion.article key={b.id} className="req" layout initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}>
+              <div className="req-top">
+                <div>
+                  <b className="req-name">{b.name}</b>
+                  <span className="req-code">#{b.id}</span>
+                </div>
+                <span className={`req-st ${ST[b.status]?.[1] || ""}`}>{ST[b.status]?.[0] || b.status}</span>
+              </div>
+              <div className="req-dates">
+                <div><span>Arrivo</span><b>{fmtDate(b.from, { weekday: "short", day: "numeric", month: "short" })}</b></div>
+                <i>→</i>
+                <div><span>Partenza</span><b>{fmtDate(b.to, { weekday: "short", day: "numeric", month: "short" })}</b></div>
+                <div className="req-tot"><span>{b.nights} notti · {b.guests} ospiti</span><b>{euro(b.total)}</b></div>
+              </div>
+              <div className="req-tags">
+                {b.transfer && <span className="tf"><Plane size={13} /> Transfer{b.arrivalTime ? ` ${b.arrivalTime}` : ""}{b.flight ? ` · ${b.flight}` : ""}</span>}
+                {b.pet && <span><PawPrint size={13} /> Animale</span>}
+                <a href={`https://wa.me/${b.phone}`} target="_blank" rel="noreferrer"><Phone size={13} /> +{b.phone}</a>
+                <a href={`mailto:${b.email}`}><Mail size={13} /> {b.email}</a>
+              </div>
+              {b.notes && <p className="req-notes">“{b.notes}”</p>}
+              {b.status === "pending" && (
+                <div className="req-actions">
+                  <button className="adm-btn sm ok" disabled={!!busy} onClick={() => decide(b, "accept")}><Check size={15} /> {busy === b.id + "accept" ? "Confermo…" : "Accetta"}</button>
+                  <button className="adm-btn ghost sm" disabled={!!busy} onClick={() => decide(b, "reject")}><X size={15} /> {busy === b.id + "reject" ? "Rifiuto…" : "Rifiuta"}</button>
+                </div>
+              )}
+            </motion.article>
+          ))}
+        </AnimatePresence>
+      </div>
+    </>
   );
 }
 
@@ -373,6 +474,18 @@ function Prices({ d, set }) {
           <Field label="Cauzione" prefix="€" type="number" value={d.deposit} onChange={(v) => set({ deposit: v })} />
           <Field label="Notti minime" type="number" value={d.minNights} onChange={(v) => set({ minNights: v })} />
           <Field label="Ospiti massimi" type="number" value={d.maxGuests} onChange={(v) => set({ maxGuests: v })} />
+        </div>
+      </div>
+      <div className="adm-box">
+        <div className="adm-box-head">
+          <div>
+            <h3>Transfer dall'aeroporto</h3>
+            <p className="adm-hint">Opzione che l'ospite può aggiungere: lo andate a prendere a Orio al Serio.</p>
+          </div>
+          <Toggle on={d.transferEnabled !== false} onChange={(v) => set({ transferEnabled: v })} />
+        </div>
+        <div className="adm-grid4">
+          <Field label="Prezzo transfer" prefix="€" type="number" value={d.transferPrice} onChange={(v) => set({ transferPrice: v })} />
         </div>
       </div>
       <div className="adm-box">

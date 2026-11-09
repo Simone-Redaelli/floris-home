@@ -12,6 +12,8 @@ export const DEFAULTS = {
   deposit: SITE.deposit,
   minNights: 1,
   maxGuests: 5,
+  transferEnabled: true,    // transfer dall'aeroporto di Orio al Serio
+  transferPrice: 35,
   checkIn: SITE.checkIn,
   checkOut: SITE.checkOut,
   whatsapp: SITE.whatsapp,
@@ -55,13 +57,14 @@ export function nightPrice(day, s) {
   return { price: Number(s.pricePerNight), kind: "base" };
 }
 
-export function quote(from, to, s) {
+export function quote(from, to, s, opts = {}) {
   const nights = nightsBetween(from, to);
   const blockedSet = new Set(s.blocked || []);
   const conflicts = nights.filter((d) => blockedSet.has(d));
   const lines = nights.map((d) => ({ day: d, ...nightPrice(d, s) }));
   const subtotal = lines.reduce((a, l) => a + l.price, 0);
-  const total = nights.length ? subtotal + Number(s.cleaningFee || 0) : 0;
+  const transferFee = opts.transfer && s.transferEnabled ? Number(s.transferPrice || 0) : 0;
+  const total = nights.length ? subtotal + Number(s.cleaningFee || 0) + transferFee : 0;
 
   // raggruppa le notti per prezzo per il riepilogo
   const groups = [];
@@ -75,7 +78,7 @@ export function quote(from, to, s) {
   else if (from < today()) status = "past";
   else if (conflicts.length) status = "unavailable";
   else if (nights.length < Number(s.minNights || 1)) status = "min";
-  return { nights, conflicts, groups, subtotal, total, status };
+  return { nights, conflicts, groups, subtotal, transferFee, total, status };
 }
 
 /* ---------- lettura pubblica da Firestore (REST, senza SDK) ---------- */

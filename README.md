@@ -45,6 +45,14 @@ Finché Firebase non è configurato il sito funziona lo stesso con i valori di `
 **Sicurezza**: le chiavi in `firebase-config.js` sono pubbliche per design. Chi modifica i dati lo decidono le regole di Firestore:
 solo l'utente autenticato con l'email admin può scrivere. Crea l'account admin (punto 2) prima di pubblicare le regole.
 
+## Richieste automatiche (WhatsApp + Google Calendar + Gmail)
+Nella cartella `backend/` c'è il server che gestisce le richieste come per il sito ripetizioni:
+richiesta → WhatsApp con ✅/❌ → conferma con blocco notti, evento Calendar ed email.
+Guida completa: **backend/README.md**. Le regole Firestore aggiornate sono in `firestore.rules`.
+
+## Transfer dall'aeroporto
+L'ospite può aggiungere il transfer da Orio al Serio (default €35): prezzo e attivazione dal pannello admin → Prezzi.
+
 ## Sezioni
 Preloader · Hero cinematografica · Calendario con disponibilità e preventivo in tempo reale · Manifesto a scorrimento · Tour immersivo stanza per stanza ·
 Galleria orizzontale con lightbox · Servizi · Bergamo e mappa · Recensioni · Prenotazione (WhatsApp/email) · Regole e FAQ

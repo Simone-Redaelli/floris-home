@@ -35,10 +35,10 @@ function Rotator() {
 /* ---------------- BARRA DATE ---------------- */
 function SearchBar() {
   const { settings: s } = useSettings();
-  const { from, to, guests, setFrom, setTo, setGuests } = useBooking();
+  const { from, to, guests, transfer, setFrom, setTo, setGuests } = useBooking();
   const [open, setOpen] = useState(null); // "dates" | "guests" | null
   const ref = useRef(null);
-  const q = quote(from, to, s);
+  const q = quote(from, to, s, { transfer });
   const ok = q.status === "ok";
 
   useEffect(() => {

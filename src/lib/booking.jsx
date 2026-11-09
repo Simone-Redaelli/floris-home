@@ -7,7 +7,12 @@ export function BookingProvider({ children }) {
   const [from, setFrom] = useState(null);
   const [to, setTo] = useState(null);
   const [guests, setGuests] = useState(2);
-  return <Ctx.Provider value={{ from, to, guests, setFrom, setTo, setGuests }}>{children}</Ctx.Provider>;
+  const [transfer, setTransfer] = useState(false);
+  return (
+    <Ctx.Provider value={{ from, to, guests, transfer, setFrom, setTo, setGuests, setTransfer }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export const useBooking = () => useContext(Ctx);
