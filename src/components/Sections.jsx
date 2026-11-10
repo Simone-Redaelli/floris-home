@@ -3,11 +3,11 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import {
   ArrowUpRight, X, ChevronLeft, ChevronRight, Plus, Minus, MessageCircle, Mail, Navigation, Star,
   Maximize2, BedDouble, Users, Ruler, Check, Plane, Landmark, Theater, Trophy, Castle, Building2, Phone,
-  IdCard, BookOpen, Car, ShieldCheck,
+  IdCard, BookOpen, Car, ShieldCheck, Baby, Utensils, Sunrise, Sunset, Croissant,
 } from "lucide-react";
 import { COUNTRIES, DOC_TYPES, ageOf } from "../lib/countries";
 import { P, CITY, SITE, GALLERY, AMENITIES, PLACES, SCORES, FAQ, AUDIENCE, TOUR } from "../data";
-import { useSettings, quote, euro, fmtDate } from "../lib/settings";
+import { useSettings, quote, euro, fmtDate, EXTRAS } from "../lib/settings";
 import { useBooking } from "../lib/booking";
 import { api, hasApi } from "../lib/api";
 import Calendar from "./Calendar";
@@ -222,11 +222,15 @@ export function Bergamo() {
 
 /* ---------------- PRENOTA ---------------- */
 
+// nomi in italiano per il messaggio WhatsApp che arriva a te
+const EXTRA_IT = { crib: "culla", highchair: "seggiolone", earlyIn: "check-in anticipato", lateOut: "check-out posticipato", breakfast: "kit colazione" };
+const EXTRA_ICON = { crib: Baby, highchair: Utensils, earlyIn: Sunrise, lateOut: Sunset, breakfast: Croissant };
+
 export function Booking() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const k = t.book;
   const { settings: s, loading } = useSettings();
-  const { from, to, guests, transfer, setFrom, setTo, setGuests, setTransfer } = useBooking();
+  const { from, to, guests, transfer, extras, setFrom, setTo, setGuests, setTransfer, setExtras, toggleExtra } = useBooking();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({ email: "", phone: "", notes: "", pet: false, arrivalTime: "", flight: "", consent: false, website: "" });
   const [main, setMain] = useState({ firstName: "", lastName: "", sex: "", birthDate: "", birthPlace: "", birthCountry: "Italia", nationality: "Italia", docType: "Carta d'identità", docNumber: "", docIssuedBy: "" });
@@ -238,8 +242,15 @@ export function Booking() {
   const [done, setDone] = useState(null);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e?.target ? (e.target.type === "checkbox" ? e.target.checked : e.target.value) : e }));
 
-  const q = quote(from, to, s, { transfer });
+  // i minorenni non pagano la tassa di soggiorno: li contiamo appena l'ospite inserisce le date di nascita
+  const minors = others.filter((o) => { const a = ageOf(o.birthDate); return a !== null && a < 18; }).length;
+  const q = quote(from, to, s, { transfer, extras, guests, adults: guests - minors });
   const valid = q.status === "ok";
+  const activeExtras = EXTRAS.filter((e) => s.extras?.[e.id]?.enabled);
+  const exPrice = (e) => {
+    const p = Number(s.extras[e.id].price) || 0;
+    return p ? `+${euro(p)}${e.unit === "person" ? ` ${k.perPerson}` : ""}` : k.free;
+  };
   const maxG = Number(s.maxGuests) || 5;
   const months = typeof window !== "undefined" && innerWidth > 980 ? 2 : 1;
   const tfOn = transfer && s.transferEnabled;
@@ -268,7 +279,8 @@ export function Booking() {
     ? [
         `Ciao! Sono ${fullName || "interessato/a"} e vorrei soggiornare a Flori's Home dal ${fmtDate(from)} al ${fmtDate(to)} (${q.nights.length} notti), ${guests} ospiti${form.pet ? " + un animale" : ""}.`,
         tfOn ? `Vorrei anche il transfer dall'aeroporto di Orio al Serio${form.arrivalTime ? ` (arrivo ${form.arrivalTime}${form.flight ? `, volo ${form.flight}` : ""})` : ""}.` : null,
-        `Totale stimato ${euro(q.total)}. È disponibile?`,
+        q.extras.length ? `Servizi extra: ${q.extras.map((e) => `${EXTRA_IT[e.id]}${e.qty > 1 ? ` ×${e.qty}` : ""} (${euro(e.amount)})`).join(", ")}.` : null,
+        `Totale stimato ${euro(q.total)}${q.tax ? ` (di cui ${euro(q.tax)} di tassa di soggiorno)` : ""}. È disponibile?`,
         form.email ? `Email: ${form.email}` : null,
         form.notes ? `Note: ${form.notes}` : null,
         "",
@@ -291,7 +303,7 @@ export function Booking() {
     try {
       const r = await api("/api/bookings", {
         method: "POST",
-        body: { ...form, name: fullName, guest: main, others, from, to, guests, transfer: tfOn, arrivalTime: tfOn ? form.arrivalTime : "", flight: tfOn ? form.flight : "" },
+        body: { ...form, name: fullName, guest: main, others, from, to, guests, transfer: tfOn, extras: q.extras.map((e) => e.id), lang, arrivalTime: tfOn ? form.arrivalTime : "", flight: tfOn ? form.flight : "" },
       });
       setDone(r);
       setStep(2);
@@ -301,7 +313,7 @@ export function Booking() {
     setSending(false);
   };
 
-  const reset = () => { setFrom(null); setTo(null); setTransfer(false); setDone(null); setStep(0); };
+  const reset = () => { setFrom(null); setTo(null); setTransfer(false); setExtras([]); setDone(null); setStep(0); };
   const first = useRef(true);
   useEffect(() => {
     if (first.current) { first.current = false; return; }
@@ -353,6 +365,26 @@ export function Booking() {
                           </motion.div>
                         )}
                       </AnimatePresence>
+                    </div>
+                  )}
+
+                  {activeExtras.length > 0 && (
+                    <div className="extras">
+                      <div className="ex-head"><b>{k.exTitle}</b><span>{k.exSub}</span></div>
+                      <div className="ex-grid">
+                        {activeExtras.map((e) => {
+                          const I = EXTRA_ICON[e.id];
+                          const on = extras.includes(e.id);
+                          return (
+                            <button key={e.id} className={`ex ${on ? "on" : ""}`} onClick={() => toggleExtra(e.id)} aria-pressed={on}>
+                              <span className="ex-ico"><I size={19} /></span>
+                              <span className="ex-txt"><b>{k.ex[e.id].t}</b><small>{k.ex[e.id].s}</small></span>
+                              <span className="ex-price">{exPrice(e)}</span>
+                              <motion.span className="ex-check" animate={{ scale: on ? 1 : 0.6, opacity: on ? 1 : 0 }}><Check size={13} /></motion.span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </motion.div>
@@ -495,7 +527,21 @@ export function Booking() {
                       </motion.div>
                     )}
                   </AnimatePresence>
+                  <AnimatePresence initial={false}>
+                    {q.extras.map((e) => (
+                      <motion.div key={e.id} className="ex-line" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                        <span>{k.ex[e.id].t}{e.qty > 1 ? ` × ${e.qty}` : ""}</span><span>{e.amount ? euro(e.amount) : k.free}</span>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                  {q.tax > 0 && (
+                    <div className="tax-line">
+                      <span>{k.tax} <small>{k.taxNote(s.taxRate, euro(s.taxCap), s.taxMaxNights)}</small></span>
+                      <span>{euro(q.tax)}</span>
+                    </div>
+                  )}
                   <div className="tot"><span>{k.total}</span><motion.b key={q.total} initial={{ scale: 1.15 }} animate={{ scale: 1 }}>{euro(q.total)}</motion.b></div>
+                  {q.tax > 0 && <small className="tax-pay">{k.taxPay(euro(q.tax))}</small>}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -592,7 +638,7 @@ export function Footer() {
           </div>
           <div>
             <span className="lbl">{f.explore}</span>
-            <p className="foot-links">{LINKS.map(([l, h]) => <a key={h} href={h}>{l}</a>)}</p>
+            <p className="foot-links">{LINKS.map(([l, h]) => <a key={h} href={h}>{l}</a>)}<a href="#guida">{f.guide}</a></p>
           </div>
         </div>
         <div className="foot-bottom">

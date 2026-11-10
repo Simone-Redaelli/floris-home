@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://simone-redaelli.github.io/floris-home/sitemap.xml

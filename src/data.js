@@ -41,6 +41,7 @@ export const CITY = {
 
 export const SITE = {
   name: "Flori's Home",
+  url: "https://simone-redaelli.github.io/floris-home", // indirizzo pubblico del sito
   address: "Via San Pio X, 16 — 24125 Bergamo",
   coords: { lat: 45.69282, lng: 9.70946 },
 
@@ -168,19 +169,19 @@ export const TRUST = ["9,1 Superbo su Booking", "Parcheggio gratuito", "4 km da 
    km / min = in auto da Via San Pio X. I testi sono in src/i18n (act.items.<id>).
    cta: "book" = prenota, "tickets" = biglietti, "info" = scopri */
 export const ACTIVITIES = [
-  { id: "alta", cat: "culture", icon: "Landmark", km: 6, min: 15, from: 13, cta: "book", featured: true, img: "alta",
+  { id: "alta", lat: 45.7035, lng: 9.6628, cat: "culture", icon: "Landmark", km: 6, min: 15, from: 13, cta: "book", featured: true, img: "alta",
     url: "https://www.visitbergamo.net/en/oggetto/guided-tour-of-upper-bergamo-on-sunday-and-on-public-holidays" },
-  { id: "funi", cat: "culture", icon: "TramFront", km: 5, min: 13, cta: "tickets",
+  { id: "funi", lat: 45.701, lng: 9.6652, cat: "culture", icon: "TramFront", km: 5, min: 13, cta: "tickets",
     url: "https://www.atb.bergamo.it/en/atb-network/tourism-in-bergamo/bergamo-funiculars" },
-  { id: "carrara", cat: "culture", icon: "Palette", km: 4.2, min: 12, cta: "tickets", url: "https://www.lacarrara.it/" },
-  { id: "donizetti", cat: "culture", icon: "Drama", km: 4.4, min: 12, cta: "tickets", url: "https://www.teatrodonizetti.it/" },
-  { id: "atalanta", cat: "sport", icon: "Trophy", km: 5, min: 13, cta: "tickets", url: "https://www.atalanta.it/biglietteria" },
+  { id: "carrara", lat: 45.7046, lng: 9.6747, cat: "culture", icon: "Palette", km: 4.2, min: 12, cta: "tickets", url: "https://www.lacarrara.it/" },
+  { id: "donizetti", lat: 45.6946, lng: 9.6723, cat: "culture", icon: "Drama", km: 4.4, min: 12, cta: "tickets", url: "https://www.teatrodonizetti.it/" },
+  { id: "atalanta", lat: 45.7087, lng: 9.6807, cat: "sport", icon: "Trophy", km: 5, min: 13, cta: "tickets", url: "https://www.atalanta.it/biglietteria" },
   { id: "cooking", cat: "food", icon: "ChefHat", km: 10, min: 20, from: 102, cta: "book", url: "https://cesarine.com/search/bergamo" },
-  { id: "leolandia", cat: "family", icon: "FerrisWheel", km: 22, min: 25, cta: "tickets", url: "https://www.leolandia.it/" },
-  { id: "crespi", cat: "culture", icon: "Factory", km: 20, min: 25, cta: "book", url: "https://www.crespidadda.it/" },
-  { id: "terme", cat: "relax", icon: "Waves", km: 28, min: 35, cta: "book", url: "https://shop.qcterme.com/en/locations/san-pellegrino" },
-  { id: "iseo", cat: "nature", icon: "Ship", km: 40, min: 40, cta: "tickets", url: "https://www.navigazionelagoiseo.it/" },
-  { id: "como", cat: "nature", icon: "Sailboat", km: 35, min: 45, cta: "tickets", url: "https://www.navigazionelaghi.it/" },
-  { id: "orio", cat: "shop", icon: "ShoppingBag", km: 4, min: 8, cta: "info", url: "https://www.oriocenter.it/" },
+  { id: "leolandia", lat: 45.606, lng: 9.5383, cat: "family", icon: "FerrisWheel", km: 22, min: 25, cta: "tickets", url: "https://www.leolandia.it/" },
+  { id: "crespi", lat: 45.5967, lng: 9.5361, cat: "culture", icon: "Factory", km: 20, min: 25, cta: "book", url: "https://www.crespidadda.it/" },
+  { id: "terme", lat: 45.835, lng: 9.665, cat: "relax", icon: "Waves", km: 28, min: 35, cta: "book", url: "https://shop.qcterme.com/en/locations/san-pellegrino" },
+  { id: "iseo", lat: 45.715, lng: 10.08, cat: "nature", icon: "Ship", km: 40, min: 40, cta: "tickets", url: "https://www.navigazionelagoiseo.it/" },
+  { id: "como", lat: 45.8557, lng: 9.3969, cat: "nature", icon: "Sailboat", km: 35, min: 45, cta: "tickets", url: "https://www.navigazionelaghi.it/" },
+  { id: "orio", lat: 45.6697, lng: 9.7004, cat: "shop", icon: "ShoppingBag", km: 4, min: 8, cta: "info", url: "https://www.oriocenter.it/" },
 ];
 export const ACT_CATS = ["all", "culture", "nature", "family", "relax", "food", "sport", "shop"];

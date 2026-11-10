@@ -1,7 +1,7 @@
 // Firebase Admin: legge/scrive impostazioni e richieste su Firestore (scavalca le regole, solo lato server).
 import fs from 'node:fs';
 import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { env } from './env.js';
 
@@ -29,4 +29,4 @@ if (creds) {
   console.log('📁 Firebase non configurato: uso file locali in ./data (va bene per le prove).');
 }
 
-export { db, auth, FieldValue };
+export { db, auth, FieldValue, Timestamp };

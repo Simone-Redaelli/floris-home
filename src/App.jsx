@@ -11,8 +11,9 @@ import { SettingsProvider } from "./lib/settings";
 import { BookingProvider } from "./lib/booking";
 import { LangProvider } from "./i18n";
 
-// Il pannello admin viene scaricato solo da chi apre #admin
+// Il pannello admin e la guida ospiti vengono scaricati solo da chi li apre
 const Admin = lazy(() => import("./admin/Admin"));
+const Guide = lazy(() => import("./components/Guide"));
 
 function Site() {
   useSmoothScroll();
@@ -58,17 +59,28 @@ function Site() {
   );
 }
 
-const isAdminHash = () => window.location.hash.startsWith("#admin");
+const pageOf = () => (window.location.hash.startsWith("#admin") ? "admin" : window.location.hash.startsWith("#guida") ? "guide" : "site");
 
 export default function App() {
-  const [admin] = useState(isAdminHash);
+  const [page] = useState(pageOf);
   useEffect(() => {
-    const f = () => isAdminHash() !== admin && window.location.reload();
+    const f = () => pageOf() !== page && window.location.reload();
     addEventListener("hashchange", f);
     return () => removeEventListener("hashchange", f);
-  }, [admin]);
+  }, [page]);
 
-  if (admin) {
+  if (page === "guide") {
+    return (
+      <LangProvider>
+        <SettingsProvider>
+          <Suspense fallback={<div className="adm-loading"><span /></div>}>
+            <Guide />
+          </Suspense>
+        </SettingsProvider>
+      </LangProvider>
+    );
+  }
+  if (page === "admin") {
     return (
       <Suspense fallback={<div className="adm-loading"><span /></div>}>
         <Admin />

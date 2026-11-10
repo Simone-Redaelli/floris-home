@@ -1,5 +1,6 @@
 import { env } from './env.js';
-import { fmtDayLong, euro, guestsLabel, transferLine, escapeHtml as h } from './format.js';
+import { guideLink, prettyCode } from './guide.js';
+import { fmtDayLong, euro, guestsLabel, transferLine, extrasLine, escapeHtml as h } from './format.js';
 
 function layout({ title, intro, rows, button, footer }) {
   const rowsHtml = rows
@@ -41,17 +42,20 @@ export function confirmedEmail(b, s) {
     ['Partenza', `${fmtDayLong(b.to)} · ${s.checkOut}`],
     ['Ospiti', guestsLabel(b.guests) + (b.pet ? ' + animale' : '')],
     ...(b.transfer ? [['Transfer', transferLine(b).replace('Transfer ', '')]] : []),
+    ...(extrasLine(b) ? [['Servizi extra', extrasLine(b)]] : []),
     ['Totale', euro(b.total)],
+    ...(b.tax ? [['Tassa di soggiorno', `${euro(b.tax)} (inclusa nel totale, da pagare all'arrivo)`]] : []),
     ['Cauzione', `${euro(s.deposit)} in contanti, restituita al check-out`],
     ['Indirizzo', env.property.address],
     ['Codice', b.id],
+    ...(b.guideCode ? [['Guida della casa', `codice ${prettyCode(b.guideCode)}`]] : []),
   ];
   const html = layout({
     title: 'Ti aspettiamo a Bergamo!',
     intro: `Ciao ${h(b.name)}, il tuo soggiorno a <b>${h(env.property.name)}</b> è confermato. Trovi l'evento anche nel tuo Google Calendar (controlla l'invito che ti è arrivato).`,
     rows,
-    button: { href: maps, label: '📍 Apri su Google Maps' },
-    footer: `${b.transfer ? 'Ti veniamo a prendere noi all\'aeroporto di Orio al Serio: scrivici su WhatsApp se il volo cambia orario.<br>' : ''}Parcheggio gratuito, Wi-Fi e biancheria inclusi. Per qualsiasi cosa rispondi a questa email o scrivici su WhatsApp.<br><br>— ${h(env.admin.name)}`,
+    button: b.guideCode ? { href: guideLink(b.guideCode), label: '📘 Apri la guida della casa' } : { href: maps, label: '📍 Apri su Google Maps' },
+    footer: `${b.guideCode ? `Nella guida trovi Wi-Fi, come entrare, parcheggio e numeri utili. <a href="${h(maps)}" style="color:#b5794a">Apri l'indirizzo su Google Maps</a>.<br>` : ''}${b.transfer ? 'Ti veniamo a prendere noi all\'aeroporto di Orio al Serio: scrivici su WhatsApp se il volo cambia orario.<br>' : ''}Parcheggio gratuito, Wi-Fi e biancheria inclusi. Per qualsiasi cosa rispondi a questa email o scrivici su WhatsApp.<br><br>— ${h(env.admin.name)}`,
   });
   const text = [
     `Ciao ${b.name}, il tuo soggiorno a ${env.property.name} è confermato!`,
@@ -59,6 +63,7 @@ export function confirmedEmail(b, s) {
     ...rows.map(([k, v]) => `${k}: ${v}`),
     '',
     `Mappa: ${maps}`,
+    ...(b.guideCode ? [`Guida della casa: ${guideLink(b.guideCode)}`] : []),
     '',
     'Per qualsiasi cosa rispondi a questa email o scrivici su WhatsApp.',
     `— ${env.admin.name}`,
@@ -77,5 +82,36 @@ export function rejectedEmail(b) {
     footer: `— ${h(env.admin.name)}`,
   });
   const text = `Ciao ${b.name}, purtroppo ${env.property.name} non è disponibile dal ${fmtDayLong(b.from)} al ${fmtDayLong(b.to)}.\nPuoi scegliere altre date qui: ${link}\n\n— ${env.admin.name}`;
+  return { subject, html, text };
+}
+
+export function preArrivalEmail(b, s) {
+  const link = b.guideCode ? guideLink(b.guideCode) : `${env.publicUrl}/#guida`;
+  const subject = `Domani ti aspettiamo a ${env.property.name} 🗝️`;
+  const html = layout({
+    title: 'Ci vediamo domani!',
+    intro: `Ciao ${h(b.name)}, è quasi ora! Nella guida della casa trovi come entrare, la password del Wi-Fi, il parcheggio e i numeri utili.`,
+    rows: [
+      ['Arrivo', `${fmtDayLong(b.from)} · ${s.checkIn}`],
+      ['Indirizzo', env.property.address],
+      ...(b.guideCode ? [['Codice guida', prettyCode(b.guideCode)]] : []),
+    ],
+    button: { href: link, label: '📘 Apri la guida della casa' },
+    footer: `Se arrivi più tardi del previsto scrivici su WhatsApp.<br><br>— ${h(env.admin.name)}`,
+  });
+  const text = `Ciao ${b.name}, ti aspettiamo domani (${fmtDayLong(b.from)}, check-in ${s.checkIn}).\nGuida della casa: ${link}\n\n— ${env.admin.name}`;
+  return { subject, html, text };
+}
+
+export function reviewEmail(b, url) {
+  const subject = `Grazie per aver scelto ${env.property.name} ⭐`;
+  const html = layout({
+    title: 'Com\'è andata?',
+    intro: `Ciao ${h(b.name)}, grazie di essere stato/a nostro ospite! Se ti sei trovato/a bene, una recensione su Google ci aiuta tantissimo: bastano 30 secondi.`,
+    rows: [['Soggiorno', `${fmtDayLong(b.from)} → ${fmtDayLong(b.to)}`]],
+    button: { href: url, label: '⭐ Lascia una recensione' },
+    footer: `Speriamo di rivederti presto a Bergamo!<br><br>— ${h(env.admin.name)}`,
+  });
+  const text = `Ciao ${b.name}, grazie di essere stato/a nostro ospite! Ci lasci una recensione? ${url}\n\n— ${env.admin.name}`;
   return { subject, html, text };
 }

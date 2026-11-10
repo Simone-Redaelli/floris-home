@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { iso, parse, today, nightPrice } from "../lib/settings";
+import { iso, parse, today, nightPrice, unavailableSet } from "../lib/settings";
 import { useLang } from "../i18n";
 
 
@@ -26,7 +26,12 @@ export default function Calendar({ settings, mode = "range", from, to, onRange, 
   const [base, setBase] = useState({ y: now.getFullYear(), m: now.getMonth() });
   const [dir, setDir] = useState(1);
   const [hover, setHover] = useState(null);
-  const blocked = useMemo(() => new Set(settings.blocked || []), [settings.blocked]);
+  // ospite: non prenotabili = bloccate + occupate su Booking/Airbnb · admin: modifica solo quelle bloccate a mano
+  const ext = useMemo(() => new Set(settings.extBlocked || []), [settings.extBlocked]);
+  const blocked = useMemo(
+    () => (mode === "admin" ? new Set(settings.blocked || []) : unavailableSet(settings)),
+    [mode, settings.blocked, settings.extBlocked], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   // drag admin
   const drag = useRef(null);
@@ -77,7 +82,7 @@ export default function Calendar({ settings, mode = "range", from, to, onRange, 
     return out;
   };
   const down = (d) => {
-    if (mode !== "admin" || d < t0) return;
+    if (mode !== "admin" || d < t0 || ext.has(d)) return;
     drag.current = { start: d, block: !blocked.has(d) };
     setDragSet(new Set([d]));
   };
@@ -88,7 +93,7 @@ export default function Calendar({ settings, mode = "range", from, to, onRange, 
   useEffect(() => {
     if (mode !== "admin") return;
     const up = () => {
-      if (drag.current && dragSet) onToggle([...dragSet], drag.current.block);
+      if (drag.current && dragSet) onToggle([...dragSet].filter((x) => !ext.has(x)), drag.current.block);
       drag.current = null;
       setDragSet(null);
     };
@@ -134,6 +139,7 @@ export default function Calendar({ settings, mode = "range", from, to, onRange, 
                     if (!d) return <span key={i} />;
                     const dis = isDisabled(d);
                     const isB = blocked.has(d);
+                    const isExt = mode === "admin" && ext.has(d) && !isB;
                     const inDrag = dragSet?.has(d);
                     const sel = from && (d === from || d === rangeEnd);
                     const inR = from && rangeEnd && d > from && d < rangeEnd;
@@ -142,6 +148,7 @@ export default function Calendar({ settings, mode = "range", from, to, onRange, 
                       "cal-day",
                       dis && "dis",
                       isB && "blk",
+                      isExt && "ext",
                       d === t0 && "today",
                       sel && "sel",
                       inR && "inr",
@@ -159,10 +166,10 @@ export default function Calendar({ settings, mode = "range", from, to, onRange, 
                         onPointerDown={() => down(d)}
                         onPointerEnter={() => enter(d)}
                         disabled={mode === "range" && dis}
-                        title={isB ? t.cal.unavailable : `€${np.price} ${t.cal.perNight}`}
+                        title={isExt ? "Occupato su Booking/Airbnb" : isB ? t.cal.unavailable : `€${np.price} ${t.cal.perNight}`}
                       >
                         <b>{parse(d).getDate()}</b>
-                        {d >= t0 && <small>{isB ? "—" : np.price}</small>}
+                        {d >= t0 && <small>{isB || isExt ? "—" : np.price}</small>}
                       </button>
                     );
                   })}

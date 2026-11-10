@@ -31,13 +31,13 @@ export const sendText = (to, body) =>
 /**
  * Template approvato. buttonPayloads = payload dei bottoni "risposta rapida", nell'ordine del template.
  */
-export const sendTemplate = (to, name, bodyParams = [], buttonPayloads = []) =>
+export const sendTemplate = (to, name, bodyParams = [], buttonPayloads = [], lang = env.wa.lang) =>
   send({
     to,
     type: 'template',
     template: {
       name,
-      language: { code: env.wa.lang },
+      language: { code: lang },
       components: [
         { type: 'body', parameters: bodyParams.map((t) => ({ type: 'text', text: clean(t) })) },
         ...buttonPayloads.map((payload, i) => ({

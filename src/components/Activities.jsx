@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Landmark, TramFront, Palette, Drama, Factory, FerrisWheel, Waves, Ship, Sailboat, ChefHat, Trophy, ShoppingBag,
-  Compass, Mountain, Car, ArrowUpRight, MessageCircle,
+  Compass, Mountain, Car, ArrowUpRight, MessageCircle, LayoutGrid, Map as MapIcon,
 } from "lucide-react";
+
+const ActMap = lazy(() => import("./ActMap"));
 
 // solo le icone usate (niente import di tutta la libreria)
 const L = { Landmark, TramFront, Palette, Drama, Factory, FerrisWheel, Waves, Ship, Sailboat, ChefHat, Trophy, ShoppingBag, Compass, Mountain, Car, ArrowUpRight, MessageCircle };
@@ -48,6 +50,7 @@ export default function Activities() {
   const { t } = useLang();
   const k = t.act;
   const [cat, setCat] = useState("all");
+  const [view, setView] = useState("cards");
   const list = useMemo(() => (cat === "all" ? ACTIVITIES : ACTIVITIES.filter((a) => a.cat === cat)), [cat]);
   const cats = ACT_CATS.filter((c) => c === "all" || ACTIVITIES.some((a) => a.cat === c));
   const wa = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(k.waText)}`;
@@ -56,7 +59,8 @@ export default function Activities() {
     <section className="sec soft" id="attivita">
       <div className="wrap">
         <Head kicker={k.kicker} title={`${k.title1} <em>${k.title2}</em>`} sub={k.sub} />
-        <Reveal className="act-filters" role="tablist">
+        <Reveal className="act-bar">
+        <div className="act-filters" role="tablist">
           {cats.map((c) => {
             const I = L[CAT_ICON[c]] || L.Compass;
             const n = c === "all" ? ACTIVITIES.length : ACTIVITIES.filter((a) => a.cat === c).length;
@@ -67,8 +71,29 @@ export default function Activities() {
               </button>
             );
           })}
+        </div>
+        <div className="act-view" role="group" aria-label={k.view}>
+          {[["cards", LayoutGrid, k.viewCards], ["map", MapIcon, k.viewMap]].map(([v, I, l]) => (
+            <button key={v} className={view === v ? "on" : ""} onClick={() => setView(v)} aria-pressed={view === v}>
+              {view === v && <motion.i layoutId="act-view-pill" className="act-pill" transition={{ type: "spring", stiffness: 380, damping: 32 }} />}
+              <I size={15} /> {l}
+            </button>
+          ))}
+        </div>
         </Reveal>
-        <motion.div layout className="act-grid">
+        <AnimatePresence mode="wait" initial={false}>
+        {view === "map" ? (
+          <motion.div key="map" className="act-map-wrap" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+            <Suspense fallback={<div className="act-map loading" />}>
+              <ActMap list={list} k={k} />
+            </Suspense>
+            <div className="act-legend">
+              <span><i className="mk-dot home" /> {k.home}</span>
+              {cats.filter((c) => c !== "all").map((c) => <span key={c}><i className={`mk-dot act-${c}`} /> {k.cats[c]}</span>)}
+            </div>
+          </motion.div>
+        ) : (
+        <motion.div key="cards" layout className="act-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <AnimatePresence mode="popLayout">
             {list.map((a) => <Card key={a.id} a={a} txt={k.items[a.id]} k={k} />)}
             <motion.a
@@ -89,6 +114,8 @@ export default function Activities() {
             </motion.a>
           </AnimatePresence>
         </motion.div>
+        )}
+        </AnimatePresence>
         <p className="act-note">{k.note}</p>
       </div>
     </section>

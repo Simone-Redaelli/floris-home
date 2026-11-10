@@ -9,7 +9,10 @@ export const fmtDay = (s) => D(s).toFormat('ccc d LLL');
 export const fmtDayLong = (s) => D(s).toFormat('cccc d LLLL yyyy');
 /** "ven 20 nov → lun 23 nov (3 notti)" */
 export const fmtStay = (b) => `${fmtDay(b.from)} → ${fmtDay(b.to)} (${b.nights} ${b.nights === 1 ? 'notte' : 'notti'})`;
-export const euro = (n) => `€${Math.round(Number(n) || 0).toLocaleString('it-IT')}`;
+export const euro = (n) => {
+  const v = Math.round((Number(n) || 0) * 100) / 100;
+  return `€${Number.isInteger(v) ? v.toLocaleString('it-IT') : v.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
 export const guestsLabel = (n) => `${n} ${n === 1 ? 'ospite' : 'ospiti'}`;
 
 /** Riga transfer: "Transfer da Orio al Serio (arrivo 18:30, volo FR1234)" */
@@ -18,6 +21,9 @@ export function transferLine(b) {
   const extra = [b.arrivalTime && `arrivo ${b.arrivalTime}`, b.flight && `volo ${b.flight}`].filter(Boolean).join(', ');
   return `Transfer da Orio al Serio${extra ? ` (${extra})` : ''}`;
 }
+
+/** "Culla, Kit colazione ×3" */
+export const extrasLine = (b) => (b.extras || []).map((e) => `${e.name}${e.qty > 1 ? ` ×${e.qty}` : ''}`).join(', ') || null;
 
 /** Primo orario "HH:MM" dentro un testo tipo "16:00 – 20:00", altrimenti fallback */
 export const firstTime = (text, fallback) => (String(text || '').match(/(\d{1,2}):(\d{2})/) || [null])[0] || fallback;

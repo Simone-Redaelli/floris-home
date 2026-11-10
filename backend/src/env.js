@@ -24,6 +24,8 @@ export const env = {
     appSecret: e.WA_APP_SECRET || '',
     apiVersion: e.WA_API_VERSION || 'v25.0',
     lang: e.WA_TEMPLATE_LANG || 'it',
+    // lingue in cui hai creato i template su Meta (es. it,en): gli ospiti stranieri li ricevono nella loro lingua
+    langs: (e.WA_TEMPLATE_LANGS || e.WA_TEMPLATE_LANG || 'it').split(',').map((x) => x.trim()).filter(Boolean),
     useTemplates: e.WA_USE_TEMPLATES !== 'false',
   },
   google: {

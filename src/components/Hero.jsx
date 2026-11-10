@@ -41,10 +41,10 @@ function SearchBar() {
   const { t } = useLang();
   const h = t.hero;
   const { settings: s } = useSettings();
-  const { from, to, guests, transfer, setFrom, setTo, setGuests } = useBooking();
+  const { from, to, guests, transfer, extras, setFrom, setTo, setGuests } = useBooking();
   const [open, setOpen] = useState(null); // "dates" | "guests" | null
   const ref = useRef(null);
-  const q = quote(from, to, s, { transfer });
+  const q = quote(from, to, s, { transfer, extras, guests });
   const ok = q.status === "ok";
 
   useEffect(() => {

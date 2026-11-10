@@ -97,7 +97,29 @@ Ottime notizie {{1}}! ✅ Il tuo soggiorno a Flori's Home è confermato: {{2}}. 
 ```
 Ciao {{1}}, purtroppo Flori's Home non è disponibile per {{2}}. Puoi scegliere altre date qui: {{3}}
 ```
+**`istruzioni_arrivo`** (parte da solo il giorno prima dell'arrivo, dalle 10:00)
+```
+Ciao {{1}}! Ti aspettiamo {{2}} a Flori's Home (check-in {{3}}).
+Indirizzo: {{4}}
+Nella guida della casa trovi come entrare, il Wi-Fi, il parcheggio e i numeri utili: {{5}}
+Buon viaggio!
+```
+
+**`richiesta_recensione`** (parte da solo dopo il check-out, dalle 12:00; serve il link recensione Google nel pannello → Info e contatti)
+```
+Ciao {{1}}, grazie di essere stato/a nostro ospite a Flori's Home! Se ti sei trovato/a bene, ci lasci una recensione? Ci aiuta tantissimo: {{2}}
+```
+
+**Ospiti stranieri:** puoi creare gli stessi template anche in inglese (o altre lingue) con lo **stesso nome** e scriverle in `WA_TEMPLATE_LANGS=it,en`: ognuno riceve i messaggi nella lingua in cui ha usato il sito.
+
 Finché i template non sono approvati puoi provare con `WA_USE_TEMPLATES=false` (funziona solo se hai scritto al numero nelle ultime 24 ore).
+
+## Calendari Booking.com / Airbnb (iCal)
+Il server legge ogni 30 minuti i calendari dei portali (link salvati nel pannello → Disponibilità) e blocca quelle notti sul sito. Serve anche come "Sincronizza ora" nel pannello e pubblica `/calendar.ics`.
+**Senza server** lo fa GitHub Actions (vedi README principale): basta il segreto `FIREBASE_SERVICE_ACCOUNT_BASE64`.
+
+## Guida della casa
+Quando accetti una richiesta il server crea il codice personale dell'ospite (es. `K7M2-Q9TX`) e lo mette nell'email di conferma e nel messaggio del giorno prima. Wi-Fi e istruzioni d'ingresso si scrivono nel pannello → Guida ospiti.
 
 ## 5) Mettilo online
 Il backend può stare sulla stessa VPS delle ripetizioni (porta diversa, `PORT=3002`).

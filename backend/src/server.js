@@ -5,10 +5,12 @@ import rateLimit from 'express-rate-limit';
 import { env, checkEnv, digits } from './env.js';
 import { auth, firebaseReady } from './firebase.js';
 import { store, newCode } from './store.js';
-import { getSettings, quote, isDay, today } from './settings.js';
+import { getSettings, quote, isDay, today, EXTRAS } from './settings.js';
 import { webhook } from './webhook.js';
 import { acceptBooking, rejectBooking } from './decisions.js';
 import * as notify from './notify.js';
+import { syncIcal, siteIcs } from './ical.js';
+import { startScheduler } from './scheduler.js';
 
 checkEnv();
 
@@ -118,7 +120,11 @@ app.post('/api/bookings', limiter, async (req, res) => {
     console.error('Errore lettura impostazioni:', err);
     return res.status(502).json({ error: 'Errore temporaneo, riprova tra poco.' });
   }
-  const q = quote({ from, to, guests, transfer }, s);
+  // minorenni esenti dalla tassa di soggiorno
+  const minors = others.filter((o) => { const a = ageOf(o.birthDate); return a !== null && a < 18; }).length;
+  const extras = (Array.isArray(body.extras) ? body.extras : []).map(String).filter((x) => EXTRAS.some((e) => e.id === x));
+  const lang = ['it', 'en', 'fr', 'es', 'de'].includes(body.lang) ? body.lang : 'it';
+  const q = quote({ from, to, guests, adults: guests - minors, transfer, extras }, s);
   if (q.status !== 'ok') return res.status(409).json({ error: STATUS_ERR[q.status] || 'Date non valide.' });
 
   const booking = {
@@ -135,7 +141,11 @@ app.post('/api/bookings', limiter, async (req, res) => {
     stay: q.stay,
     cleaning: q.cleaning,
     transferFee: q.transferFee,
+    extras: q.extras,
+    extrasTotal: q.extrasTotal,
+    tax: q.tax,
     total: q.total,
+    lang,
     createdAt: new Date().toISOString(),
   };
 
@@ -184,6 +194,26 @@ app.post('/api/admin/bookings/:id/:action(accept|reject)', requireAdmin, async (
   }
 });
 
+// Sincronizza subito i calendari Booking/Airbnb (bottone nel pannello)
+app.post('/api/admin/ical/sync', requireAdmin, async (_req, res) => {
+  try {
+    const r = await syncIcal();
+    res.json({ ok: true, nights: r.extBlocked.length, clash: r.clash });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Calendario del sito da incollare su Booking/Airbnb: /calendar.ics oppure /calendar-booking.ics
+app.get(/^\/calendar(?:-([a-z0-9-]+))?\.ics$/, async (req, res) => {
+  if (!firebaseReady) return res.status(503).send('Firebase non configurato');
+  try {
+    res.type('text/calendar; charset=utf-8').send(await siteIcs(req.params[0] || null));
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
 // ── Webhook WhatsApp ─────────────────────────────────────────
 app.use(webhook);
 
@@ -206,5 +236,15 @@ async function expireOld() {
   }
 }
 setInterval(() => expireOld().catch(console.error), 60 * 60 * 1000).unref();
+
+// ── Calendari Booking/Airbnb ogni 30 minuti ──
+if (firebaseReady) {
+  const tick = () => syncIcal({ log: () => {} }).catch((err) => console.error('Sync iCal:', err.message));
+  setTimeout(tick, 10_000).unref();
+  setInterval(tick, 30 * 60 * 1000).unref();
+}
+
+// ── Messaggi automatici (istruzioni prima dell'arrivo, recensione dopo la partenza) ──
+startScheduler();
 
 app.listen(env.port, () => console.log(`🚀 Server su http://localhost:${env.port}`));

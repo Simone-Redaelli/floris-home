@@ -8,8 +8,10 @@ export function BookingProvider({ children }) {
   const [to, setTo] = useState(null);
   const [guests, setGuests] = useState(2);
   const [transfer, setTransfer] = useState(false);
+  const [extras, setExtras] = useState([]); // id dei servizi extra scelti
+  const toggleExtra = (id) => setExtras((xs) => (xs.includes(id) ? xs.filter((x) => x !== id) : [...xs, id]));
   return (
-    <Ctx.Provider value={{ from, to, guests, transfer, setFrom, setTo, setGuests, setTransfer }}>
+    <Ctx.Provider value={{ from, to, guests, transfer, extras, setFrom, setTo, setGuests, setTransfer, setExtras, toggleExtra }}>
       {children}
     </Ctx.Provider>
   );

@@ -14,6 +14,19 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if false;
     }
+    // Dati riservati dell'admin: link dei calendari Booking/Airbnb, Wi-Fi e istruzioni d'ingresso
+    match /private/{docId} {
+      allow read, write: if isAdmin();
+    }
+    // Guida dell'ospite: si apre solo conoscendo il codice (niente elenco) e scade 2 giorni dopo la partenza
+    match /guestGuides/{code} {
+      allow get: if isAdmin() || (resource != null && resource.data.expiresAt > request.time);
+      allow list, write: if isAdmin();
+    }
+    // Chi ha ricevuto un codice (nome, telefono, date): solo admin
+    match /guestAccess/{code} {
+      allow read, write: if isAdmin();
+    }
     match /{document=**} {
       allow read, write: if false;
     }

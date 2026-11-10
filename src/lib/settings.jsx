@@ -21,8 +21,47 @@ export const DEFAULTS = {
   email: SITE.email,
   phone: SITE.phone,
   seasons: [],              // [{ id, name, from: "YYYY-MM-DD", to: "YYYY-MM-DD", price }]
-  blocked: [],              // ["YYYY-MM-DD", ...] notti non disponibili
+  blocked: [],              // ["YYYY-MM-DD", ...] notti non disponibili (segnate da te o confermate dal sito)
+  extBlocked: [],           // notti occupate su Booking/Airbnb (le scrive la sincronizzazione iCal)
+  extSyncedAt: "",
+  // servizi extra che l'ospite può aggiungere (prezzo in €; unità fissa, vedi EXTRAS)
+  extras: {
+    crib: { enabled: true, price: 15 },
+    highchair: { enabled: true, price: 5 },
+    earlyIn: { enabled: true, price: 20 },
+    lateOut: { enabled: true, price: 20 },
+    breakfast: { enabled: true, price: 8 },
+  },
+  // tassa di soggiorno del Comune di Bergamo: % del prezzo a notte per persona, con tetto e notti massime
+  taxEnabled: true,
+  taxRate: 7,
+  taxCap: 5,
+  taxMaxNights: 5,
+  reviewUrl: "",            // link "lascia una recensione" su Google
+  // guida della casa (parte visibile a chi apre la guida)
+  parkingInfo: "",
+  wasteDays: "",
+  guideNotes: "",
 };
+
+/* Servizi extra: unit "stay" = una volta a soggiorno, "person" = per ogni ospite */
+export const EXTRAS = [
+  { id: "crib", unit: "stay" },
+  { id: "highchair", unit: "stay" },
+  { id: "earlyIn", unit: "stay" },
+  { id: "lateOut", unit: "stay" },
+  { id: "breakfast", unit: "person" },
+];
+
+/* unisce i valori salvati con i predefiniti (anche dentro "extras") */
+export function normalize(raw = {}) {
+  const s = { ...DEFAULTS, ...raw };
+  s.extras = Object.fromEntries(EXTRAS.map(({ id }) => [id, { ...DEFAULTS.extras[id], ...(raw.extras?.[id] || {}) }]));
+  return s;
+}
+
+/* notti non prenotabili: bloccate da te + occupate su Booking/Airbnb */
+export const unavailableSet = (s) => new Set([...(s.blocked || []), ...(s.extBlocked || [])]);
 
 export const DOC_PATH = ["config", "site"];
 
@@ -47,7 +86,11 @@ export const nightsBetween = (from, to) => {
 };
 export const fmtDate = (s, opts = { day: "numeric", month: "long" }) =>
   parse(s).toLocaleDateString(currentLocale(), opts);
-export const euro = (n) => "€" + Math.round(n).toLocaleString("it-IT");
+export const euro = (n) => {
+  const v = Math.round((Number(n) || 0) * 100) / 100;
+  return "€" + (Number.isInteger(v) ? v.toLocaleString("it-IT") : v.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+};
+const r2 = (n) => Math.round(n * 100) / 100;
 
 /* ---------- prezzi ---------- */
 export function nightPrice(day, s) {
@@ -60,12 +103,39 @@ export function nightPrice(day, s) {
 
 export function quote(from, to, s, opts = {}) {
   const nights = nightsBetween(from, to);
-  const blockedSet = new Set(s.blocked || []);
-  const conflicts = nights.filter((d) => blockedSet.has(d));
+  const off = unavailableSet(s);
+  const conflicts = nights.filter((d) => off.has(d));
   const lines = nights.map((d) => ({ day: d, ...nightPrice(d, s) }));
   const subtotal = lines.reduce((a, l) => a + l.price, 0);
-  const transferFee = opts.transfer && s.transferEnabled ? Number(s.transferPrice || 0) : 0;
-  const total = nights.length ? subtotal + Number(s.cleaningFee || 0) + transferFee : 0;
+  const guests = Math.max(1, Number(opts.guests) || 1);
+  const adults = Math.min(guests, Math.max(0, opts.adults ?? guests));
+  const cleaning = nights.length ? Number(s.cleaningFee || 0) : 0;
+  const transferFee = nights.length && opts.transfer && s.transferEnabled ? Number(s.transferPrice || 0) : 0;
+
+  // servizi extra scelti (solo quelli attivi)
+  const ex = s.extras || DEFAULTS.extras;
+  const extras = nights.length
+    ? EXTRAS.filter((e) => (opts.extras || []).includes(e.id) && ex[e.id]?.enabled).map((e) => {
+        const price = Number(ex[e.id].price) || 0;
+        const qty = e.unit === "person" ? guests : 1;
+        return { id: e.id, unit: e.unit, price, qty, amount: price * qty };
+      })
+    : [];
+  const extrasTotal = extras.reduce((a, e) => a + e.amount, 0);
+
+  // tassa di soggiorno: per ogni notte (fino al massimo) e ogni adulto, rate% del prezzo a notte per persona, con tetto
+  let tax = 0;
+  let taxNights = 0;
+  if (s.taxEnabled && nights.length && adults > 0) {
+    taxNights = Math.min(nights.length, Math.max(0, Number(s.taxMaxNights) || nights.length));
+    for (const l of lines.slice(0, taxNights)) {
+      const pp = r2(Math.min(Number(s.taxCap) || Infinity, ((Number(s.taxRate) || 0) / 100) * (l.price / guests)));
+      tax += pp * adults;
+    }
+    tax = r2(tax);
+  }
+
+  const total = nights.length ? r2(subtotal + cleaning + transferFee + extrasTotal + tax) : 0;
 
   // raggruppa le notti per prezzo per il riepilogo
   const groups = [];
@@ -79,7 +149,7 @@ export function quote(from, to, s, opts = {}) {
   else if (from < today()) status = "past";
   else if (conflicts.length) status = "unavailable";
   else if (nights.length < Number(s.minNights || 1)) status = "min";
-  return { nights, conflicts, groups, subtotal, transferFee, total, status };
+  return { nights, conflicts, groups, subtotal, cleaning, transferFee, extras, extrasTotal, tax, taxNights, adults, total, status };
 }
 
 /* ---------- lettura pubblica da Firestore (REST, senza SDK) ---------- */
@@ -95,28 +165,28 @@ function decode(v) {
   if ("timestampValue" in v) return v.timestampValue;
   return null;
 }
-const decodeFields = (f) => Object.fromEntries(Object.entries(f).map(([k, v]) => [k, decode(v)]));
+export const decodeFields = (f) => Object.fromEntries(Object.entries(f).map(([k, v]) => [k, decode(v)]));
 
 export async function fetchSettings() {
-  if (!isConfigured) return { ...DEFAULTS };
+  if (!isConfigured) return normalize();
   const { projectId, apiKey } = firebaseConfig;
   const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${DOC_PATH.join("/")}?key=${apiKey}`;
   const r = await fetch(url);
-  if (!r.ok) return { ...DEFAULTS };
+  if (!r.ok) return normalize();
   const j = await r.json();
-  return { ...DEFAULTS, ...decodeFields(j.fields || {}) };
+  return normalize(decodeFields(j.fields || {}));
 }
 
 /* ---------- contesto React ---------- */
-const Ctx = createContext({ settings: DEFAULTS, loading: true });
+const Ctx = createContext({ settings: normalize(), loading: true });
 
 export function SettingsProvider({ children }) {
-  const [state, setState] = useState({ settings: DEFAULTS, loading: true });
+  const [state, setState] = useState({ settings: normalize(), loading: true });
   useEffect(() => {
     let alive = true;
     fetchSettings()
       .then((s) => alive && setState({ settings: s, loading: false }))
-      .catch(() => alive && setState({ settings: DEFAULTS, loading: false }));
+      .catch(() => alive && setState({ settings: normalize(), loading: false }));
     return () => (alive = false);
   }, []);
   return <Ctx.Provider value={state}>{children}</Ctx.Provider>;

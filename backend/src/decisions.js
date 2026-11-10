@@ -1,10 +1,11 @@
 // Cosa succede quando accetti o rifiuti (da WhatsApp o dal pannello admin).
 import { env } from './env.js';
 import { store } from './store.js';
-import { getSettings, blockNights } from './settings.js';
+import { getSettings, blockNights, unavailableSet } from './settings.js';
 import { createStayEvent, createTransferEvent, sendEmail } from './google.js';
 import { confirmedEmail, rejectedEmail } from './emails.js';
 import * as notify from './notify.js';
+import { createGuide, guideLink } from './guide.js';
 import { fmtStay, fmtDay, euro, STATUS_LABEL } from './format.js';
 
 const admin = () => ({ name: env.admin.name, email: env.admin.email });
@@ -22,7 +23,7 @@ export async function acceptBooking(id) {
 
   // Le notti sono ancora libere? (nel frattempo potresti averle bloccate o accettato un'altra richiesta)
   const s = await getSettings();
-  const blocked = new Set(s.blocked || []);
+  const blocked = unavailableSet(s); // anche le notti occupate su Booking/Airbnb
   const taken = b.nightList.filter((d) => blocked.has(d));
   if (taken.length) {
     await store.update(id, { status: 'pending' });
@@ -44,7 +45,15 @@ export async function acceptBooking(id) {
     problems.push(`evento Google Calendar non creato (${err.message})`);
   }
 
-  const confirmed = await store.update(id, { status: 'confirmed', ...ev, confirmedAt: new Date().toISOString() });
+  // guida digitale della casa con codice personale
+  let guideCode = null;
+  try {
+    guideCode = await createGuide(b);
+  } catch (err) {
+    problems.push(`guida non creata (${err.message})`);
+  }
+
+  const confirmed = await store.update(id, { status: 'confirmed', ...ev, guideCode, confirmedAt: new Date().toISOString() });
 
   const mail = confirmedEmail(confirmed, s);
   const [emailRes, waRes] = await Promise.allSettled([
@@ -63,6 +72,7 @@ export async function acceptBooking(id) {
       `🗓️ ${fmtStay(b)} · ${euro(b.total)}`,
       b.transfer ? `🚕 Transfer da Orio${b.arrivalTime ? ` alle ${b.arrivalTime}` : ''}${b.flight ? ` (volo ${b.flight})` : ''}` : null,
       '🔒 Notti bloccate sul calendario del sito.',
+      guideCode ? `📘 Guida ospite: ${guideLink(guideCode)}` : null,
       problems.length ? `⚠️ Attenzione: ${problems.join('; ')}.` : '📨 Email, invito Google Calendar e WhatsApp inviati.',
     ].filter(Boolean).join('\n'),
   };

@@ -1,31 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, onSnapshot } from "firebase/firestore";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
+import { doc, getDoc, setDoc, serverTimestamp, collection, onSnapshot } from "firebase/firestore";
 import {
-  LayoutDashboard, CalendarDays, Euro, Info, LogOut, Save, Plus, Trash2, Lock, ExternalLink,
+  LayoutDashboard, CalendarDays, Euro, Info, LogOut, Save, Plus, Trash2, Lock, ExternalLink, BookOpenText, Sparkles,
   Check, AlertTriangle, Eye, EyeOff, RotateCcw, Inbox, Plane, PawPrint, Phone, Mail, X,
 } from "lucide-react";
-import { firebaseConfig, ADMIN_EMAIL, isConfigured } from "../lib/firebase-config";
-import { DEFAULTS, DOC_PATH, today, addDays, nightsBetween, euro, fmtDate, quote } from "../lib/settings";
+import { ADMIN_EMAIL, isConfigured } from "../lib/firebase-config";
+import { DOC_PATH, today, addDays, nightsBetween, euro, fmtDate, quote, normalize } from "../lib/settings";
+import { getFb } from "./fb";
+import { Head, Field, Toggle, Kpi } from "./ui";
+import { IcalBox, ExtrasBox, TaxBox, GuideTab, Stats, TodoToday } from "./more";
 import Calendar from "../components/Calendar";
 import { api, hasApi } from "../lib/api";
-
-let fb = null;
-function getFb() {
-  if (!fb && isConfigured) {
-    const app = initializeApp(firebaseConfig);
-    fb = { auth: getAuth(app), db: getFirestore(app) };
-  }
-  return fb;
-}
 
 const TABS = [
   { id: "home", label: "Panoramica", icon: LayoutDashboard },
   { id: "req", label: "Richieste", icon: Inbox },
   { id: "cal", label: "Disponibilità", icon: CalendarDays },
   { id: "price", label: "Prezzi", icon: Euro },
+  { id: "guide", label: "Guida ospiti", icon: BookOpenText },
   { id: "info", label: "Info e contatti", icon: Info },
 ];
 
@@ -137,18 +131,26 @@ function Dashboard({ user }) {
   const [draft, setDraft] = useState(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
+  const [bookings, setBookings] = useState(null);
+
+  // richieste arrivate dal sito (servono a Richieste, Panoramica e Statistiche)
+  useEffect(() => onSnapshot(
+    collection(getFb().db, "bookings"),
+    (snap) => setBookings(snap.docs.map((x) => x.data()).sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))),
+    () => setBookings([]),
+  ), []);
 
   useEffect(() => {
     getDoc(doc(getFb().db, ...DOC_PATH))
       .then((snap) => {
-        const data = { ...DEFAULTS, ...(snap.exists() ? snap.data() : {}) };
+        const data = normalize(snap.exists() ? snap.data() : {});
         delete data.updatedAt;
         setSaved(data);
         setDraft(data);
       })
       .catch(() => {
-        setSaved({ ...DEFAULTS });
-        setDraft({ ...DEFAULTS });
+        setSaved(normalize());
+        setDraft(normalize());
         flash("Impossibile leggere le impostazioni: controlla le regole di Firestore.", "err");
       });
   }, []);
@@ -175,9 +177,16 @@ function Dashboard({ user }) {
         transferEnabled: draft.transferEnabled !== false,
         maxGuests: Math.max(1, Number(draft.maxGuests) || 1),
         seasons: (draft.seasons || []).map((x) => ({ ...x, price: Number(x.price) || 0 })),
-        blocked: [...new Set(draft.blocked || [])].filter((d) => d >= addDays(today(), -1)).sort(),
+        blocked: [...new Set(draft.blocked || [])].filter((d) => d >= addDays(today(), -400)).sort(), // tengo un anno di storico per le statistiche
+        extras: Object.fromEntries(Object.entries(draft.extras || {}).map(([k, v]) => [k, { enabled: v.enabled !== false, price: Number(v.price) || 0 }])),
+        taxEnabled: draft.taxEnabled !== false,
+        taxRate: Number(draft.taxRate) || 0,
+        taxCap: Number(draft.taxCap) || 0,
+        taxMaxNights: Math.max(0, Number(draft.taxMaxNights) || 0),
       };
-      await setDoc(doc(getFb().db, ...DOC_PATH), { ...clean, updatedAt: serverTimestamp() });
+      // le notti di Booking/Airbnb le scrive solo la sincronizzazione: non le sovrascrivo
+      const { extBlocked, extSyncedAt, ...toWrite } = clean; // eslint-disable-line no-unused-vars
+      await setDoc(doc(getFb().db, ...DOC_PATH), { ...toWrite, updatedAt: serverTimestamp() }, { merge: true });
       setSaved(clean);
       setDraft(clean);
       flash("Modifiche salvate e già online");
@@ -217,13 +226,14 @@ function Dashboard({ user }) {
       <main className="adm-main">
         <AnimatePresence mode="wait">
           <motion.div key={tab} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
-            {tab === "home" && <Overview d={draft} set={set} go={setTab} />}
-            {tab === "req" && <Requests user={user} flash={flash} onBlocked={(nights) => {
+            {tab === "home" && <Overview d={draft} set={set} go={setTab} bookings={bookings} />}
+            {tab === "req" && <Requests user={user} flash={flash} list={bookings} onBlocked={(nights) => {
               const add = (x) => ({ ...x, blocked: [...new Set([...(x.blocked || []), ...nights])].sort() });
               setSaved((x) => x && add(x)); setDraft((x) => x && add(x));
             }} />}
-            {tab === "cal" && <Availability d={draft} set={set} />}
+            {tab === "cal" && <Availability d={draft} set={set} user={user} flash={flash} />}
             {tab === "price" && <Prices d={draft} set={set} />}
+            {tab === "guide" && <GuideTab d={draft} set={set} flash={flash} />}
             {tab === "info" && <InfoTab d={draft} set={set} />}
           </motion.div>
         </AnimatePresence>
@@ -259,18 +269,9 @@ const ST = {
   expired: ["Scaduta", "no"],
 };
 
-function Requests({ user, flash, onBlocked }) {
-  const [list, setList] = useState(null);
+function Requests({ user, flash, onBlocked, list }) {
   const [filter, setFilter] = useState("pending");
   const [busy, setBusy] = useState(null);
-
-  useEffect(() => {
-    return onSnapshot(
-      collection(getFb().db, "bookings"),
-      (snap) => setList(snap.docs.map((x) => x.data()).sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))),
-      () => setList([]),
-    );
-  }, []);
 
   const decide = async (b, action) => {
     if (!hasApi()) return flash("Il server delle richieste non è ancora online: rispondi dal messaggio WhatsApp.", "err");
@@ -325,6 +326,8 @@ function Requests({ user, flash, onBlocked }) {
               <div className="req-tags">
                 {b.transfer && <span className="tf"><Plane size={13} /> Transfer{b.arrivalTime ? ` ${b.arrivalTime}` : ""}{b.flight ? ` · ${b.flight}` : ""}</span>}
                 {b.pet && <span><PawPrint size={13} /> Animale</span>}
+                {(b.extras || []).map((e) => <span key={e.id} className="rex"><Sparkles size={13} /> {e.name}{e.qty > 1 ? ` ×${e.qty}` : ""}</span>)}
+                {b.tax > 0 && <span>Tassa sogg. {euro(b.tax)}</span>}
                 <a href={`https://wa.me/${b.phone}`} target="_blank" rel="noreferrer"><Phone size={13} /> +{b.phone}</a>
                 <a href={`mailto:${b.email}`}><Mail size={13} /> {b.email}</a>
               </div>
@@ -371,10 +374,10 @@ function CheckinData({ c, flash }) {
 }
 
 /* ---------------- tab: panoramica ---------------- */
-function Overview({ d, set, go }) {
+function Overview({ d, set, go, bookings }) {
   const t = today();
   const next30 = nightsBetween(t, addDays(t, 30));
-  const blockedSet = new Set(d.blocked || []);
+  const blockedSet = new Set([...(d.blocked || []), ...(d.extBlocked || [])]);
   const busy = next30.filter((x) => blockedSet.has(x)).length;
   const nextFree = next30.find((x) => !blockedSet.has(x));
   const weekend = quote(nextFriday(t), addDays(nextFriday(t), 2), d);
@@ -394,6 +397,8 @@ function Overview({ d, set, go }) {
         <Kpi label="Prima notte libera" value={nextFree ? fmtDate(nextFree, { day: "numeric", month: "short" }) : "—"} sub={nextFree ? "disponibile" : "nessuna nei prossimi 30 giorni"} onClick={() => go("cal")} />
         <Kpi label="Prossimo weekend" value={weekend.status === "ok" || weekend.status === "min" ? euro(weekend.total) : "Occupato"} sub="2 notti, pulizia inclusa" onClick={() => go("price")} />
       </div>
+      <TodoToday d={d} bookings={bookings} />
+      <Stats d={d} bookings={bookings} />
       <div className="adm-box">
         <h3>Avviso sul sito</h3>
         <p className="adm-hint">Un messaggio facoltativo mostrato nella sezione prenotazione (es. "Offerta -10% a gennaio").</p>
@@ -414,7 +419,7 @@ function nextFriday(t) {
 }
 
 /* ---------------- tab: disponibilità ---------------- */
-function Availability({ d, set }) {
+function Availability({ d, set, user, flash }) {
   const [fromQ, setFromQ] = useState("");
   const [toQ, setToQ] = useState("");
   const toggle = useCallback((days, block) => {
@@ -437,10 +442,12 @@ function Availability({ d, set }) {
         <div className="adm-legend">
           <span><i className="lg free" /> Libero</span>
           <span><i className="lg blk" /> Occupato</span>
+          <span><i className="lg ext" /> Booking/Airbnb</span>
           <span><i className="lg special" /> Prezzo speciale</span>
         </div>
         <Calendar settings={d} mode="admin" onToggle={toggle} months={2} />
       </div>
+      <IcalBox d={d} user={user} flash={flash} />
       <div className="adm-cols">
         <div className="adm-box">
           <h3>Blocca o libera un periodo</h3>
@@ -515,6 +522,8 @@ function Prices({ d, set }) {
           <Field label="Prezzo transfer" prefix="€" type="number" value={d.transferPrice} onChange={(v) => set({ transferPrice: v })} />
         </div>
       </div>
+      <ExtrasBox d={d} set={set} />
+      <TaxBox d={d} set={set} />
       <div className="adm-box">
         <div className="adm-box-head">
           <div>
@@ -560,47 +569,14 @@ function InfoTab({ d, set }) {
           <Field label="Check-out" value={d.checkOut} onChange={(v) => set({ checkOut: v })} />
         </div>
       </div>
+      <div className="adm-box">
+        <h3>Recensioni</h3>
+        <p className="adm-hint">Il link "lascia una recensione" della tua scheda Google: lo mandiamo in automatico agli ospiti dopo la partenza.</p>
+        <div className="adm-grid3">
+          <Field label="Link recensione Google" value={d.reviewUrl} onChange={(v) => set({ reviewUrl: v.trim() })} placeholder="https://g.page/r/…/review" />
+        </div>
+      </div>
     </>
   );
 }
 
-/* ---------------- piccoli componenti ---------------- */
-function Head({ title, sub }) {
-  return (
-    <header className="adm-head">
-      <h1>{title}</h1>
-      <p>{sub}</p>
-    </header>
-  );
-}
-
-function Field({ label, value, onChange, type = "text", prefix, hint, min }) {
-  return (
-    <label className="adm-field">
-      <span>{label}</span>
-      <div className={`adm-input ${prefix ? "has-prefix" : ""}`}>
-        {prefix && <em>{prefix}</em>}
-        <input type={type} value={value ?? ""} min={type === "number" ? 0 : min} onChange={(e) => onChange(e.target.value)} />
-      </div>
-      {hint && <small>{hint}</small>}
-    </label>
-  );
-}
-
-function Toggle({ on, onChange }) {
-  return (
-    <button className={`adm-toggle ${on ? "on" : ""}`} onClick={() => onChange(!on)} aria-pressed={on}>
-      <motion.i layout transition={{ type: "spring", stiffness: 500, damping: 30 }} />
-    </button>
-  );
-}
-
-function Kpi({ label, value, sub, onClick }) {
-  return (
-    <button className="adm-kpi" onClick={onClick}>
-      <span>{label}</span>
-      <b>{value}</b>
-      <small>{sub}</small>
-    </button>
-  );
-}
