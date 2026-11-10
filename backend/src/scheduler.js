@@ -9,6 +9,9 @@ import { getSettings } from './settings.js';
 import { sendEmail } from './google.js';
 import { preArrivalEmail, reviewEmail } from './emails.js';
 import * as notify from './notify.js';
+import { db, firebaseReady } from './firebase.js';
+import { unavailableSet, nightsBetween } from './settings.js';
+import { layout } from './emails.js';
 
 const TZ = env.timezone;
 
@@ -52,8 +55,42 @@ export async function runScheduler() {
   return due.length;
 }
 
+/* Lista d'attesa: appena tutte le notti richieste tornano libere (sbloccate da te o cancellate su Booking/Airbnb) avvisa l'ospite */
+export async function checkWaitlist(s) {
+  if (!firebaseReady) return 0;
+  const today = DateTime.now().setZone(TZ).toISODate();
+  const snap = await db.collection('waitlist').where('status', '==', 'waiting').get();
+  const off = unavailableSet(s);
+  let sent = 0;
+  for (const docu of snap.docs) {
+    const w = { id: docu.id, ...docu.data() };
+    if (w.from < today) { await docu.ref.update({ status: 'expired' }); continue; }
+    const free = nightsBetween(w.from, w.to).every((n) => !off.has(n));
+    if (!free || !s.bookingOpen) continue;
+    await docu.ref.update({ status: 'notified', notifiedAt: new Date().toISOString() });
+    const link = `${env.publicUrl}/?arrivo=${w.from}&partenza=${w.to}&ospiti=${w.guests || 2}#prenota`;
+    const jobs = [notify.guestWaitlistFree(w, link)];
+    if (w.email) {
+      jobs.push(sendEmail({
+        to: [{ name: w.name, email: w.email }],
+        subject: `Si sono liberate le tue date a ${env.property.name} 🎉`,
+        html: layout({ title: 'Le date sono libere!', intro: `Ciao ${w.name}, si sono liberate le notti che aspettavi. Prenotale prima che le prenda qualcun altro.`, rows: [['Date', `${w.from} → ${w.to}`], ['Ospiti', String(w.guests || 2)]], button: { href: link, label: 'Prenota ora' }, footer: `— ${env.admin.name}` }),
+        text: `Ciao ${w.name}, si sono liberate le date che aspettavi (${w.from} → ${w.to}). Prenota qui: ${link}`,
+      }));
+    }
+    const r = await Promise.allSettled(jobs);
+    r.filter((x) => x.status === 'rejected').forEach((x) => console.error('Lista d\'attesa:', x.reason?.message));
+    console.log(`🔔 Lista d'attesa: avvisato ${w.name} (${w.from} → ${w.to})`);
+    sent++;
+  }
+  return sent;
+}
+
 export function startScheduler() {
-  const tick = () => runScheduler().catch((err) => console.error('Messaggi automatici:', err.message));
+  const tick = () => {
+    runScheduler().catch((err) => console.error('Messaggi automatici:', err.message));
+    getSettings().then(checkWaitlist).catch((err) => console.error('Lista d\'attesa:', err.message));
+  };
   setTimeout(tick, 20_000).unref();
   setInterval(tick, 15 * 60 * 1000).unref();
 }

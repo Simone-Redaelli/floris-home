@@ -5,11 +5,12 @@ import {
 } from "firebase/firestore";
 import {
   Plus, Trash2, Copy, RefreshCw, Link2, MessageCircle, ExternalLink, KeyRound, Check, AlertTriangle,
-  ChevronLeft, ChevronRight, Star, TrendingUp, LogIn, LogOut as Out,
+  ChevronLeft, ChevronRight, Star, TrendingUp, LogIn, LogOut as Out, BellRing,
 } from "lucide-react";
 import { getFb } from "./fb";
 import { Field, Toggle } from "./ui";
-import { EXTRAS, today, addDays, nightsBetween, euro, fmtDate, quote, parse } from "../lib/settings";
+import { EXTRAS, today, addDays, nightsBetween, euro, fmtDate, quote, parse, unavailableSet } from "../lib/settings";
+import { bookLink } from "../lib/waitlist";
 import { api, hasApi } from "../lib/api";
 import { SITE } from "../data";
 import PhoneInput from "../components/PhoneInput";
@@ -328,6 +329,7 @@ export function GuideTab({ d, set, flash }) {
 /* ======================= DA FARE OGGI ======================= */
 export function TodoToday({ d, bookings }) {
   const [acc, setAcc] = useState([]);
+  const waitlist = useWaitlist();
   useEffect(() => onSnapshot(collection(db(), "guestAccess"), (s) => setAcc(s.docs.map((x) => x.data())), () => setAcc([])), []);
 
   const t = today();
@@ -346,7 +348,8 @@ export function TodoToday({ d, bookings }) {
 
   const arrivals = people.filter((p) => p.from === tomorrow || p.from === t);
   const departures = people.filter((p) => p.to === t || p.to === yesterday);
-  if (!arrivals.length && !departures.length) return null;
+  const wl = (waitlist || []).filter((w) => waitState(w, d) === "free");
+  if (!arrivals.length && !departures.length && !wl.length) return null;
 
   const link = (p) => (p.code ? guideUrl(p.code) : `${SITE.url}/#guida`);
   const arriveMsg = (p) => p.lang && p.lang !== "it"
@@ -368,6 +371,16 @@ export function TodoToday({ d, bookings }) {
             <span className="todo-ico in"><LogIn size={16} /></span>
             <div><b>{p.name}</b><span>arriva {p.from === t ? "oggi" : "domani"} · manda le istruzioni</span></div>
             {wa(p, arriveMsg(p)) ? <a className="adm-btn sm ok" href={wa(p, arriveMsg(p))} target="_blank" rel="noreferrer"><MessageCircle size={15} /> Invia</a> : <small>nessun numero</small>}
+          </li>
+        ))}
+        {wl.map((w) => (
+          <li key={`w${w.id}`}>
+            <span className="todo-ico wl"><BellRing size={16} /></span>
+            <div><b>{w.name}</b><span>aspettava {fmtDate(w.from, { day: "numeric", month: "short" })} → {fmtDate(w.to, { day: "numeric", month: "short" })}: ora sono libere</span></div>
+            <a className="adm-btn sm ok" href={`https://wa.me/${w.phone}?text=${encodeURIComponent(wlMsg(w))}`} target="_blank" rel="noreferrer"
+              onClick={() => updateDoc(doc(db(), "waitlist", w.id), { status: "notified", notifiedAt: new Date().toISOString() }).catch(() => {})}>
+              <MessageCircle size={15} /> Avvisa
+            </a>
           </li>
         ))}
         {departures.map((p) => (
@@ -576,5 +589,87 @@ export function ReviewsTab({ flash }) {
         </ul>
       </div>
     </>
+  );
+}
+
+/* ======================= LISTA D'ATTESA ======================= */
+
+export function useWaitlist() {
+  const [list, setList] = useState(null);
+  useEffect(() => onSnapshot(
+    collection(db(), "waitlist"),
+    (s) => setList(s.docs.map((x) => ({ id: x.id, ...x.data() })).sort((a, b) => String(a.from).localeCompare(String(b.from)))),
+    () => setList([]),
+  ), []);
+  return list;
+}
+
+// stato di ogni richiesta rispetto al calendario attuale (anche non ancora salvato)
+export function waitState(w, d) {
+  if (w.status === "notified") return "notified";
+  if (w.from < today()) return "expired";
+  const off = unavailableSet(d);
+  return nightsBetween(w.from, w.to).every((n) => !off.has(n)) ? "free" : "waiting";
+}
+
+const wlMsg = (w) => {
+  const first = String(w.name || "").split(" ")[0];
+  const range = `${fmtDate(w.from, { day: "numeric", month: "long" })} – ${fmtDate(w.to, { day: "numeric", month: "long" })}`;
+  const link = bookLink(SITE.url, w);
+  return w.lang && w.lang !== "it"
+    ? `Hi ${first}! Good news: the dates you were waiting for at Flori's Home (${range}) are now available. Book them here before someone else does: ${link}`
+    : `Ciao ${first}! Buone notizie: a Flori's Home si sono liberate le date che aspettavi (${range}). Prenotale qui prima che le prenda qualcun altro: ${link}`;
+};
+
+export function WaitlistBox({ d, flash }) {
+  const list = useWaitlist();
+  const [show, setShow] = useState("active");
+  const rows = (list || []).map((w) => ({ ...w, st: waitState(w, d) }));
+  const active = rows.filter((w) => w.st === "free" || w.st === "waiting");
+  const shown = show === "active" ? active : rows.filter((w) => w.st === "notified" || w.st === "expired");
+  const mark = async (w) => {
+    try { await updateDoc(doc(db(), "waitlist", w.id), { status: "notified", notifiedAt: new Date().toISOString() }); } catch { /* niente */ }
+  };
+  const remove = async (w) => {
+    if (!confirm(`Togliere ${w.name} dalla lista d'attesa?`)) return;
+    await deleteDoc(doc(db(), "waitlist", w.id)).catch(() => {});
+    flash("Tolto dalla lista d'attesa");
+  };
+  const free = active.filter((w) => w.st === "free").length;
+  const LABEL = { free: "Date libere!", waiting: "In attesa", notified: "Avvisato", expired: "Date passate" };
+  return (
+    <div className="adm-box wlist">
+      <div className="adm-box-head">
+        <div>
+          <h3>Lista d'attesa {free > 0 && <span className="wl-badge">{free} da avvisare</span>}</h3>
+          <p className="adm-hint">Chi ha trovato le date occupate e vuole essere avvisato. {hasApi() ? "Con il server attivo il messaggio parte da solo appena le notti si liberano (anche se si libera una prenotazione su Booking/Airbnb)." : "Quando sblocchi le notti la riga diventa verde: un tocco e parte il messaggio WhatsApp con il link per prenotare."}</p>
+        </div>
+        <div className="st-tabs">
+          <button className={show === "active" ? "on" : ""} onClick={() => setShow("active")}>Attive ({active.length})</button>
+          <button className={show === "old" ? "on" : ""} onClick={() => setShow("old")}>Archivio</button>
+        </div>
+      </div>
+      {list === null && <div className="adm-loading small"><span /></div>}
+      {list && !shown.length && <p className="adm-hint">Nessuno in lista.</p>}
+      <ul className="wl-list">
+        {shown.map((w) => (
+          <li key={w.id} className={`st-${w.st}`}>
+            <span className="wl-chip">{LABEL[w.st]}</span>
+            <div className="wl-who">
+              <b>{w.name}</b>
+              <span>{fmtDate(w.from, { day: "numeric", month: "short" })} → {fmtDate(w.to, { day: "numeric", month: "short" })} · {w.guests} ospiti · +{w.phone}{w.email ? ` · ${w.email}` : ""}</span>
+            </div>
+            <div className="gl-act">
+              {w.st === "free" && (
+                <a className="adm-btn sm ok" href={`https://wa.me/${w.phone}?text=${encodeURIComponent(wlMsg(w))}`} target="_blank" rel="noreferrer" onClick={() => mark(w)}>
+                  <MessageCircle size={15} /> Avvisa
+                </a>
+              )}
+              <button className="adm-icon-btn" onClick={() => remove(w)} title="Togli"><Trash2 size={15} /></button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

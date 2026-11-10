@@ -81,5 +81,17 @@ export function guestReview(b, url) {
   );
 }
 
+/** A chi era in lista d'attesa: le date si sono liberate */
+export function guestWaitlistFree(w, link) {
+  const stay = fmtStay(w);
+  if (T) return sendTemplate(w.phone, 'date_libere', [String(w.name).split(' ')[0], stay, link], [], L(w));
+  return sendText(
+    w.phone,
+    w.lang && w.lang !== 'it'
+      ? `Hi ${String(w.name).split(' ')[0]}! 🎉 Good news: the dates you were waiting for at ${env.property.name} (${stay}) are now available. Book them here before someone else does:\n${link}`
+      : `Ciao ${String(w.name).split(' ')[0]}! 🎉 Buone notizie: a ${env.property.name} si sono liberate le date che aspettavi (${stay}). Prenotale qui prima che le prenda qualcun altro:\n${link}`,
+  );
+}
+
 /** A te: risposta libera (mi hai appena scritto, quindi la finestra di 24h è aperta) */
 export const replyAdmin = (text) => sendText(env.admin.phone, text);

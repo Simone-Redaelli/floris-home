@@ -10,7 +10,7 @@ import { ADMIN_EMAIL, isConfigured } from "../lib/firebase-config";
 import { DOC_PATH, today, addDays, nightsBetween, euro, fmtDate, quote, normalize } from "../lib/settings";
 import { getFb } from "./fb";
 import { Head, Field, Toggle, Kpi } from "./ui";
-import { IcalBox, ExtrasBox, TaxBox, GuideTab, Stats, TodoToday, ReviewsTab } from "./more";
+import { IcalBox, ExtrasBox, TaxBox, GuideTab, Stats, TodoToday, ReviewsTab, WaitlistBox } from "./more";
 import Calendar from "../components/Calendar";
 import { api, hasApi } from "../lib/api";
 
@@ -453,6 +453,7 @@ function Availability({ d, set, user, flash }) {
         </div>
         <Calendar settings={d} mode="admin" onToggle={toggle} months={2} />
       </div>
+      <WaitlistBox d={d} flash={flash} />
       <IcalBox d={d} user={user} flash={flash} />
       <div className="adm-cols">
         <div className="adm-box">

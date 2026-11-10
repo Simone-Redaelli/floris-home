@@ -214,6 +214,12 @@ export default {
     thanks: (n) => `Dziękujemy${n ? `, ${n}` : ""}!`, thanksSub: "Twoja opinia dotarła: opublikujemy ją po krótkiej weryfikacji.",
     google: "Zostaw ją też w Google", back: "Wróć na stronę",
   },
+  wl: {
+    title: "Powiadom mnie, gdy się zwolnią", sub: (r) => `Te noce (${r}) są zajęte. Zostaw nam swój WhatsApp: jeśli się zwolnią, od razu napiszemy z linkiem do rezerwacji.`,
+    name: "Twoje imię", email: "E-mail (opcjonalnie)", consent: "Zgadzam się na kontakt wyłącznie w sprawie tych dat.",
+    cta: "Powiadom mnie", sending: "Zapisywanie…", err: "Nie udało się zapisać prośby, spróbuj ponownie.",
+    done: (n, r) => `Świetnie${n ? `, ${n}` : ""}! Jeśli noce ${r} się zwolnią, napiszemy na WhatsApp.`,
+  },
   mbar: { perNight: "/ noc", superb: "Znakomity", cta: "Wybierz daty" },
   cal: { wd: ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"], unavailable: "Niedostępne", perNight: "/ noc", prev: "Poprzedni miesiąc", next: "Następny miesiąc" },
 };

@@ -269,6 +269,12 @@ export default {
     thanks: (n) => `Thank you${n ? `, ${n}` : ""}!`, thanksSub: "Your review has arrived: we'll publish it after a quick check.",
     google: "Leave it on Google too", back: "Back to the website",
   },
+  wl: {
+    title: "Notify me if they free up", sub: (r) => `Those nights (${r}) are taken. Leave us your WhatsApp: if they free up we'll message you right away with a link to book them.`,
+    name: "Your name", email: "Email (optional)", consent: "I agree to be contacted only about these dates.",
+    cta: "Notify me if they free up", sending: "Saving…", err: "Couldn't save your request, please try again.",
+    done: (n, r) => `Great${n ? `, ${n}` : ""}! If ${r} becomes available we'll message you on WhatsApp.`,
+  },
   mbar: { perNight: "/ night", superb: "Superb", cta: "Pick dates" },
   cal: { wd: ["M", "T", "W", "T", "F", "S", "S"], unavailable: "Not available", perNight: "/ night", prev: "Previous month", next: "Next month" },
 };

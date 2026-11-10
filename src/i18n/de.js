@@ -269,6 +269,12 @@ export default {
     thanks: (n) => `Danke${n ? `, ${n}` : ""}!`, thanksSub: "Deine Bewertung ist angekommen: Wir veröffentlichen sie nach einer kurzen Prüfung.",
     google: "Auch auf Google bewerten", back: "Zurück zur Website",
   },
+  wl: {
+    title: "Benachrichtige mich, wenn frei", sub: (r) => `Diese Nächte (${r}) sind belegt. Hinterlass uns deine WhatsApp-Nummer: Werden sie frei, schreiben wir dir sofort mit dem Buchungslink.`,
+    name: "Dein Name", email: "E-Mail (optional)", consent: "Ich bin einverstanden, nur wegen dieser Daten kontaktiert zu werden.",
+    cta: "Benachrichtige mich", sending: "Speichern…", err: "Die Anfrage konnte nicht gespeichert werden, bitte erneut versuchen.",
+    done: (n, r) => `Perfekt${n ? `, ${n}` : ""}! Werden ${r} frei, schreiben wir dir auf WhatsApp.`,
+  },
   mbar: { perNight: "/ Nacht", superb: "Hervorragend", cta: "Daten wählen" },
   cal: { wd: ["M", "D", "M", "D", "F", "S", "S"], unavailable: "Nicht verfügbar", perNight: "/ Nacht", prev: "Vorheriger Monat", next: "Nächster Monat" },
 };

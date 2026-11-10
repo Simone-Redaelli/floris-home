@@ -18,6 +18,7 @@ import { HandTitle, Handwrite, Magnetic, KeyDone, TransferMap } from "./Fx";
 import { Approx } from "../lib/fx";
 import { fetchApprovedReviews } from "../lib/reviews";
 import PhoneInput from "./PhoneInput";
+import Waitlist from "./Waitlist";
 import { Polaroids, Skyline, Trail, Sticker } from "./Wow";
 
 export function Head({ kicker, title, sub, center }) {
@@ -555,6 +556,9 @@ export function Booking() {
                 </motion.div>
               </AnimatePresence>
             )}
+            <AnimatePresence>
+              {step === 0 && q.status === "unavailable" && <Waitlist key={`${from}-${to}`} from={from} to={to} guests={guests} />}
+            </AnimatePresence>
 
             <AnimatePresence>
               {valid && (

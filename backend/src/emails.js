@@ -3,7 +3,7 @@ import { env } from './env.js';
 import { guideLink, prettyCode } from './guide.js';
 import { fmtDayLong, euro, guestsLabel, transferLine, extrasLine, escapeHtml as h } from './format.js';
 
-function layout({ title, intro, rows, button, footer }) {
+export function layout({ title, intro, rows, button, footer }) {
   const rowsHtml = rows
     .map(([k, v]) => `
       <tr>

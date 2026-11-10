@@ -110,6 +110,11 @@ Buon viaggio!
 Ciao {{1}}, grazie di essere stato/a nostro ospite a Flori's Home! Se ti sei trovato/a bene, ci lasci una recensione? Ci aiuta tantissimo: {{2}}
 ```
 
+**`date_libere`** (lista d'attesa: parte da solo quando le notti richieste tornano libere)
+```
+Ciao {{1}}! Buone notizie: a Flori's Home si sono liberate le date che aspettavi ({{2}}). Prenotale qui prima che le prenda qualcun altro: {{3}}
+```
+
 **Ospiti stranieri:** puoi creare gli stessi template anche in inglese (o altre lingue) con lo **stesso nome** e scriverle in `WA_TEMPLATE_LANGS=it,en`: ognuno riceve i messaggi nella lingua in cui ha usato il sito.
 
 Finché i template non sono approvati puoi provare con `WA_USE_TEMPLATES=false` (funziona solo se hai scritto al numero nelle ultime 24 ore).
