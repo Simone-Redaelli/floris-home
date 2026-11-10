@@ -40,8 +40,8 @@ export const DEFAULTS = {
 
 /* Servizi extra (stesso elenco del sito) */
 export const EXTRAS = [
-  { id: 'cot', unit: 'stay', it: 'Lettino' },
-  { id: 'highchair', unit: 'stay', it: 'Seggiolone' },
+  { id: 'cot', unit: 'stay', it: 'Lettino', free: true },
+  { id: 'highchair', unit: 'stay', it: 'Seggiolone', free: true },
   { id: 'earlyIn', unit: 'stay', it: 'Check-in anticipato' },
   { id: 'lateOut', unit: 'stay', it: 'Check-out posticipato' },
   { id: 'ac', unit: 'night', it: 'Aria condizionata' },
@@ -110,7 +110,7 @@ export function quote({ from, to, guests = 1, adults, transfer = false, extras =
   const ex = s.extras || DEFAULTS.extras;
   const extraLines = nights.length
     ? EXTRAS.filter((e) => extras.includes(e.id) && ex[e.id]?.enabled).map((e) => {
-        const price = Number(ex[e.id].price) || 0;
+        const price = e.free ? 0 : Number(ex[e.id].price) || 0;
         const qty = e.unit === 'person' ? g : e.unit === 'night' ? nights.length : 1;
         return { id: e.id, name: e.it, qty, price, amount: price * qty };
       })

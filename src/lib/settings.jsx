@@ -50,8 +50,8 @@ export const DEFAULTS = {
 
 /* Servizi extra: unit "stay" = una volta a soggiorno, "night" = per ogni notte, "person" = per ogni ospite */
 export const EXTRAS = [
-  { id: "cot", unit: "stay" },
-  { id: "highchair", unit: "stay" },
+  { id: "cot", unit: "stay", free: true },        // sempre gratis
+  { id: "highchair", unit: "stay", free: true },  // sempre gratis
   { id: "earlyIn", unit: "stay" },
   { id: "lateOut", unit: "stay" },
   { id: "ac", unit: "night" },
@@ -67,7 +67,7 @@ export const cancelDeadline = (from, s) => (from ? addDays(from, -(Number(s.canc
 /* unisce i valori salvati con i predefiniti (anche dentro "extras") */
 export function normalize(raw = {}) {
   const s = { ...DEFAULTS, ...raw };
-  s.extras = Object.fromEntries(EXTRAS.map(({ id }) => [id, { ...DEFAULTS.extras[id], ...(raw.extras?.[id] || {}) }]));
+  s.extras = Object.fromEntries(EXTRAS.map(({ id, free }) => [id, { ...DEFAULTS.extras[id], ...(raw.extras?.[id] || {}), ...(free ? { price: 0 } : {}) }]));
   return s;
 }
 
@@ -128,7 +128,7 @@ export function quote(from, to, s, opts = {}) {
   const ex = s.extras || DEFAULTS.extras;
   const extras = nights.length
     ? EXTRAS.filter((e) => (opts.extras || []).includes(e.id) && ex[e.id]?.enabled).map((e) => {
-        const price = Number(ex[e.id].price) || 0;
+        const price = e.free ? 0 : Number(ex[e.id].price) || 0;
         const qty = e.unit === "person" ? guests : e.unit === "night" ? nights.length : 1;
         return { id: e.id, unit: e.unit, price, qty, amount: price * qty };
       })

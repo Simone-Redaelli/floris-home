@@ -151,7 +151,7 @@ export function ExtrasBox({ d, set }) {
           <div key={e.id} className={`ex-arow ${ex[e.id]?.enabled ? "" : "off"}`}>
             <Toggle on={ex[e.id]?.enabled !== false} onChange={(v) => upd(e.id, { enabled: v })} />
             <b>{EXTRA_LABEL[e.id][0]}</b>
-            <Field label="Prezzo" prefix="€" type="number" value={ex[e.id]?.price} onChange={(v) => upd(e.id, { price: v })} />
+            {e.free ? <span className="ex-free">Gratis</span> : <Field label="Prezzo" prefix="€" type="number" value={ex[e.id]?.price} onChange={(v) => upd(e.id, { price: v })} />}
             <small>{EXTRA_LABEL[e.id][1]}</small>
           </div>
         ))}
