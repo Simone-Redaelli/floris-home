@@ -113,7 +113,7 @@ export default {
     extraGuest: (c, inc, p) => `Cena dla ${n(c, "gościa", "gości", "gości")}: cena podstawowa do ${inc} osób, +${p}% za noc za każdą dodatkową osobę.`,
     cancelUntil: (d, c) => `Bezpłatne anulowanie do ${d} (${c} dni przed przyjazdem). Później rezerwacji nie można anulować.`,
     cancelNo: (c) => `Do przyjazdu zostało mniej niż ${c} dni: tej rezerwacji nie będzie można anulować.`,
-    exTitle: "Usługi dodatkowe", exSub: "Dodaj je teraz, a wszystko przygotujemy na Twój przyjazd.",
+    exTitle: "Usługi dodatkowe", exSub: "Dodaj je teraz, a wszystko przygotujemy na Twój przyjazd. Płatne gotówką przy przyjeździe.",
     ex: {
       cot: { t: "Łóżeczko", s: "Łóżeczko dla dziecka, gratis" },
       highchair: { t: "Krzesełko do karmienia", s: "Do posiłków w kuchni, gratis" },
@@ -121,6 +121,7 @@ export default {
       lateOut: { t: "Późniejsze wymeldowanie", s: "Do 13:00, po potwierdzeniu" },
       ac: { t: "Klimatyzacja", s: "Na cały pobyt" },
     },
+    cashPay: (x, ex, tax) => `W tym ${x} płatne gotówką przy przyjeździe: ${[ex && "usługi dodatkowe", tax && "opłata miejscowa (niepełnoletni zwolnieni)"].filter(Boolean).join(" i ")}.`,
     tax: "Opłata miejscowa",
     taxNote: (r, c, k) => `${r}% za noc za osobę dorosłą, maks. ${c}${Number(k) ? `, pierwsze ${k} nocy` : ""}`,
     taxPay: (x) => `Suma zawiera ${x} miejskiej opłaty miejscowej, płatnej przy przyjeździe. Osoby niepełnoletnie są zwolnione.`,

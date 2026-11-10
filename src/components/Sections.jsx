@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import {
   ArrowUpRight, X, ChevronLeft, ChevronRight, Plus, Minus, MessageCircle, Mail, Navigation, Star,
   Maximize2, BedDouble, Users, Ruler, Check, Plane, Landmark, Theater, Trophy, Castle, Building2, Phone,
-  IdCard, BookOpen, Car, ShieldCheck, Baby, Utensils, Sunrise, Sunset, Snowflake, CalendarX2, PawPrint,
+  IdCard, BookOpen, Car, ShieldCheck, Baby, Utensils, Sunrise, Sunset, Snowflake, CalendarX2, PawPrint, Banknote,
 } from "lucide-react";
 import { COUNTRIES, DOC_TYPES, ageOf } from "../lib/countries";
 import { P, CITY, SITE, GALLERY, AMENITIES, PLACES, SCORES, FAQ, AUDIENCE, TOUR } from "../data";
@@ -287,7 +287,7 @@ export function Booking() {
         `Ciao! Sono ${fullName || "interessato/a"} e vorrei soggiornare a Flori's Home dal ${fmtDate(from)} al ${fmtDate(to)} (${q.nights.length} notti), ${guests} ospiti${form.pet ? ` + un animale (${euro(q.petFee)})` : ""}.`,
         tfOn ? `Vorrei anche il transfer dall'aeroporto di Orio al Serio${form.arrivalTime ? ` (arrivo ${form.arrivalTime}${form.flight ? `, volo ${form.flight}` : ""})` : ""}.` : null,
         q.extras.length ? `Servizi extra: ${q.extras.map((e) => `${EXTRA_IT[e.id]}${e.qty > 1 ? ` ×${e.qty}` : ""} (${euro(e.amount)})`).join(", ")}.` : null,
-        `Totale stimato ${euro(q.total)}${q.tax ? ` (di cui ${euro(q.tax)} di tassa di soggiorno)` : ""}. È disponibile?`,
+        `Totale stimato ${euro(q.total)}${q.extrasTotal + q.tax > 0 ? ` (di cui ${euro(q.extrasTotal + q.tax)} in contanti all'arrivo: ${[q.extrasTotal && "servizi extra", q.tax && `tassa di soggiorno ${euro(q.tax)}`].filter(Boolean).join(" e ")})` : ""}. È disponibile?`,
         Number(s.cancelDays) > 0 ? `Ho letto che la cancellazione è gratuita fino a ${s.cancelDays} giorni prima dell'arrivo.` : null,
         form.email ? `Email: ${form.email}` : null,
         form.notes ? `Note: ${form.notes}` : null,
@@ -559,7 +559,9 @@ export function Booking() {
                     </div>
                   )}
                   <div className="tot"><span>{k.total}</span><motion.b key={q.total} initial={{ scale: 1.15 }} animate={{ scale: 1 }}>{euro(q.total)}</motion.b></div>
-                  {q.tax > 0 && <small className="tax-pay">{k.taxPay(euro(q.tax))}</small>}
+                  {q.extrasTotal + q.tax > 0 && (
+                    <div className="cash-note"><Banknote size={15} /><span>{k.cashPay(euro(q.extrasTotal + q.tax), q.extrasTotal > 0, q.tax > 0)}</span></div>
+                  )}
                   {Number(s.cancelDays) > 0 && (
                     <div className="cancel-note">
                       <CalendarX2 size={15} />

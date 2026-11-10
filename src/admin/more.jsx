@@ -145,7 +145,7 @@ export function ExtrasBox({ d, set }) {
   return (
     <div className="adm-box">
       <h3>Servizi extra</h3>
-      <p className="adm-hint">L'ospite li aggiunge alla richiesta come il transfer. Prezzo 0 = gratis. Check-in anticipato e check-out posticipato li confermi tu insieme alla prenotazione.</p>
+      <p className="adm-hint">L'ospite li aggiunge alla richiesta come il transfer e li paga in contanti all'arrivo. Lettino e seggiolone sono sempre gratis. Check-in anticipato e check-out posticipato li confermi tu insieme alla prenotazione.</p>
       <div className="ex-admin">
         {EXTRAS.map((e) => (
           <div key={e.id} className={`ex-arow ${ex[e.id]?.enabled ? "" : "off"}`}>

@@ -168,7 +168,7 @@ export default {
     extraGuest: (n, inc, p) => `Precio para ${n} huéspedes: precio base hasta ${inc}, +${p}% por noche por cada huésped adicional.`,
     cancelUntil: (d, n) => `Cancelación gratuita hasta el ${d} (${n} días antes de la llegada). Después ya no se puede cancelar.`,
     cancelNo: (n) => `Faltan menos de ${n} días para la llegada: esta reserva no se podrá cancelar.`,
-    exTitle: "Servicios extra", exSub: "Añádelos ahora y lo tendremos todo listo a tu llegada.",
+    exTitle: "Servicios extra", exSub: "Añádelos ahora y lo tendremos todo listo a tu llegada. Se pagan en efectivo a la llegada.",
     ex: {
       cot: { t: "Cuna", s: "Cuna para los más pequeños, gratis" },
       highchair: { t: "Trona", s: "Para las comidas en la cocina, gratis" },
@@ -176,6 +176,7 @@ export default {
       lateOut: { t: "Check-out tardío", s: "Hasta las 13:00, previa confirmación" },
       ac: { t: "Aire acondicionado", s: "Para toda la estancia" },
     },
+    cashPay: (x, ex, tax) => `De los cuales ${x} se pagan en efectivo a la llegada: ${[ex && "servicios extra", tax && "tasa turística (menores exentos)"].filter(Boolean).join(" y ")}.`,
     tax: "Tasa turística",
     taxNote: (r, c, n) => `${r}% por noche y adulto, máx. ${c}${Number(n) ? `, primeras ${n} noches` : ""}`,
     taxPay: (x) => `El total incluye ${x} de tasa turística municipal, a pagar a la llegada. Los menores están exentos.`,
