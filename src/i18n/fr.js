@@ -229,6 +229,7 @@ export default {
     cta: "Vérifier la disponibilité", contacts: "Contact", explore: "Explorer", copy: "Appartement de vacances", photos: "Photos de la ville : Unsplash",
   },
   guide: {
+    cdDays: (n) => `jours avant votre arrivée à Bergame`, cdTomorrow: "C'est demain ! À bientôt à Bergame.", cdToday: (ci) => `C'est aujourd'hui ! Nous vous attendons dès ${String(ci).split(/[–-]/)[0].trim()}.`, cdStay: (d, n) => `Jour ${d} sur ${n} : profitez de Bergame !`, cdAfter: "Merci d'avoir séjourné chez nous : revenez vite !",
     title: "Guide de la maison", welcome1: "Bienvenue", welcome2: "chez vous",
     hello: (n) => `Bonjour ${n},`, helloEm: "bienvenue !",
     sub: "Tout ce qu'il vous faut pendant le séjour, au même endroit.",
@@ -251,6 +252,7 @@ export default {
     notes: "Notes de l'hôte", around: "Que faire aux alentours", aroundSub: "Ville Haute, lacs, thermes et nos expériences préférées, réservables en ligne.", aroundCta: "Voir les activités",
     enjoy: "Bon séjour à Bergame !", back: "Retour au site",
   },
+  wx: { today: "Aujourd'hui à Bergame", kinds: { clear: "dégagé", cloudy: "nuageux", fog: "brouillard", rain: "pluie", snow: "neige", storm: "orage" } },
   mbar: { perNight: "/ nuit", superb: "Exceptionnel", cta: "Choisir les dates" },
   cal: { wd: ["L", "M", "M", "J", "V", "S", "D"], unavailable: "Indisponible", perNight: "/ nuit", prev: "Mois précédent", next: "Mois suivant" },
 };

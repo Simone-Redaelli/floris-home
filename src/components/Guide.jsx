@@ -10,6 +10,7 @@ import { fetchGuide } from "../lib/guide";
 import { SITE } from "../data";
 import { LangSwitch } from "./Chrome";
 import { EASE } from "./ui";
+import { Handwrite, Countdown } from "./Fx";
 
 const KEY = "floris-guide";
 const clean = (c) => String(c || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
@@ -109,11 +110,12 @@ export default function Guide() {
       <section className="gd-hero">
         <motion.span className="kicker" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>{g.title}</motion.span>
         <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
-          {unlocked ? <>{g.hello(data.name)} <em>{g.helloEm}</em></> : <>{g.welcome1} <em>{g.welcome2}</em></>}
+          {unlocked ? <>{g.hello(data.name)} <em><Handwrite key="h" text={g.helloEm} delay={0.4} /></em></> : <>{g.welcome1} <em><Handwrite key="w" text={g.welcome2} delay={0.4} /></em></>}
         </motion.h1>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
           {unlocked ? g.stay(L(data.from), L(data.to)) : g.sub}
         </motion.p>
+        {unlocked && <Countdown from={data.from} to={data.to} checkIn={s.checkIn} />}
         <div className="gd-chips">
           <span><Clock size={15} /> {g.checkIn} <b>{s.checkIn}</b></span>
           <span><DoorOpen size={15} /> {g.checkOut} <b>{s.checkOut}</b></span>

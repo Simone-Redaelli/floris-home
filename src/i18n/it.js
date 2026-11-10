@@ -229,6 +229,7 @@ export default {
     cta: "Verifica disponibilità", contacts: "Contatti", explore: "Esplora", copy: "Appartamento ad uso turistico", photos: "Foto città: Unsplash",
   },
   guide: {
+    cdDays: (n) => `giorni al tuo arrivo a Bergamo`, cdTomorrow: "Domani si parte! Ti aspettiamo a Bergamo.", cdToday: (ci) => `È oggi! Ti aspettiamo dalle ${String(ci).split(/[–-]/)[0].trim()}.`, cdStay: (d, n) => `Giorno ${d} di ${n}: goditi Bergamo!`, cdAfter: "Grazie di essere stato nostro ospite: torna presto!",
     title: "Guida della casa", welcome1: "Benvenuto", welcome2: "a casa",
     hello: (n) => `Ciao ${n},`, helloEm: "benvenuto!",
     sub: "Tutto quello che ti serve durante il soggiorno, in un posto solo.",
@@ -251,6 +252,7 @@ export default {
     notes: "Note dell'host", around: "Cosa fare nei dintorni", aroundSub: "Città Alta, laghi, terme e le nostre esperienze preferite, prenotabili online.", aroundCta: "Scopri le attività",
     enjoy: "Buon soggiorno a Bergamo!", back: "Torna al sito",
   },
+  wx: { today: "Oggi a Bergamo", kinds: { clear: "sereno", cloudy: "nuvoloso", fog: "nebbia", rain: "pioggia", snow: "neve", storm: "temporale" } },
   mbar: { perNight: "/ notte", superb: "Superbo", cta: "Scegli le date" },
   cal: { wd: ["L", "M", "M", "G", "V", "S", "D"], unavailable: "Non disponibile", perNight: "/ notte", prev: "Mese precedente", next: "Mese successivo" },
 };

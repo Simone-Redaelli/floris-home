@@ -4,6 +4,7 @@ import { BellRing, ChevronsRight } from "lucide-react";
 import { P } from "../data";
 import { Img, EASE } from "./ui";
 import { useLang } from "../i18n";
+import { Handwrite } from "./Fx";
 
 /* Pianta in vaso disegnata in SVG */
 function Plant({ className, flip }) {
@@ -99,11 +100,18 @@ export default function Door({ onReveal, onDone }) {
             {d.eyebrow}
           </motion.span>
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.35, ease: EASE }}>
-            {d.title1} <em>{d.title2}</em>
+            {d.title1} <em><Handwrite text={d.title2} delay={0.9} speed={0.08} /></em>
           </motion.h1>
         </motion.div>
 
         <motion.div className="door-scene" style={{ scale: sceneScale, y: sceneY }}>
+          <motion.div className="door-wins" style={{ opacity: decoO }}>
+            {["l", "r"].map((side) => (
+              <span key={side} className={`door-win ${side}`}>
+                <i className="glass" /><i className="glow" /><i className="mull-v" /><i className="mull-h" /><i className="curtain" />
+              </span>
+            ))}
+          </motion.div>
           <motion.div className="lamp" style={{ opacity: decoO }}>
             <span className="lamp-arm" /><span className="lamp-glass" /><span className="lamp-glow" />
           </motion.div>

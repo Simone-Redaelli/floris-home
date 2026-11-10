@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "fra
 import { Hand, Plane, MapPin, ArrowUpRight } from "lucide-react";
 import { P, AUDIENCE } from "../data";
 import { useLang } from "../i18n";
+import { Handwrite, SkyDecor } from "./Fx";
 import { Img, Counter, Reveal, EASE } from "./ui";
 
 const isTouch = () => typeof window !== "undefined" && window.matchMedia("(hover: none)").matches;
@@ -116,7 +117,7 @@ export function Polaroids({ onOpen }) {
         <div className="pol-head">
           <Reveal className="head">
             <span className="kicker">{c.kicker}</span>
-            <h2>{c.title1} <em>{c.title2}</em></h2>
+            <h2>{c.title1} <em><Handwrite text={c.title2} /></em></h2>
             <p>{c.sub}</p>
           </Reveal>
           <Reveal className="pol-hint" delay={0.2}><Hand size={18} /> {isTouch() ? c.hintTouch : c.hintDrag}</Reveal>
@@ -169,7 +170,7 @@ export function Stack() {
       <div className="wrap">
         <Reveal className="head center">
           <span className="kicker">{t.stack.kicker}</span>
-          <h2>{t.stack.title1} <em>{t.stack.title2}</em></h2>
+          <h2>{t.stack.title1} <em><Handwrite text={t.stack.title2} /></em></h2>
         </Reveal>
         <div className="stack" ref={ref}>
           {items.map((a, i) => <StackCard key={i} a={a} i={i} n={items.length} p={p} />)}
@@ -186,6 +187,7 @@ const FLIGHT = "M40 60 C 300 10, 520 120, 760 70 S 1150 20, 1240 150";
 export function Skyline() {
   const { t } = useLang();
   const ref = useRef(null);
+  const skyRef = useRef(null);
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start 0.9", "end 0.3"] });
   const s = useSpring(p, { stiffness: 80, damping: 24 });
   const draw = useTransform(s, [0, 0.6], [0, 1]);
@@ -195,8 +197,9 @@ export function Skyline() {
   return (
     <div className="skyline" ref={ref} aria-hidden="true">
       <svg viewBox="0 0 1300 220" preserveAspectRatio="xMidYMax meet">
+        <SkyDecor pathRef={skyRef} />
         <motion.path d={FLIGHT} className="flight" style={{ pathLength: trail }} />
-        <motion.path d={SKY} className="sky" style={{ pathLength: draw }} />
+        <motion.path ref={skyRef} d={SKY} className="sky" style={{ pathLength: draw }} />
       </svg>
       <motion.div className="plane" style={{ offsetPath: `path('${FLIGHT}')`, offsetDistance: fly }}>
         <Plane size={22} />

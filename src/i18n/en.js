@@ -229,6 +229,7 @@ export default {
     cta: "Check availability", contacts: "Contact", explore: "Explore", copy: "Holiday apartment", photos: "City photos: Unsplash",
   },
   guide: {
+    cdDays: (n) => `days until you arrive in Bergamo`, cdTomorrow: "Tomorrow's the day! See you in Bergamo.", cdToday: (ci) => `It's today! We're expecting you from ${String(ci).split(/[–-]/)[0].trim()}.`, cdStay: (d, n) => `Day ${d} of ${n}: enjoy Bergamo!`, cdAfter: "Thank you for staying with us: come back soon!",
     title: "House guide", welcome1: "Welcome", welcome2: "home",
     hello: (n) => `Hi ${n},`, helloEm: "welcome!",
     sub: "Everything you need during your stay, all in one place.",
@@ -251,6 +252,7 @@ export default {
     notes: "Notes from your host", around: "Things to do nearby", aroundSub: "Upper Town, lakes, spas and our favourite experiences, bookable online.", aroundCta: "Discover activities",
     enjoy: "Enjoy your stay in Bergamo!", back: "Back to the website",
   },
+  wx: { today: "Today in Bergamo", kinds: { clear: "clear", cloudy: "cloudy", fog: "fog", rain: "rain", snow: "snow", storm: "storm" } },
   mbar: { perNight: "/ night", superb: "Superb", cta: "Pick dates" },
   cal: { wd: ["M", "T", "W", "T", "F", "S", "S"], unavailable: "Not available", perNight: "/ night", prev: "Previous month", next: "Next month" },
 };

@@ -14,13 +14,14 @@ import Calendar from "./Calendar";
 import { Img, Reveal, Counter, Icon, EASE } from "./ui";
 import { useLinks } from "./Chrome";
 import { useLang } from "../i18n";
+import { HandTitle, Handwrite, Magnetic, KeyDone } from "./Fx";
 import { Polaroids, Skyline, Trail, Sticker } from "./Wow";
 
 export function Head({ kicker, title, sub, center }) {
   return (
     <Reveal className={`head ${center ? "center" : ""}`}>
       <span className="kicker">{kicker}</span>
-      <h2 dangerouslySetInnerHTML={{ __html: title }} />
+      <h2><HandTitle html={title} /></h2>
       {sub && <p>{sub}</p>}
     </Reveal>
   );
@@ -486,7 +487,7 @@ export function Booking() {
 
               {step === 2 && (
                 <motion.div key="done" className="done-box" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                  <motion.div className="done-ico" initial={{ scale: 0, rotate: -40 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.15 }}><Check size={34} /></motion.div>
+                  <KeyDone />
                   <h3>{done?.viaWhatsApp ? k.almost : k.sent}</h3>
                   {done?.viaWhatsApp ? (
                     <p>{k.waDone1} <b>{k.waDone2}</b> {k.waDone3} <a href={`https://wa.me/${s.whatsapp}?text=${encodeURIComponent(waMsg)}`} target="_blank" rel="noreferrer">{k.waNotOpen}</a></p>
@@ -575,14 +576,18 @@ export function Booking() {
             </AnimatePresence>
 
             {step === 0 && (
-              <button className={`btn ${valid ? "" : "off"}`} onClick={() => valid && setStep(1)}>
-                {k.cont} <ArrowUpRight size={18} />
-              </button>
+              <Magnetic strength={0.12} className="block">
+                <button className={`btn ${valid ? "" : "off"}`} onClick={() => valid && setStep(1)}>
+                  {k.cont} <ArrowUpRight size={18} />
+                </button>
+              </Magnetic>
             )}
             {step === 1 && (
-              <button className={`btn ${valid && formOk && !sending ? "" : "off"}`} onClick={submit}>
-                {sending ? k.sending : <><MessageCircle size={18} /> {hasApi() ? k.send : k.sendWa}</>}
-              </button>
+              <Magnetic strength={0.12} className="block">
+                <button className={`btn ${valid && formOk && !sending ? "" : "off"}`} onClick={submit}>
+                  {sending ? k.sending : <><MessageCircle size={18} /> {hasApi() ? k.send : k.sendWa}</>}
+                </button>
+              </Magnetic>
             )}
             <p className="fine">{k.fine(euro(s.deposit))}</p>
           </Reveal>
@@ -650,9 +655,9 @@ export function Footer() {
         <Reveal>
           <Trail className="foot-cta">
             <span className="trail-hint">{f.hint}</span>
-            <h2>{f.title1} <em>{f.title2}</em></h2>
+            <h2>{f.title1} <em><Handwrite text={f.title2} /></em></h2>
             <p>{f.sub}</p>
-            <a href="#prenota" className="btn light">{f.cta} <ArrowUpRight size={18} /></a>
+            <Magnetic strength={0.3}><a href="#prenota" className="btn light">{f.cta} <ArrowUpRight size={18} /></a></Magnetic>
           </Trail>
         </Reveal>
         <div className="foot-grid">

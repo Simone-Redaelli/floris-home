@@ -229,6 +229,7 @@ export default {
     cta: "Verfügbarkeit prüfen", contacts: "Kontakt", explore: "Entdecken", copy: "Ferienwohnung", photos: "Stadtfotos: Unsplash",
   },
   guide: {
+    cdDays: (n) => `Tage bis zu deiner Ankunft in Bergamo`, cdTomorrow: "Morgen geht's los! Bis bald in Bergamo.", cdToday: (ci) => `Heute ist es so weit! Wir erwarten dich ab ${String(ci).split(/[–-]/)[0].trim()} Uhr.`, cdStay: (d, n) => `Tag ${d} von ${n}: genieß Bergamo!`, cdAfter: "Danke, dass du bei uns warst: komm bald wieder!",
     title: "Hausguide", welcome1: "Willkommen", welcome2: "zu Hause",
     hello: (n) => `Hallo ${n},`, helloEm: "willkommen!",
     sub: "Alles, was du während deines Aufenthalts brauchst – an einem Ort.",
@@ -251,6 +252,7 @@ export default {
     notes: "Hinweise vom Gastgeber", around: "Was man in der Nähe erleben kann", aroundSub: "Oberstadt, Seen, Thermen und unsere Lieblingserlebnisse – online buchbar.", aroundCta: "Erlebnisse entdecken",
     enjoy: "Schöne Zeit in Bergamo!", back: "Zurück zur Website",
   },
+  wx: { today: "Heute in Bergamo", kinds: { clear: "klar", cloudy: "bewölkt", fog: "Nebel", rain: "Regen", snow: "Schnee", storm: "Gewitter" } },
   mbar: { perNight: "/ Nacht", superb: "Hervorragend", cta: "Daten wählen" },
   cal: { wd: ["M", "D", "M", "D", "F", "S", "S"], unavailable: "Nicht verfügbar", perNight: "/ Nacht", prev: "Vorheriger Monat", next: "Nächster Monat" },
 };

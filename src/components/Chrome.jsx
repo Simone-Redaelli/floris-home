@@ -6,6 +6,7 @@ import { useSettings, euro } from "../lib/settings";
 import { scrollToId } from "../lib/booking";
 import { EASE } from "./ui";
 import { useLang, LANGS } from "../i18n";
+import { Magnetic } from "./Fx";
 
 /* ---------------- SCROLL FLUIDO ---------------- */
 export function useSmoothScroll() {
@@ -111,7 +112,7 @@ export function Nav() {
           {LINKS.map(([l, h]) => <a key={h} href={h}>{l}</a>)}
         </nav>
         <LangSwitch />
-        <a href="#prenota" className="nav-cta">{t.nav.book}</a>
+        <Magnetic strength={0.35}><a href="#prenota" className="nav-cta">{t.nav.book}</a></Magnetic>
         <button className="burger" onClick={() => setOpen(true)} aria-label={t.nav.menu}><Menu size={22} /></button>
       </motion.header>
 

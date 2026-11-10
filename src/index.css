@@ -75,7 +75,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var
 .menu-close { position: absolute; top: 22px; right: 22px; width: 48px; height: 48px; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: var(--shadow); }
 
 /* ---------- HERO ---------- */
-.hero { position: relative; padding: 128px 0 40px; overflow: hidden; min-height: 100svh; display: flex; flex-direction: column; }
+.hero { position: relative; padding: 128px 0 40px; overflow: hidden; min-height: 100svh; display: flex; flex-direction: column; isolation: isolate; }
 .hero-bg { position: absolute; inset: 0; z-index: -1; background:
   radial-gradient(600px 400px at 12% 20%, rgba(127,146,124,.18), transparent 70%),
   radial-gradient(700px 500px at 88% 12%, rgba(181,121,74,.16), transparent 70%),
@@ -1237,3 +1237,131 @@ html.intro-on .nav, html.intro-on .progress, html.intro-on .mbar { opacity: 0; p
 .bs-pet span { display: grid; gap: 1px; } .bs-pet small { font-size: .76rem; color: var(--dim); font-weight: 500; }
 .cash-note { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; background: #fff6ec; color: var(--gold-d); font-size: .8rem; line-height: 1.45; font-weight: 600; }
 .cash-note svg { flex-shrink: 0; margin-top: 1px; }
+
+/* =================== LUCE DI BERGAMO (fasi del giorno) =================== */
+.hero-bg::after { content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity 1.6s ease, background 1.6s ease; pointer-events: none; }
+html[data-phase="morning"] .hero-bg::after { opacity: 1; background: linear-gradient(180deg, rgba(255,200,150,.5), rgba(255,230,205,.22) 40%, transparent 70%); }
+html[data-phase="sunset"] .hero-bg::after { opacity: 1; background: linear-gradient(180deg, rgba(240,120,80,.48), rgba(255,170,115,.3) 32%, rgba(255,214,180,.12) 58%, transparent 80%); }
+html[data-phase="night"] .hero-bg::after { opacity: 1; background: linear-gradient(180deg, rgba(40,46,96,.5), rgba(96,92,160,.22) 38%, rgba(140,130,190,.06) 62%, transparent 78%); }
+
+/* porta d'ingresso: muro e finestre cambiano con l'ora */
+.door-wins { position: absolute; inset: 0; pointer-events: none; }
+.door-win { position: absolute; top: 6%; width: 50%; height: 44%; border-radius: 999px 999px 6px 6px / 120px 120px 6px 6px; overflow: hidden; background: #efe3d3; box-shadow: 0 0 0 7px #e7d7c2, 0 24px 40px -24px rgba(90,60,32,.5); }
+.door-win.l { right: calc(100% + 40%); } .door-win.r { left: calc(100% + 40%); }
+.door-win .glass { position: absolute; inset: 6px; border-radius: inherit; background: linear-gradient(180deg, #d6ebf7, #f1f7fb); transition: background 1.2s; }
+.door-win .glow { position: absolute; inset: 6px; border-radius: inherit; opacity: 0; background: radial-gradient(circle at 50% 70%, #fff1c9, #ffcc73 55%, #f3a64a); transition: opacity 1.2s; }
+.door-win .mull-v { position: absolute; top: 0; bottom: 0; left: 50%; width: 5px; translate: -50% 0; background: #e7d7c2; }
+.door-win .mull-h { position: absolute; left: 0; right: 0; top: 52%; height: 5px; background: #e7d7c2; }
+.door-win .curtain { position: absolute; inset: 6px 6px auto; height: 26%; border-radius: inherit; background: repeating-linear-gradient(90deg, rgba(255,255,255,.55) 0 6px, rgba(255,255,255,.25) 6px 12px); opacity: .5; }
+html[data-phase="morning"] .door-win .glass { background: linear-gradient(180deg, #ffd9b0, #cfe4f2); }
+html[data-phase="sunset"] .door-win .glass { background: linear-gradient(180deg, #ff9f6e, #ffd2a1 70%); }
+html[data-phase="night"] .door-win .glass { background: #2f3456; }
+html[data-phase="night"] .door-win .glow { opacity: 1; animation: winOn 1.6s ease-out .4s both; }
+html[data-phase="night"] .door-win.r .glow { animation-delay: 1s; }
+@keyframes winOn { 0% { opacity: 0; } 20% { opacity: .9; } 28% { opacity: .3; } 40%, 100% { opacity: 1; } }
+html[data-phase="night"] .door-win { box-shadow: 0 0 0 7px #d9c7af, 0 0 60px 6px rgba(255,190,100,.45); }
+html[data-phase="sunset"] .wall { background:
+  radial-gradient(500px 360px at 50% 62%, rgba(255,190,130,.55), transparent 70%),
+  repeating-linear-gradient(90deg, rgba(181,121,74,.035) 0 2px, transparent 2px 120px),
+  linear-gradient(180deg, #f7dcc6 0%, #efd2bb 72%, #e4cbb2 72%, #d8bfa2 100%); }
+html[data-phase="night"] .wall { background:
+  radial-gradient(520px 380px at 50% 62%, rgba(255,200,120,.32), transparent 70%),
+  repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 2px, transparent 2px 120px),
+  linear-gradient(180deg, #4b4a6b 0%, #403f5e 72%, #36354f 72%, #2f2e45 100%); }
+html[data-phase="night"] .door-text h1 { color: #fbf6ef; }
+html[data-phase="night"] .door-eyebrow { background: rgba(255,255,255,.14); color: #f3d3a8; }
+html[data-phase="night"] .lamp-glow { background: radial-gradient(circle, rgba(255,206,120,.85), transparent 65%); width: 220px; height: 220px; left: -95px; top: -75px; }
+html[data-phase="night"] .door-skip { background: rgba(255,255,255,.16); color: #fff; border-color: rgba(255,255,255,.2); }
+@media (max-width: 760px) { .door-win { display: none; } }
+
+/* skyline: sole, luna, stelle e finestre accese */
+.skydecor .sd-sun { transition: transform 1.4s var(--ease), opacity 1.4s; transform: translate(1080px, 34px); opacity: .55; }
+.skydecor.p-morning .sd-sun { transform: translate(170px, 84px) scale(.9); opacity: .75; }
+.skydecor.p-sunset .sd-sun { transform: translate(930px, 176px) scale(1.7); opacity: .9; }
+.skydecor.p-night .sd-sun { opacity: 0; }
+.skydecor .sd-moon { opacity: 0; transition: opacity 1.4s; }
+.skydecor.p-night .sd-moon { opacity: 1; }
+.moon-disc { fill: #f1e6c9; } .moon-cut { fill: var(--bg); }
+.sec.soft .moon-cut { fill: var(--bg-2); }
+.sd-star { fill: #c9b27f; opacity: 0; }
+.skydecor.p-night .sd-star { animation: twinkle 3.6s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { opacity: .2; } 50% { opacity: .9; } }
+.sd-win { fill: #f2c56b; opacity: 0; transition: opacity .8s; }
+.skydecor.p-sunset .sd-win.early { opacity: .75; }
+.skydecor.p-night .sd-win { opacity: .95; }
+.skydecor.p-night .sd-win.early { animation: flickerWin 5s ease-in-out infinite; }
+@keyframes flickerWin { 50% { opacity: .6; } }
+
+/* =================== METEO =================== */
+.wx-chip { display: inline-flex; align-items: center; gap: 7px; margin-left: 10px; padding: 9px 16px; border-radius: 999px; background: rgba(255,255,255,.85); box-shadow: var(--shadow); font-size: .88rem; color: var(--muted); vertical-align: middle; }
+.wx-chip b { color: var(--ink); }
+.wx-chip .wx-sep { opacity: .5; }
+.wx-ico { color: var(--gold-d); }
+.wx-clear .wx-ico { animation: spinSlow 14s linear infinite; }
+.wx-rain .wx-ico, .wx-storm .wx-ico { color: #5f7ea8; } .wx-snow .wx-ico { color: #7aa0c4; }
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+@media (max-width: 640px) { .wx-chip { margin: 8px 0 0; } }
+.wx-fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+.wx-sun { position: absolute; top: 4%; right: 6%; width: 260px; height: 260px; transition: top 1.4s, right 1.4s; }
+.wx-sun i { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, rgba(255,200,120,.0), rgba(255,200,120,.22) 6%, rgba(255,200,120,0) 12%, rgba(255,200,120,.22) 18%, rgba(255,200,120,0) 24%, rgba(255,200,120,.22) 30%, rgba(255,200,120,0) 36%, rgba(255,200,120,.22) 42%, rgba(255,200,120,0) 48%, rgba(255,200,120,.22) 54%, rgba(255,200,120,0) 60%, rgba(255,200,120,.22) 66%, rgba(255,200,120,0) 72%, rgba(255,200,120,.22) 78%, rgba(255,200,120,0) 84%, rgba(255,200,120,.22) 90%, rgba(255,200,120,0) 96%); -webkit-mask: radial-gradient(circle, #000 20%, transparent 70%); mask: radial-gradient(circle, #000 20%, transparent 70%); animation: spinSlow 60s linear infinite; }
+.wx-sun::after { content: ""; position: absolute; inset: 38%; border-radius: 50%; background: radial-gradient(circle, #ffe6b3, rgba(255,200,120,.5) 60%, transparent 72%); }
+.wx-sun.p-morning { top: 14%; right: auto; left: 4%; }
+.wx-sun.p-sunset { top: 22%; right: 2%; }
+.wx-sun.p-sunset::after { background: radial-gradient(circle, #ffc58f, rgba(246,140,90,.55) 60%, transparent 72%); }
+.wx-star { position: absolute; border-radius: 50%; background: #f6d68b; box-shadow: 0 0 7px rgba(240,196,110,.95); animation: twinkle 3.4s ease-in-out infinite; }
+.wx-cloud { position: absolute; width: 420px; height: 120px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.75), rgba(255,255,255,0)); animation: drift 70s linear infinite; }
+.wx-cloud.c1 { top: 6%; left: -20%; }
+.wx-cloud.c2 { top: 16%; left: 30%; width: 520px; height: 140px; animation-duration: 95s; animation-delay: -30s; opacity: .8; }
+.wx-cloud.c3 { top: 2%; left: 60%; width: 360px; animation-duration: 80s; animation-delay: -55s; opacity: .7; }
+.k-rain .wx-cloud, .k-storm .wx-cloud { background: radial-gradient(closest-side, rgba(150,160,180,.45), rgba(150,160,180,0)); }
+@keyframes drift { from { transform: translateX(-30vw); } to { transform: translateX(110vw); } }
+.wx-fog { position: absolute; left: -20%; right: -20%; height: 120px; background: linear-gradient(180deg, transparent, rgba(255,255,255,.55), transparent); animation: fogMove 26s ease-in-out infinite alternate; }
+.wx-fog.f1 { top: 30%; } .wx-fog.f2 { top: 58%; animation-duration: 34s; opacity: .7; }
+@keyframes fogMove { to { transform: translateX(12%); } }
+.wx-drop { position: absolute; top: -12%; width: 1.5px; border-radius: 2px; background: linear-gradient(180deg, rgba(110,130,165,0), rgba(110,130,165,.55)); animation: rainFall 1s linear infinite; }
+@keyframes rainFall { to { transform: translate(-40px, 120vh); } }
+.wx-flash { position: absolute; inset: 0; background: #fff; opacity: 0; animation: flash 9s infinite; }
+@keyframes flash { 0%, 92%, 100% { opacity: 0; } 93% { opacity: .55; } 94% { opacity: 0; } 95.5% { opacity: .35; } 97% { opacity: 0; } }
+.wx-flake { position: absolute; top: -4%; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(150,175,205,.35), 0 0 8px rgba(120,150,190,.7); animation-name: snowFall, snowSway; animation-timing-function: linear, ease-in-out; animation-iteration-count: infinite, infinite; animation-direction: normal, alternate; }
+@keyframes snowFall { to { top: 104%; } }
+@keyframes snowSway { from { margin-left: -14px; } to { margin-left: 14px; } }
+
+/* =================== TITOLI SCRITTI A MANO =================== */
+.hw { position: relative; display: inline; }
+.hw-word { display: inline-block; white-space: nowrap; }
+.hw-ch { display: inline-block; will-change: clip-path; }
+.hw-line { position: absolute; left: 0; right: 0; bottom: -.12em; width: 100%; height: .22em; overflow: visible; pointer-events: none; }
+.hw-line path { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; opacity: .55; vector-effect: non-scaling-stroke; }
+
+/* =================== PULSANTI MAGNETICI =================== */
+.mag { display: inline-block; padding: 14px; margin: -14px; }
+.mag-in { display: inline-block; }
+.mag.block { display: block; padding: 8px; margin: -8px; }
+.mag.block .mag-in { display: block; }
+.mag.block .btn { width: 100%; }
+
+/* =================== CHIAVE + CORIANDOLI =================== */
+.key-done { position: relative; width: 96px; height: 96px; }
+.kd-plate { position: relative; width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center; background: #f6ead9; box-shadow: 0 20px 40px -18px rgba(95,115,92,.8), 0 0 0 6px #fff, 0 0 0 7px rgba(181,121,74,.25); overflow: visible; }
+.kd-hole { position: absolute; width: 40px; height: 40px; fill: #4a3b2e; }
+.kd-key { position: absolute; left: 50%; top: 50%; width: 110px; height: 38px; margin: -19px 0 0 -55px; stroke: #c9a05a; filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
+.kd-check { position: absolute; color: #fff; display: grid; place-items: center; }
+.confetti { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: 5; pointer-events: none; }
+.confetti i { position: absolute; left: 0; top: 0; }
+
+/* =================== CONTO ALLA ROVESCIA =================== */
+.cd { display: flex; align-items: center; gap: 16px; padding: 14px 22px 14px 14px; border-radius: 24px; background: var(--card); box-shadow: var(--shadow); }
+.cd > div { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.cd-num { font-family: var(--serif); font-weight: 500; font-size: 2.6rem; line-height: 1; color: var(--gold-d); }
+.cd span { font-weight: 600; color: var(--ink); }
+.suitcase { width: 70px; height: 70px; flex-shrink: 0; overflow: visible; }
+.sc-bounce { animation: hop 3.2s ease-in-out 2s infinite; transform-origin: 60px 110px; }
+@keyframes hop { 0%, 80%, 100% { transform: translateY(0); } 86% { transform: translateY(-7px) rotate(-3deg); } 92% { transform: translateY(0) rotate(1deg); } }
+.sc-body { fill: #b5794a; }
+.sc-stripe { fill: none; stroke: #9c6238; stroke-width: 0; }
+.sc-lid { fill: #9c6238; }
+.sc-handle { fill: none; stroke: #4a3b2e; stroke-width: 5; stroke-linecap: round; }
+.sc-clasp { fill: #f2c94c; }
+.sc-sticker.a { fill: #7f927c; } .sc-sticker.b { fill: #fbf6ef; }
+.sc-wheel { fill: #4a3b2e; }
+@media (prefers-reduced-motion: reduce) { .sc-bounce, .wx-ico { animation: none; } }

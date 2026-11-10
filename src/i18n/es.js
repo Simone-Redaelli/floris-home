@@ -229,6 +229,7 @@ export default {
     cta: "Comprobar disponibilidad", contacts: "Contacto", explore: "Explorar", copy: "Apartamento turístico", photos: "Fotos de la ciudad: Unsplash",
   },
   guide: {
+    cdDays: (n) => `días para tu llegada a Bérgamo`, cdTomorrow: "¡Mañana es el día! Te esperamos en Bérgamo.", cdToday: (ci) => `¡Es hoy! Te esperamos desde las ${String(ci).split(/[–-]/)[0].trim()}.`, cdStay: (d, n) => `Día ${d} de ${n}: ¡disfruta de Bérgamo!`, cdAfter: "Gracias por alojarte con nosotros: ¡vuelve pronto!",
     title: "Guía de la casa", welcome1: "Bienvenido", welcome2: "a casa",
     hello: (n) => `Hola ${n},`, helloEm: "¡bienvenido!",
     sub: "Todo lo que necesitas durante la estancia, en un solo lugar.",
@@ -251,6 +252,7 @@ export default {
     notes: "Notas del anfitrión", around: "Qué hacer cerca", aroundSub: "Ciudad Alta, lagos, termas y nuestras experiencias favoritas, reservables online.", aroundCta: "Ver actividades",
     enjoy: "¡Disfruta de Bérgamo!", back: "Volver a la web",
   },
+  wx: { today: "Hoy en Bérgamo", kinds: { clear: "despejado", cloudy: "nublado", fog: "niebla", rain: "lluvia", snow: "nieve", storm: "tormenta" } },
   mbar: { perNight: "/ noche", superb: "Fantástico", cta: "Elegir fechas" },
   cal: { wd: ["L", "M", "X", "J", "V", "S", "D"], unavailable: "No disponible", perNight: "/ noche", prev: "Mes anterior", next: "Mes siguiente" },
 };

@@ -174,6 +174,7 @@ export default {
     cta: "Sprawdź dostępność", contacts: "Kontakt", explore: "Odkrywaj", copy: "Apartament wakacyjny", photos: "Zdjęcia miasta: Unsplash",
   },
   guide: {
+    cdDays: () => "dni do Twojego przyjazdu do Bergamo", cdTomorrow: "Jutro wyjazd! Do zobaczenia w Bergamo.", cdToday: (ci) => `To już dziś! Czekamy na Ciebie od ${String(ci).split(/[–-]/)[0].trim()}.`, cdStay: (d, n) => `Dzień ${d} z ${n}: ciesz się Bergamo!`, cdAfter: "Dziękujemy za pobyt u nas: wracaj szybko!",
     title: "Przewodnik po domu", welcome1: "Witaj", welcome2: "w domu",
     hello: (x) => `Cześć ${x},`, helloEm: "witaj!",
     sub: "Wszystko, czego potrzebujesz podczas pobytu, w jednym miejscu.",
@@ -196,6 +197,7 @@ export default {
     notes: "Uwagi gospodarza", around: "Co robić w okolicy", aroundSub: "Górne Miasto, jeziora, termy i nasze ulubione atrakcje z rezerwacją online.", aroundCta: "Zobacz atrakcje",
     enjoy: "Miłego pobytu w Bergamo!", back: "Wróć na stronę",
   },
+  wx: { today: "Dziś w Bergamo", kinds: { clear: "bezchmurnie", cloudy: "pochmurno", fog: "mgła", rain: "deszcz", snow: "śnieg", storm: "burza" } },
   mbar: { perNight: "/ noc", superb: "Znakomity", cta: "Wybierz daty" },
   cal: { wd: ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"], unavailable: "Niedostępne", perNight: "/ noc", prev: "Poprzedni miesiąc", next: "Następny miesiąc" },
 };

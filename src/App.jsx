@@ -10,6 +10,7 @@ import { Bento, Amenities, Reviews, Bergamo, Booking, Faq, Footer } from "./comp
 import { SettingsProvider } from "./lib/settings";
 import { BookingProvider } from "./lib/booking";
 import { LangProvider } from "./i18n";
+import { AmbientProvider } from "./lib/ambient";
 
 // Il pannello admin e la guida ospiti vengono scaricati solo da chi li apre
 const Admin = lazy(() => import("./admin/Admin"));
@@ -32,6 +33,7 @@ function Site() {
   }, [intro]);
   return (
     <LangProvider>
+    <AmbientProvider>
     <SettingsProvider>
       <BookingProvider>
         <Nav />
@@ -55,6 +57,7 @@ function Site() {
         <MobileBar />
       </BookingProvider>
     </SettingsProvider>
+    </AmbientProvider>
     </LangProvider>
   );
 }
@@ -72,11 +75,13 @@ export default function App() {
   if (page === "guide") {
     return (
       <LangProvider>
+        <AmbientProvider>
         <SettingsProvider>
           <Suspense fallback={<div className="adm-loading"><span /></div>}>
             <Guide />
           </Suspense>
         </SettingsProvider>
+        </AmbientProvider>
       </LangProvider>
     );
   }

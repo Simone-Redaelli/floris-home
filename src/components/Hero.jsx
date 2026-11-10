@@ -8,6 +8,7 @@ import { useBooking, scrollToId } from "../lib/booking";
 import Calendar from "./Calendar";
 import { Img, EASE } from "./ui";
 import { Sticker, Leaves } from "./Wow";
+import { WeatherChip, WeatherFx, useMagnetic } from "./Fx";
 
 /* parola che cambia nel titolo */
 function Rotator() {
@@ -53,6 +54,7 @@ function SearchBar() {
     return () => removeEventListener("pointerdown", close);
   }, []);
 
+  const mag = useMagnetic(0.25);
   const months = typeof window !== "undefined" && innerWidth > 820 ? 2 : 1;
   const max = Number(s.maxGuests) || 5;
 
@@ -80,9 +82,9 @@ function SearchBar() {
           <b>{h.guestsN(guests)}</b>
         </div>
       </button>
-      <button className="sgo" onClick={() => { setOpen(null); scrollToId("prenota"); }}>
+      <motion.button className="sgo" {...mag} onClick={() => { setOpen(null); scrollToId("prenota"); }}>
         {ok ? <span>{euro(q.total)} · {h.book}</span> : <><Search size={18} /><span>{h.check}</span></>}
-      </button>
+      </motion.button>
 
       <AnimatePresence>
         {open === "dates" && (
@@ -178,6 +180,7 @@ export function Hero() {
   return (
     <section className="hero" id="top">
       <div className="hero-bg" />
+      <WeatherFx />
       <Leaves count={8} />
       <motion.div className="hero-sticker" initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.9 }}>
         <Sticker text={h.sticker}>€0<small className="st-small">{h.stickerSmall}</small></Sticker>
@@ -186,6 +189,7 @@ export function Hero() {
         <motion.div className="hero-chip" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
           <span className="dot" /> {s.bookingOpen ? h.open : h.closed} · {h.from} <b>{euro(s.pricePerNight)}</b> {h.perNight}
         </motion.div>
+        <WeatherChip />
         <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.1, ease: EASE }}>
           {h.title1}<br />{h.title2} <Rotator />
         </motion.h1>
