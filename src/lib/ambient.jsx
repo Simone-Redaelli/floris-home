@@ -59,11 +59,20 @@ export function AmbientProvider({ children }) {
 
   useEffect(() => {
     let alive = true;
+    const { lat, lng } = SITE.coords;
+    const get = (url) => fetch(url, { signal: AbortSignal.timeout?.(8000) }).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
+    // riserva: wttr.in (se open-meteo è bloccato dal browser o dalla rete)
+    const backup = () => get(`https://wttr.in/${lat},${lng}?format=j1`).then((j) => {
+      const c = j.current_condition?.[0];
+      if (!alive || !c || forceKind) return;
+      const code = Number(c.weatherCode);
+      const kind = [113].includes(code) ? "clear" : [116, 119, 122].includes(code) ? "cloudy" : [143, 248, 260].includes(code) ? "fog"
+        : [200, 386, 389, 392, 395].includes(code) ? "storm" : [179, 227, 230, 323, 326, 329, 332, 335, 338, 368, 371].includes(code) ? "snow" : "rain";
+      setWeather({ temp: Math.round(Number(c.temp_C)), kind, isDay: true });
+    });
     const load = () => {
-      const { lat, lng } = SITE.coords;
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,is_day&daily=sunrise,sunset&timezone=${encodeURIComponent(TZ)}&forecast_days=1`;
-      fetch(url)
-        .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      get(url)
         .then((j) => {
           if (!alive) return;
           const rise = mins(j.daily?.sunrise?.[0]);
@@ -73,7 +82,7 @@ export function AmbientProvider({ children }) {
             setWeather({ temp: Math.round(j.current.temperature_2m), kind: kindOf(j.current.weather_code), isDay: !!j.current.is_day });
           }
         })
-        .catch(() => {});
+        .catch(() => backup().catch(() => {}));
     };
     load();
     const id = setInterval(load, 20 * 60_000);

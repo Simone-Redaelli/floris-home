@@ -8,6 +8,7 @@ import { EASE } from "./ui";
 import { useLang, LANGS } from "../i18n";
 import { Magnetic } from "./Fx";
 import { Approx } from "../lib/fx";
+import Flag from "./Flag";
 
 /* ---------------- SCROLL FLUIDO ---------------- */
 export function useSmoothScroll() {
@@ -49,7 +50,7 @@ export function LangSwitch({ big }) {
       <div className="lang-row" aria-label={t.nav.lang}>
         {LANGS.map((l) => (
           <button key={l.code} className={l.code === lang ? "on" : ""} onClick={() => setLang(l.code)}>
-            <span>{l.flag}</span>{l.code.toUpperCase()}
+            <Flag lang={l.code} />{l.code.toUpperCase()}
           </button>
         ))}
       </div>
@@ -58,7 +59,7 @@ export function LangSwitch({ big }) {
   return (
     <div className="lang">
       <button className="lang-btn" onClick={() => setOpen(!open)} aria-label={t.nav.lang} aria-expanded={open}>
-        <span className="flag">{cur.flag}</span>{cur.code.toUpperCase()}
+        <Flag lang={cur.code} />{cur.code.toUpperCase()}
         <motion.i animate={{ rotate: open ? 180 : 0 }}>▾</motion.i>
       </button>
       <AnimatePresence>
@@ -66,7 +67,7 @@ export function LangSwitch({ big }) {
           <motion.div className="lang-menu" initial={{ opacity: 0, y: -8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.96 }} transition={{ duration: 0.2 }}>
             {LANGS.map((l) => (
               <button key={l.code} className={l.code === lang ? "on" : ""} onClick={() => { setLang(l.code); setOpen(false); }}>
-                <span className="flag">{l.flag}</span>{l.label}
+                <Flag lang={l.code} />{l.label}
               </button>
             ))}
           </motion.div>

@@ -76,7 +76,9 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var
 
 /* ---------- HERO ---------- */
 .hero { position: relative; padding: 128px 0 40px; overflow: hidden; min-height: 100svh; display: flex; flex-direction: column; isolation: isolate; }
+.wx-fx { contain: strict; }
 .hero-bg { position: absolute; inset: 0; z-index: -1; background:
+  var(--phase-sky, linear-gradient(transparent, transparent)),
   radial-gradient(600px 400px at 12% 20%, rgba(127,146,124,.18), transparent 70%),
   radial-gradient(700px 500px at 88% 12%, rgba(181,121,74,.16), transparent 70%),
   radial-gradient(900px 500px at 50% 100%, rgba(243,227,210,.9), transparent 70%); }
@@ -1239,10 +1241,9 @@ html.intro-on .nav, html.intro-on .progress, html.intro-on .mbar { opacity: 0; p
 .cash-note svg { flex-shrink: 0; margin-top: 1px; }
 
 /* =================== LUCE DI BERGAMO (fasi del giorno) =================== */
-.hero-bg::after { content: ""; position: absolute; inset: 0; opacity: 0; transition: opacity 1.6s ease, background 1.6s ease; pointer-events: none; }
-html[data-phase="morning"] .hero-bg::after { opacity: 1; background: linear-gradient(180deg, rgba(255,200,150,.5), rgba(255,230,205,.22) 40%, transparent 70%); }
-html[data-phase="sunset"] .hero-bg::after { opacity: 1; background: linear-gradient(180deg, rgba(240,120,80,.48), rgba(255,170,115,.3) 32%, rgba(255,214,180,.12) 58%, transparent 80%); }
-html[data-phase="night"] .hero-bg::after { opacity: 1; background: linear-gradient(180deg, rgba(40,46,96,.5), rgba(96,92,160,.22) 38%, rgba(140,130,190,.06) 62%, transparent 78%); }
+html[data-phase="morning"] { --phase-sky: linear-gradient(180deg, rgba(255,200,150,.5), rgba(255,230,205,.22) 40%, rgba(255,230,205,0) 70%); }
+html[data-phase="sunset"] { --phase-sky: linear-gradient(180deg, rgba(240,120,80,.48), rgba(255,170,115,.3) 32%, rgba(255,214,180,.12) 58%, rgba(255,214,180,0) 80%); }
+html[data-phase="night"] { --phase-sky: linear-gradient(180deg, rgba(40,46,96,.5), rgba(96,92,160,.22) 38%, rgba(140,130,190,.06) 62%, rgba(140,130,190,0) 78%); }
 
 /* porta d'ingresso: muro e finestre cambiano con l'ora */
 .door-wins { position: absolute; inset: 0; pointer-events: none; }
@@ -1487,3 +1488,6 @@ html[data-phase="night"] .door-skip { background: rgba(255,255,255,.16); color: 
 .wl-who span { color: var(--muted); font-size: .84rem; overflow-wrap: anywhere; }
 .todo-ico.wl { background: #fff1d6; color: #b5794a; }
 @media (max-width: 760px) { .wl-list li { grid-template-columns: 1fr auto; } .wl-chip { grid-column: 1 / -1; justify-self: start; } }
+.flag-img { display: inline-block; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.08); object-fit: cover; vertical-align: middle; flex-shrink: 0; }
+.lang-btn, .lang-menu button, .lang-row button { display: inline-flex; align-items: center; gap: 7px; }
+.pc-show { display: inline-flex; align-items: center; gap: 6px; }

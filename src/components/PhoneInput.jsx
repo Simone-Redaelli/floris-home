@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { DIAL, TOP, flag, dialOf, defaultIso, splitPasted } from "../lib/phone";
+import { DIAL, TOP, dialOf, defaultIso, splitPasted } from "../lib/phone";
+import Flag from "./Flag";
 
 /* Campo telefono con prefisso già pronto: l'ospite sceglie il paese e scrive solo il numero.
    onChange riceve "+39 3331234567" */
@@ -25,11 +26,11 @@ export default function PhoneInput({ value, onChange, lang = "it", locale = "it-
     setLocal(v.replace(/[^\d\s]/g, "").slice(0, 18));
   };
 
-  const opt = ([i, c]) => <option key={i} value={i}>{flag(i)} {names[i]} (+{c})</option>;
+  const opt = ([i, c]) => <option key={i} value={i}>{names[i]} (+{c})</option>;
   return (
     <div className="phone-in">
       <label className="phone-cc" aria-label={label ? `${label}: prefisso` : "Prefisso"}>
-        <span className="pc-show">{flag(iso)} +{dialOf(iso)}</span>
+        <span className="pc-show"><Flag iso={iso} /> +{dialOf(iso)}</span>
         <select value={iso} onChange={(e) => setIso(e.target.value)}>
           {DIAL.filter(([i]) => TOP.includes(i)).sort((a, b) => TOP.indexOf(a[0]) - TOP.indexOf(b[0])).map(opt)}
           <option disabled>──────────</option>

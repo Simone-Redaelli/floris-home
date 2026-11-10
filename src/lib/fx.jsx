@@ -18,6 +18,7 @@ const region = () => {
 };
 
 export function currencyFor(lang, reg = region()) {
+  if (lang === "it") return null; // chi legge in italiano paga e ragiona in euro
   if (lang === "pl" || reg === "PL") return "PLN";
   if (reg === "CH" || reg === "LI") return "CHF";
   if (reg === "GB") return "GBP";
@@ -43,8 +44,9 @@ export function FxProvider({ children }) {
   useEffect(() => {
     if (!cur || rates) return;
     let alive = true;
-    fetch("https://api.frankfurter.app/latest?from=EUR&to=PLN,GBP,CHF,USD")
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    const get = (u) => fetch(u).then((r) => (r.ok ? r.json() : Promise.reject(r.status)));
+    get("https://api.frankfurter.app/latest?from=EUR&to=PLN,GBP,CHF,USD")
+      .catch(() => get("https://open.er-api.com/v6/latest/EUR")) // riserva
       .then((j) => {
         if (!alive || !j.rates) return;
         setRates(j.rates);
