@@ -12,6 +12,7 @@ import { Field, Toggle } from "./ui";
 import { EXTRAS, today, addDays, nightsBetween, euro, fmtDate, quote, parse } from "../lib/settings";
 import { api, hasApi } from "../lib/api";
 import { SITE } from "../data";
+import PhoneInput from "../components/PhoneInput";
 
 const db = () => getFb().db;
 const copy = (text, flash) => navigator.clipboard?.writeText(text).then(() => flash?.("Copiato"));
@@ -195,6 +196,7 @@ export function GuideTab({ d, set, flash }) {
   const [privSaved, setPrivSaved] = useState(null);
   const [list, setList] = useState(null);
   const [nw, setNw] = useState({ name: "", phone: "", from: today(), to: addDays(today(), 2), guests: 2 });
+  const [formKey, setFormKey] = useState(0);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -238,6 +240,7 @@ export function GuideTab({ d, set, flash }) {
         manual: true, createdAt: new Date().toISOString(),
       });
       setNw({ name: "", phone: "", from: today(), to: addDays(today(), 2), guests: 2 });
+      setFormKey((x) => x + 1);
       flash(`Codice creato: ${pretty(code)}`);
     } catch (e) {
       flash(e.code === "permission-denied" ? "Permesso negato: controlla le regole di Firestore." : "Creazione non riuscita.", "err");
@@ -295,7 +298,7 @@ export function GuideTab({ d, set, flash }) {
         <p className="adm-hint">Quando confermi una richiesta dal sito il codice si crea da solo e arriva all'ospite. Per chi prenota su Booking/Airbnb o al telefono crealo qui e mandaglielo su WhatsApp.</p>
         <div className="guide-new">
           <Field label="Nome ospite" value={nw.name} onChange={(v) => setNw({ ...nw, name: v })} />
-          <Field label="WhatsApp" value={nw.phone} onChange={(v) => setNw({ ...nw, phone: v })} placeholder="+39 …" />
+          <div className="adm-field"><span>WhatsApp</span><PhoneInput key={formKey} value={nw.phone} onChange={(v) => setNw((x) => ({ ...x, phone: v }))} /></div>
           <Field label="Arrivo" type="date" value={nw.from} onChange={(v) => setNw({ ...nw, from: v })} />
           <Field label="Partenza" type="date" value={nw.to} min={nw.from} onChange={(v) => setNw({ ...nw, to: v })} />
           <Field label="Ospiti" type="number" value={nw.guests} onChange={(v) => setNw({ ...nw, guests: v })} />
@@ -350,8 +353,9 @@ export function TodoToday({ d, bookings }) {
     ? `Hi ${p.first}! We're looking forward to welcoming you ${p.from === t ? "today" : "tomorrow"} (check-in ${d.checkIn}). Everything you need — how to get in, Wi-Fi, parking — is here: ${link(p)}${(p.guests || 1) > 1 ? "\n\nIf you haven't yet, please send us today the details of the other guests (name, date of birth, nationality, ID document)." : ""}`
     : `Ciao ${p.first}! Ti aspettiamo ${p.from === t ? "oggi" : "domani"} (check-in ${d.checkIn}). Qui trovi come entrare, il Wi-Fi, il parcheggio e i numeri utili: ${link(p)}${(p.guests || 1) > 1 ? "\n\nSe non l'hai già fatto, mandaci oggi i dati degli altri ospiti (nome, data di nascita, nazionalità, documento)." : ""}`;
   const reviewMsg = (p) => p.lang && p.lang !== "it"
-    ? `Hi ${p.first}, thank you for staying at Flori's Home! If you enjoyed it, a Google review would mean a lot to us: ${d.reviewUrl}`
-    : `Ciao ${p.first}, grazie di essere stato/a da noi a Flori's Home! Se ti sei trovato/a bene, ci lasci una recensione su Google? Ci aiuta tantissimo: ${d.reviewUrl}`;
+    ? `Hi ${p.first}, thank you for staying at Flori's Home! If you enjoyed it, a short review would mean a lot to us: ${revLink(p)}`
+    : `Ciao ${p.first}, grazie di essere stato/a da noi a Flori's Home! Se ti sei trovato/a bene, ci lasci una recensione? Bastano 30 secondi: ${revLink(p)}`;
+  const revLink = (p) => (p.code ? `${SITE.url}/#recensione/${p.code}` : d.reviewUrl);
   const wa = (p, text) => (p.phone ? `https://wa.me/${p.phone}?text=${encodeURIComponent(text)}` : null);
 
   return (
@@ -370,7 +374,7 @@ export function TodoToday({ d, bookings }) {
           <li key={`d${p.code || p.name}${p.to}`}>
             <span className="todo-ico out"><Out size={16} /></span>
             <div><b>{p.name}</b><span>è partito {p.to === t ? "oggi" : "ieri"} · chiedi una recensione</span></div>
-            {!d.reviewUrl ? <small>imposta il link in "Info e contatti"</small>
+            {!d.reviewUrl && !p.code ? <small>imposta il link Google in "Info e contatti"</small>
               : wa(p, reviewMsg(p)) ? <a className="adm-btn sm" href={wa(p, reviewMsg(p))} target="_blank" rel="noreferrer"><Star size={15} /> Chiedi</a> : <small>nessun numero</small>}
           </li>
         ))}
@@ -506,3 +510,71 @@ export function Stats({ d, bookings }) {
 }
 
 const TrendingIcon = () => <TrendingUp size={14} />;
+
+/* ======================= RECENSIONI DAL SITO ======================= */
+export function ReviewsTab({ flash }) {
+  const [list, setList] = useState(null);
+  const [filter, setFilter] = useState("pending");
+  useEffect(() => onSnapshot(
+    collection(db(), "reviews"),
+    (s) => setList(s.docs.map((x) => ({ id: x.id, ...x.data() })).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))),
+    () => setList([]),
+  ), []);
+  const setStatus = async (id, status) => {
+    try {
+      await updateDoc(doc(db(), "reviews", id), { status });
+      flash(status === "approved" ? "Recensione pubblicata sul sito" : "Recensione nascosta");
+    } catch (e) {
+      flash(e.code === "permission-denied" ? "Permesso negato: aggiorna le regole di Firestore." : "Non riuscito.", "err");
+    }
+  };
+  const remove = async (id) => {
+    if (!confirm("Eliminare definitivamente questa recensione?")) return;
+    await deleteDoc(doc(db(), "reviews", id)).catch(() => {});
+    flash("Recensione eliminata");
+  };
+  const counts = { pending: 0, approved: 0, hidden: 0 };
+  (list || []).forEach((r) => { counts[r.status] = (counts[r.status] || 0) + 1; });
+  const shown = (list || []).filter((r) => r.status === filter);
+  const avg = (list || []).filter((r) => r.status === "approved");
+  const mean = avg.length ? avg.reduce((a, r) => a + Number(r.rating || 0), 0) / avg.length : 0;
+  return (
+    <>
+      <header className="adm-head">
+        <h1>Recensioni</h1>
+        <p>Le scrivono gli ospiti dopo il soggiorno con il loro codice (una per soggiorno). Compaiono sul sito solo quando le approvi.</p>
+      </header>
+      <div className="adm-kpis">
+        <div className="adm-kpi"><span>Da approvare</span><b>{counts.pending}</b></div>
+        <div className="adm-kpi"><span>Pubblicate</span><b>{counts.approved}</b></div>
+        <div className="adm-kpi"><span>Media pubblicate</span><b>{mean ? mean.toLocaleString("it-IT", { maximumFractionDigits: 1 }) : "—"}<small> / 5</small></b></div>
+      </div>
+      <div className="adm-box">
+        <div className="st-tabs" role="tablist">
+          {[["pending", "Da approvare"], ["approved", "Pubblicate"], ["hidden", "Nascoste"]].map(([k, l]) => (
+            <button key={k} role="tab" aria-selected={filter === k} className={filter === k ? "on" : ""} onClick={() => setFilter(k)}>{l} ({counts[k] || 0})</button>
+          ))}
+        </div>
+        {list === null && <div className="adm-loading small"><span /></div>}
+        {list && !shown.length && <p className="adm-hint">Nessuna recensione qui.</p>}
+        <ul className="rv-list">
+          {shown.map((r) => (
+            <li key={r.id}>
+              <div className="rv-top">
+                <span className="rv-stars">{[1, 2, 3, 4, 5].map((n) => <Star key={n} size={15} fill={n <= r.rating ? "currentColor" : "none"} strokeWidth={1.5} />)}</span>
+                <b>{r.name}</b>{r.country && <span>· {r.country}</span>}
+                <small>{r.createdAt ? new Date(r.createdAt).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" }) : ""} · codice {pretty(r.id)} · {String(r.lang || "it").toUpperCase()}</small>
+              </div>
+              <p>{r.text}</p>
+              <div className="rv-act">
+                {r.status !== "approved" && <button className="adm-btn sm ok" onClick={() => setStatus(r.id, "approved")}><Check size={15} /> Pubblica</button>}
+                {r.status !== "hidden" && <button className="adm-btn ghost sm" onClick={() => setStatus(r.id, "hidden")}>Nascondi</button>}
+                <button className="adm-icon-btn" onClick={() => remove(r.id)} title="Elimina"><Trash2 size={15} /></button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
+  );
+}

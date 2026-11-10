@@ -14,7 +14,10 @@ import Calendar from "./Calendar";
 import { Img, Reveal, Counter, Icon, EASE } from "./ui";
 import { useLinks } from "./Chrome";
 import { useLang } from "../i18n";
-import { HandTitle, Handwrite, Magnetic, KeyDone } from "./Fx";
+import { HandTitle, Handwrite, Magnetic, KeyDone, TransferMap } from "./Fx";
+import { Approx } from "../lib/fx";
+import { fetchApprovedReviews } from "../lib/reviews";
+import PhoneInput from "./PhoneInput";
 import { Polaroids, Skyline, Trail, Sticker } from "./Wow";
 
 export function Head({ kicker, title, sub, center }) {
@@ -167,7 +170,32 @@ export function Reviews() {
           </div>
         </div>
       </div>
+      <GuestReviews />
     </section>
+  );
+}
+
+/* recensioni scritte dagli ospiti sul sito (solo quelle approvate) */
+function GuestReviews() {
+  const { t, locale } = useLang();
+  const r = t.rev;
+  const [list, setList] = useState([]);
+  useEffect(() => { fetchApprovedReviews().then(setList).catch(() => {}); }, []);
+  if (!list.length) return null;
+  const month = (iso) => { const x = new Date(iso); return isNaN(x) ? "" : x.toLocaleDateString(locale, { month: "long", year: "numeric" }); };
+  return (
+    <div className="wrap greviews">
+      <div className="gr-head"><span className="kicker">{r.siteKicker}</span><h3>{r.siteTitle1} <em><Handwrite text={r.siteTitle2} /></em></h3></div>
+      <div className="gr-row">
+        {list.map((x, i) => (
+          <motion.figure key={x.id} className="gr-card" initial={{ opacity: 0, y: 30, rotate: i % 2 ? 1.5 : -1.5 }} whileInView={{ opacity: 1, y: 0, rotate: i % 2 ? 0.6 : -0.6 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: Math.min(i, 4) * 0.08, ease: EASE }}>
+            <div className="gr-stars" aria-label={`${x.rating}/5`}>{[1, 2, 3, 4, 5].map((n) => <Star key={n} size={16} fill={n <= x.rating ? "currentColor" : "none"} strokeWidth={1.5} />)}</div>
+            <blockquote>“{x.text}”</blockquote>
+            <figcaption><b>{x.name}</b>{x.country && <span>{x.country}</span>}<small>{month(x.createdAt)}</small></figcaption>
+          </motion.figure>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -232,7 +260,7 @@ const EXTRA_ICON = { cot: Baby, highchair: Utensils, earlyIn: Sunrise, lateOut: 
 const isItalian = (n) => /^(italia|italy|italie|italien|italiana?|italiano|italienisch|włochy|wlochy)$/i.test(String(n || "").trim());
 
 export function Booking() {
-  const { t, lang } = useLang();
+  const { t, lang, locale } = useLang();
   const k = t.book;
   const { settings: s, loading } = useSettings();
   const { from, to, guests, transfer, extras, setFrom, setTo, setGuests, setTransfer, setExtras, toggleExtra } = useBooking();
@@ -281,7 +309,7 @@ export function Booking() {
     main.docType && main.docNumber.trim().length >= 5 && main.docIssuedBy.trim();
   // altri ospiti: si possono mandare fino al giorno prima, ma chi è compilato da italiano deve avere la residenza
   const othersOk = others.every((o) => !o.firstName.trim() || !isItalian(o.nationality) || o.residence?.trim());
-  const formOk = mainOk && othersOk && /\S+@\S+\.\S+/.test(form.email) && form.phone.replace(/\D/g, "").length >= 8 && form.consent;
+  const formOk = mainOk && othersOk && /\S+@\S+\.\S+/.test(form.email) && form.phone.replace(/\D/g, "").length >= 8 && form.phone.split(" ")[1]?.length >= 5 && form.consent;
 
   const waMsg = from && to
     ? [
@@ -372,6 +400,7 @@ export function Booking() {
                             <label><span>{k.tfTime}</span><input type="time" value={form.arrivalTime} onChange={set("arrivalTime")} /></label>
                             <label><span>{k.tfFlight}</span><input placeholder={k.tfFlightPh} value={form.flight} onChange={set("flight")} /></label>
                             <small>{k.tfNote}</small>
+                            <TransferMap />
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -409,7 +438,7 @@ export function Booking() {
                     <span className="gf-title"><i>1</i> {k.contacts}</span>
                     <div className="gf-grid">
                       <label><span>{k.email}</span><input type="email" value={form.email} onChange={set("email")} autoComplete="email" placeholder="mario@email.it" /></label>
-                      <label><span>{k.phone}</span><input type="tel" value={form.phone} onChange={set("phone")} autoComplete="tel" placeholder="+39 333 123 4567" /></label>
+                      <div className="phone-field"><span>{k.phone}</span><PhoneInput value={form.phone} onChange={(v) => setForm((f) => ({ ...f, phone: v }))} lang={lang} locale={locale} label={k.phone} /></div>
                     </div>
                   </div>
 
@@ -560,6 +589,7 @@ export function Booking() {
                     </div>
                   )}
                   <div className="tot"><span>{k.total}</span><motion.b key={q.total} initial={{ scale: 1.15 }} animate={{ scale: 1 }}>{euro(q.total)}</motion.b></div>
+                  {q.total > 0 && <div className="tot-fx"><Approx eur={q.total} /> <small>{t.fxShort}</small></div>}
                   {q.extrasTotal + q.tax > 0 && (
                     <div className="cash-note"><Banknote size={15} /><span>{k.cashPay(euro(q.extrasTotal + q.tax), q.extrasTotal > 0, q.tax > 0)}</span></div>
                   )}

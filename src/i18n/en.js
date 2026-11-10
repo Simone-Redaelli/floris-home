@@ -1,6 +1,7 @@
 const n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
 
 export default {
+  fxNote: "Indicative rate: prices and payment are in euros.", fxShort: "indicative rate, you pay in euros",
   nav: { links: ["The home", "Tour", "Amenities", "Reviews", "Bergamo", "Things to do"], book: "Book", menu: "Menu", close: "Close", lang: "Language" },
   door: {
     eyebrow: "Via San Pio X, 16 · Bergamo", title1: "Welcome", title2: "home", mat: "Welcome",
@@ -60,6 +61,7 @@ export default {
     ],
   },
   rev: {
+    siteKicker: "From our website", siteTitle1: "Written by guests", siteTitle2: "who stayed here",
     kicker: "Reviews", superb: "Superb", avg: (c) => `Average of ${c} verified reviews from real guests on Booking.com`,
     read: "Read the reviews", k2: "What guests say", t1: "Cleanliness and comfort", t2: "rated 9.7",
     scores: ["Cleanliness", "Comfort", "Facilities", "Staff", "Value for money", "Location"], sticker: "HAPPY GUESTS • REAL REVIEWS • ",
@@ -162,6 +164,7 @@ export default {
     }
   },
   book: {
+    tfMapFrom: "Orio al Serio Airport", tfMapEta: "≈ 10 min from the airport to the house",
     perPerson: "per person", perNightEx: "per day", free: "Free",
     residence: "City of residence", residencePh: "e.g. Bergamo",
     othersDue: (d) => `If you don't have them now, send us the other guests' details by ${d}: by law they must be registered before arrival, not at check-in.`,
@@ -229,6 +232,7 @@ export default {
     cta: "Check availability", contacts: "Contact", explore: "Explore", copy: "Holiday apartment", photos: "City photos: Unsplash",
   },
   guide: {
+    reviewT: "How was your stay?", reviewS: "Leave us a review: it takes 30 seconds and helps future guests choose us.", reviewCta: "Write a review",
     cdDays: (n) => `days until you arrive in Bergamo`, cdTomorrow: "Tomorrow's the day! See you in Bergamo.", cdToday: (ci) => `It's today! We're expecting you from ${String(ci).split(/[–-]/)[0].trim()}.`, cdStay: (d, n) => `Day ${d} of ${n}: enjoy Bergamo!`, cdAfter: "Thank you for staying with us: come back soon!",
     title: "House guide", welcome1: "Welcome", welcome2: "home",
     hello: (n) => `Hi ${n},`, helloEm: "welcome!",
@@ -253,6 +257,18 @@ export default {
     enjoy: "Enjoy your stay in Bergamo!", back: "Back to the website",
   },
   wx: { today: "Today in Bergamo", kinds: { clear: "clear", cloudy: "cloudy", fog: "fog", rain: "rain", snow: "snow", storm: "storm" } },
+  rw: {
+    kicker: "Review", title: "Write a review", title1: "How was your", title2: "stay?",
+    sub: "Thank you for staying with us! Your opinion helps future travellers and helps us improve.",
+    rating: "Rating", tap: "Tap the stars", words: ["Needs work", "So-so", "Good", "Lovely", "Perfect!"],
+    name: "Your name", namePh: "e.g. Emma", country: "Where are you from (optional)", countryPh: "e.g. London, UK",
+    text: "Tell us about your stay", textPh: "What you liked about the house, the area, the welcome…",
+    code: "Stay code", codeHint: "You'll find it in your confirmation message or in the house guide.",
+    send: "Send review", sending: "Sending…", note: "Your review appears on the website after a quick check. We only publish your name and country.",
+    errExists: "You've already reviewed this stay: thank you!", errCode: "Invalid or expired code: check it or message us on WhatsApp.", errGeneric: "Sending failed, please try again shortly.",
+    thanks: (n) => `Thank you${n ? `, ${n}` : ""}!`, thanksSub: "Your review has arrived: we'll publish it after a quick check.",
+    google: "Leave it on Google too", back: "Back to the website",
+  },
   mbar: { perNight: "/ night", superb: "Superb", cta: "Pick dates" },
   cal: { wd: ["M", "T", "W", "T", "F", "S", "S"], unavailable: "Not available", perNight: "/ night", prev: "Previous month", next: "Next month" },
 };

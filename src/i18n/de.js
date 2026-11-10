@@ -1,6 +1,7 @@
 const n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
 
 export default {
+  fxNote: "Richtwert: Preise und Zahlung in Euro.", fxShort: "Richtwert, Zahlung in Euro",
   nav: { links: ["Die Wohnung", "Rundgang", "Ausstattung", "Bewertungen", "Bergamo", "Erleben"], book: "Buchen", menu: "Menü", close: "Schließen", lang: "Sprache" },
   door: {
     eyebrow: "Via San Pio X, 16 · Bergamo", title1: "Willkommen", title2: "zu Hause", mat: "Willkommen",
@@ -60,6 +61,7 @@ export default {
     ],
   },
   rev: {
+    siteKicker: "Auf unserer Website", siteTitle1: "Geschrieben von Gästen,", siteTitle2: "die schon hier waren",
     kicker: "Bewertungen", superb: "Hervorragend", avg: (c) => `Durchschnitt aus ${c} verifizierten Bewertungen echter Gäste auf Booking.com`,
     read: "Bewertungen lesen", k2: "Das sagen unsere Gäste", t1: "Sauberkeit und Komfort", t2: "mit 9,7",
     scores: ["Sauberkeit", "Komfort", "Ausstattung", "Personal", "Preis-Leistung", "Lage"], sticker: "ZUFRIEDENE GÄSTE • ECHTE BEWERTUNGEN • ",
@@ -162,6 +164,7 @@ export default {
     }
   },
   book: {
+    tfMapFrom: "Flughafen Orio al Serio", tfMapEta: "≈ 10 Min. vom Flughafen bis zur Wohnung",
     perPerson: "pro Person", perNightEx: "pro Tag", free: "Gratis",
     residence: "Wohnort", residencePh: "z. B. Bergamo",
     othersDue: (d) => `Falls du sie jetzt nicht hast, schick uns die Daten der weiteren Gäste bis ${d}: Laut Gesetz müssen sie vor der Ankunft gemeldet werden, nicht beim Check-in.`,
@@ -229,6 +232,7 @@ export default {
     cta: "Verfügbarkeit prüfen", contacts: "Kontakt", explore: "Entdecken", copy: "Ferienwohnung", photos: "Stadtfotos: Unsplash",
   },
   guide: {
+    reviewT: "Wie war dein Aufenthalt?", reviewS: "Hinterlass uns eine Bewertung: Das dauert 30 Sekunden und hilft künftigen Gästen.", reviewCta: "Bewertung schreiben",
     cdDays: (n) => `Tage bis zu deiner Ankunft in Bergamo`, cdTomorrow: "Morgen geht's los! Bis bald in Bergamo.", cdToday: (ci) => `Heute ist es so weit! Wir erwarten dich ab ${String(ci).split(/[–-]/)[0].trim()} Uhr.`, cdStay: (d, n) => `Tag ${d} von ${n}: genieß Bergamo!`, cdAfter: "Danke, dass du bei uns warst: komm bald wieder!",
     title: "Hausguide", welcome1: "Willkommen", welcome2: "zu Hause",
     hello: (n) => `Hallo ${n},`, helloEm: "willkommen!",
@@ -253,6 +257,18 @@ export default {
     enjoy: "Schöne Zeit in Bergamo!", back: "Zurück zur Website",
   },
   wx: { today: "Heute in Bergamo", kinds: { clear: "klar", cloudy: "bewölkt", fog: "Nebel", rain: "Regen", snow: "Schnee", storm: "Gewitter" } },
+  rw: {
+    kicker: "Bewertung", title: "Bewertung schreiben", title1: "Wie war dein", title2: "Aufenthalt?",
+    sub: "Danke, dass du bei uns warst! Deine Meinung hilft künftigen Reisenden und uns, besser zu werden.",
+    rating: "Bewertung", tap: "Tippe auf die Sterne", words: ["Verbesserungswürdig", "Geht so", "Gut", "Sehr schön", "Perfekt!"],
+    name: "Dein Name", namePh: "z. B. Anna", country: "Woher kommst du (optional)", countryPh: "z. B. München, Deutschland",
+    text: "Erzähl von deinem Aufenthalt", textPh: "Was dir an der Wohnung, der Gegend, dem Empfang gefallen hat…",
+    code: "Aufenthaltscode", codeHint: "Du findest ihn in der Bestätigung oder im Hausguide.",
+    send: "Bewertung senden", sending: "Wird gesendet…", note: "Die Bewertung erscheint nach einer kurzen Prüfung auf der Website. Wir veröffentlichen nur Name und Land.",
+    errExists: "Du hast diesen Aufenthalt schon bewertet: danke!", errCode: "Ungültiger oder abgelaufener Code: prüfe ihn oder schreib uns auf WhatsApp.", errGeneric: "Senden fehlgeschlagen, bitte gleich nochmal versuchen.",
+    thanks: (n) => `Danke${n ? `, ${n}` : ""}!`, thanksSub: "Deine Bewertung ist angekommen: Wir veröffentlichen sie nach einer kurzen Prüfung.",
+    google: "Auch auf Google bewerten", back: "Zurück zur Website",
+  },
   mbar: { perNight: "/ Nacht", superb: "Hervorragend", cta: "Daten wählen" },
   cal: { wd: ["M", "D", "M", "D", "F", "S", "S"], unavailable: "Nicht verfügbar", perNight: "/ Nacht", prev: "Vorheriger Monat", next: "Nächster Monat" },
 };

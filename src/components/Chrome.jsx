@@ -7,6 +7,7 @@ import { scrollToId } from "../lib/booking";
 import { EASE } from "./ui";
 import { useLang, LANGS } from "../i18n";
 import { Magnetic } from "./Fx";
+import { Approx } from "../lib/fx";
 
 /* ---------------- SCROLL FLUIDO ---------------- */
 export function useSmoothScroll() {
@@ -160,7 +161,7 @@ export function MobileBar() {
       {show && (
         <motion.div className="mbar" initial={{ y: 120 }} animate={{ y: 0 }} exit={{ y: 120 }} transition={{ type: "spring", stiffness: 260, damping: 28 }}>
           <div>
-            <b>{euro(s.pricePerNight)}</b> <span>{t.mbar.perNight}</span>
+            <b>{euro(s.pricePerNight)}</b> <span>{t.mbar.perNight}</span> <Approx eur={s.pricePerNight} />
             <small><Star size={11} fill="currentColor" /> 9,1 · {t.mbar.superb}</small>
           </div>
           <button onClick={() => scrollToId("prenota")}><CalendarDays size={17} /> {t.mbar.cta}</button>

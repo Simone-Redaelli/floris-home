@@ -27,6 +27,20 @@ service cloud.firestore {
     match /guestAccess/{code} {
       allow read, write: if isAdmin();
     }
+    // Recensioni degli ospiti: le scrive chi ha un codice di soggiorno (una per codice, entro 45 giorni),
+    // tutti leggono solo quelle approvate, l'admin le approva/nasconde/elimina
+    match /reviews/{code} {
+      allow read: if isAdmin() || resource.data.status == "approved";
+      allow create: if exists(/databases/$(database)/documents/guestGuides/$(code))
+        && get(/databases/$(database)/documents/guestGuides/$(code)).data.expiresAt + duration.value(45, 'd') > request.time
+        && request.resource.data.keys().hasOnly(["name", "country", "rating", "text", "lang", "createdAt", "status"])
+        && request.resource.data.status == "pending"
+        && request.resource.data.rating is int && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 60
+        && request.resource.data.country is string && request.resource.data.country.size() <= 60
+        && request.resource.data.text is string && request.resource.data.text.size() >= 10 && request.resource.data.text.size() <= 1200;
+      allow update, delete: if isAdmin();
+    }
     match /{document=**} {
       allow read, write: if false;
     }

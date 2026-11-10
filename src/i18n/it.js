@@ -1,6 +1,7 @@
 const n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
 
 export default {
+  fxNote: "Cambio indicativo: il prezzo e il pagamento sono in euro.", fxShort: "cambio indicativo, paghi in euro",
   nav: { links: ["La casa", "Tour", "Servizi", "Recensioni", "Bergamo", "Attività"], book: "Prenota", menu: "Menu", close: "Chiudi", lang: "Lingua" },
   door: {
     eyebrow: "Via San Pio X, 16 · Bergamo", title1: "Benvenuti a", title2: "casa", mat: "Benvenuti",
@@ -60,6 +61,7 @@ export default {
     ],
   },
   rev: {
+    siteKicker: "Dal nostro sito", siteTitle1: "Scritte da chi", siteTitle2: "è già stato qui",
     kicker: "Recensioni", superb: "Superbo", avg: (c) => `Media di ${c} recensioni verificate di ospiti reali su Booking.com`,
     read: "Leggi le recensioni", k2: "Cosa dicono gli ospiti", t1: "Pulizia e comfort", t2: "da 9,7",
     scores: ["Pulizia", "Comfort", "Servizi", "Staff", "Qualità / prezzo", "Posizione"], sticker: "OSPITI FELICI • RECENSIONI VERE • ",
@@ -162,6 +164,7 @@ export default {
     }
   },
   book: {
+    tfMapFrom: "Aeroporto di Orio al Serio", tfMapEta: "≈ 10 min dall'aeroporto a casa",
     perPerson: "a persona", perNightEx: "al giorno", free: "Gratis",
     residence: "Città di residenza", residencePh: "es. Bergamo",
     othersDue: (d) => `Se non li hai ora, mandaci i dati degli altri ospiti entro ${d}: per legge vanno registrati prima dell'arrivo, non al check-in.`,
@@ -229,6 +232,7 @@ export default {
     cta: "Verifica disponibilità", contacts: "Contatti", explore: "Esplora", copy: "Appartamento ad uso turistico", photos: "Foto città: Unsplash",
   },
   guide: {
+    reviewT: "Com'è andata?", reviewS: "Lasciaci una recensione: bastano 30 secondi e aiuta i prossimi ospiti a sceglierci.", reviewCta: "Lascia una recensione",
     cdDays: (n) => `giorni al tuo arrivo a Bergamo`, cdTomorrow: "Domani si parte! Ti aspettiamo a Bergamo.", cdToday: (ci) => `È oggi! Ti aspettiamo dalle ${String(ci).split(/[–-]/)[0].trim()}.`, cdStay: (d, n) => `Giorno ${d} di ${n}: goditi Bergamo!`, cdAfter: "Grazie di essere stato nostro ospite: torna presto!",
     title: "Guida della casa", welcome1: "Benvenuto", welcome2: "a casa",
     hello: (n) => `Ciao ${n},`, helloEm: "benvenuto!",
@@ -253,6 +257,18 @@ export default {
     enjoy: "Buon soggiorno a Bergamo!", back: "Torna al sito",
   },
   wx: { today: "Oggi a Bergamo", kinds: { clear: "sereno", cloudy: "nuvoloso", fog: "nebbia", rain: "pioggia", snow: "neve", storm: "temporale" } },
+  rw: {
+    kicker: "Recensione", title: "Lascia una recensione", title1: "Com'è andato il", title2: "soggiorno?",
+    sub: "Grazie di essere stato nostro ospite! La tua opinione aiuta i prossimi viaggiatori e ci aiuta a migliorare.",
+    rating: "Voto", tap: "Tocca le stelle", words: ["Da migliorare", "Così così", "Buono", "Molto bello", "Perfetto!"],
+    name: "Il tuo nome", namePh: "es. Giulia", country: "Da dove vieni (facoltativo)", countryPh: "es. Milano, Italia",
+    text: "Racconta il soggiorno", textPh: "Cosa ti è piaciuto della casa, della zona, dell'accoglienza…",
+    code: "Codice del soggiorno", codeHint: "Lo trovi nel messaggio di conferma o nella guida della casa.",
+    send: "Invia la recensione", sending: "Invio…", note: "La recensione compare sul sito dopo una nostra verifica. Pubblichiamo solo nome e paese.",
+    errExists: "Hai già lasciato una recensione per questo soggiorno: grazie!", errCode: "Codice non valido o scaduto: controllalo o scrivici su WhatsApp.", errGeneric: "Invio non riuscito, riprova tra poco.",
+    thanks: (n) => `Grazie${n ? `, ${n}` : ""}!`, thanksSub: "La tua recensione è arrivata: la pubblichiamo dopo una veloce verifica.",
+    google: "Lasciala anche su Google", back: "Torna al sito",
+  },
   mbar: { perNight: "/ notte", superb: "Superbo", cta: "Scegli le date" },
   cal: { wd: ["L", "M", "M", "G", "V", "S", "D"], unavailable: "Non disponibile", perNight: "/ notte", prev: "Mese precedente", next: "Mese successivo" },
 };

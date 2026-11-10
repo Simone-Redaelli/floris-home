@@ -11,10 +11,12 @@ import { SettingsProvider } from "./lib/settings";
 import { BookingProvider } from "./lib/booking";
 import { LangProvider } from "./i18n";
 import { AmbientProvider } from "./lib/ambient";
+import { FxProvider } from "./lib/fx";
 
 // Il pannello admin e la guida ospiti vengono scaricati solo da chi li apre
 const Admin = lazy(() => import("./admin/Admin"));
 const Guide = lazy(() => import("./components/Guide"));
+const ReviewPage = lazy(() => import("./components/ReviewPage"));
 
 function Site() {
   useSmoothScroll();
@@ -34,6 +36,7 @@ function Site() {
   return (
     <LangProvider>
     <AmbientProvider>
+    <FxProvider>
     <SettingsProvider>
       <BookingProvider>
         <Nav />
@@ -57,12 +60,16 @@ function Site() {
         <MobileBar />
       </BookingProvider>
     </SettingsProvider>
+    </FxProvider>
     </AmbientProvider>
     </LangProvider>
   );
 }
 
-const pageOf = () => (window.location.hash.startsWith("#admin") ? "admin" : window.location.hash.startsWith("#guida") ? "guide" : "site");
+const pageOf = () => {
+  const h = window.location.hash;
+  return h.startsWith("#admin") ? "admin" : h.startsWith("#guida") ? "guide" : h.startsWith("#recensione") ? "review" : "site";
+};
 
 export default function App() {
   const [page] = useState(pageOf);
@@ -72,6 +79,17 @@ export default function App() {
     return () => removeEventListener("hashchange", f);
   }, [page]);
 
+  if (page === "review") {
+    return (
+      <LangProvider>
+        <SettingsProvider>
+          <Suspense fallback={<div className="adm-loading"><span /></div>}>
+            <ReviewPage />
+          </Suspense>
+        </SettingsProvider>
+      </LangProvider>
+    );
+  }
   if (page === "guide") {
     return (
       <LangProvider>

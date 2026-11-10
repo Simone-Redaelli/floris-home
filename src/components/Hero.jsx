@@ -9,6 +9,7 @@ import Calendar from "./Calendar";
 import { Img, EASE } from "./ui";
 import { Sticker, Leaves } from "./Wow";
 import { WeatherChip, WeatherFx, useMagnetic } from "./Fx";
+import { Approx } from "../lib/fx";
 
 /* parola che cambia nel titolo */
 function Rotator() {
@@ -187,7 +188,7 @@ export function Hero() {
       </motion.div>
       <div className="hero-top">
         <motion.div className="hero-chip" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: EASE }}>
-          <span className="dot" /> {s.bookingOpen ? h.open : h.closed} · {h.from} <b>{euro(s.pricePerNight)}</b> {h.perNight}
+          <span className="dot" /> {s.bookingOpen ? h.open : h.closed} · {h.from} <b>{euro(s.pricePerNight)}</b> {h.perNight} <Approx eur={s.pricePerNight} />
         </motion.div>
         <WeatherChip />
         <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.1, ease: EASE }}>

@@ -1,6 +1,7 @@
 const n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
 
 export default {
+  fxNote: "Taux indicatif : les prix et le paiement sont en euros.", fxShort: "taux indicatif, vous payez en euros",
   nav: { links: ["La maison", "Visite", "Services", "Avis", "Bergame", "Activités"], book: "Réserver", menu: "Menu", close: "Fermer", lang: "Langue" },
   door: {
     eyebrow: "Via San Pio X, 16 · Bergame", title1: "Bienvenue", title2: "chez vous", mat: "Bienvenue",
@@ -60,6 +61,7 @@ export default {
     ],
   },
   rev: {
+    siteKicker: "Sur notre site", siteTitle1: "Écrits par ceux", siteTitle2: "qui sont déjà venus",
     kicker: "Avis", superb: "Exceptionnel", avg: (c) => `Moyenne de ${c} avis vérifiés de vrais voyageurs sur Booking.com`,
     read: "Lire les avis", k2: "Ce qu'en disent les voyageurs", t1: "Propreté et confort", t2: "notés 9,7",
     scores: ["Propreté", "Confort", "Équipements", "Personnel", "Rapport qualité/prix", "Emplacement"], sticker: "VOYAGEURS RAVIS • VRAIS AVIS • ",
@@ -162,6 +164,7 @@ export default {
     }
   },
   book: {
+    tfMapFrom: "Aéroport d'Orio al Serio", tfMapEta: "≈ 10 min de l'aéroport à la maison",
     perPerson: "par personne", perNightEx: "par jour", free: "Gratuit",
     residence: "Ville de résidence", residencePh: "ex. Bergame",
     othersDue: (d) => `Si vous ne les avez pas maintenant, envoyez-nous les données des autres voyageurs avant le ${d} : la loi impose de les enregistrer avant l'arrivée, pas au check-in.`,
@@ -229,6 +232,7 @@ export default {
     cta: "Vérifier la disponibilité", contacts: "Contact", explore: "Explorer", copy: "Appartement de vacances", photos: "Photos de la ville : Unsplash",
   },
   guide: {
+    reviewT: "Comment s'est passé votre séjour ?", reviewS: "Laissez-nous un avis : 30 secondes suffisent et cela aide les prochains voyageurs.", reviewCta: "Laisser un avis",
     cdDays: (n) => `jours avant votre arrivée à Bergame`, cdTomorrow: "C'est demain ! À bientôt à Bergame.", cdToday: (ci) => `C'est aujourd'hui ! Nous vous attendons dès ${String(ci).split(/[–-]/)[0].trim()}.`, cdStay: (d, n) => `Jour ${d} sur ${n} : profitez de Bergame !`, cdAfter: "Merci d'avoir séjourné chez nous : revenez vite !",
     title: "Guide de la maison", welcome1: "Bienvenue", welcome2: "chez vous",
     hello: (n) => `Bonjour ${n},`, helloEm: "bienvenue !",
@@ -253,6 +257,18 @@ export default {
     enjoy: "Bon séjour à Bergame !", back: "Retour au site",
   },
   wx: { today: "Aujourd'hui à Bergame", kinds: { clear: "dégagé", cloudy: "nuageux", fog: "brouillard", rain: "pluie", snow: "neige", storm: "orage" } },
+  rw: {
+    kicker: "Avis", title: "Laisser un avis", title1: "Comment s'est passé", title2: "votre séjour ?",
+    sub: "Merci d'avoir séjourné chez nous ! Votre avis aide les prochains voyageurs et nous aide à nous améliorer.",
+    rating: "Note", tap: "Touchez les étoiles", words: ["À améliorer", "Moyen", "Bien", "Très bien", "Parfait !"],
+    name: "Votre prénom", namePh: "ex. Camille", country: "D'où venez-vous (facultatif)", countryPh: "ex. Lyon, France",
+    text: "Racontez votre séjour", textPh: "Ce que vous avez aimé de la maison, du quartier, de l'accueil…",
+    code: "Code du séjour", codeHint: "Il se trouve dans le message de confirmation ou dans le guide de la maison.",
+    send: "Envoyer l'avis", sending: "Envoi…", note: "L'avis apparaît sur le site après une vérification rapide. Nous publions seulement le prénom et le pays.",
+    errExists: "Vous avez déjà laissé un avis pour ce séjour : merci !", errCode: "Code invalide ou expiré : vérifiez-le ou écrivez-nous sur WhatsApp.", errGeneric: "Échec de l'envoi, réessayez dans un instant.",
+    thanks: (n) => `Merci${n ? `, ${n}` : ""} !`, thanksSub: "Votre avis est bien arrivé : nous le publierons après une vérification rapide.",
+    google: "Le laisser aussi sur Google", back: "Retour au site",
+  },
   mbar: { perNight: "/ nuit", superb: "Exceptionnel", cta: "Choisir les dates" },
   cal: { wd: ["L", "M", "M", "J", "V", "S", "D"], unavailable: "Indisponible", perNight: "/ nuit", prev: "Mois précédent", next: "Mois suivant" },
 };

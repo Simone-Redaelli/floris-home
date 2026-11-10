@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp, collection, onSnapshot } from "firebase/firestore";
 import {
-  LayoutDashboard, CalendarDays, Euro, Info, LogOut, Save, Plus, Trash2, Lock, ExternalLink, BookOpenText, Sparkles,
+  LayoutDashboard, CalendarDays, Euro, Info, LogOut, Save, Plus, Trash2, Lock, ExternalLink, BookOpenText, Sparkles, Star,
   Check, AlertTriangle, Eye, EyeOff, RotateCcw, Inbox, Plane, PawPrint, Phone, Mail, X,
 } from "lucide-react";
 import { ADMIN_EMAIL, isConfigured } from "../lib/firebase-config";
 import { DOC_PATH, today, addDays, nightsBetween, euro, fmtDate, quote, normalize } from "../lib/settings";
 import { getFb } from "./fb";
 import { Head, Field, Toggle, Kpi } from "./ui";
-import { IcalBox, ExtrasBox, TaxBox, GuideTab, Stats, TodoToday } from "./more";
+import { IcalBox, ExtrasBox, TaxBox, GuideTab, Stats, TodoToday, ReviewsTab } from "./more";
 import Calendar from "../components/Calendar";
 import { api, hasApi } from "../lib/api";
 
@@ -20,6 +20,7 @@ const TABS = [
   { id: "cal", label: "Disponibilità", icon: CalendarDays },
   { id: "price", label: "Prezzi", icon: Euro },
   { id: "guide", label: "Guida ospiti", icon: BookOpenText },
+  { id: "reviews", label: "Recensioni", icon: Star },
   { id: "info", label: "Info e contatti", icon: Info },
 ];
 
@@ -238,6 +239,7 @@ function Dashboard({ user }) {
             {tab === "cal" && <Availability d={draft} set={set} user={user} flash={flash} />}
             {tab === "price" && <Prices d={draft} set={set} />}
             {tab === "guide" && <GuideTab d={draft} set={set} flash={flash} />}
+            {tab === "reviews" && <ReviewsTab flash={flash} />}
             {tab === "info" && <InfoTab d={draft} set={set} />}
           </motion.div>
         </AnimatePresence>

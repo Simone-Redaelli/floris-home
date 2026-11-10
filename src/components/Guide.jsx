@@ -5,7 +5,7 @@ import {
   MessageCircle, MapPin, Navigation, Lock, Copy, Check, ArrowUpRight, Sparkles, Info, LogOut, Compass,
 } from "lucide-react";
 import { useLang } from "../i18n";
-import { useSettings, fmtDate, euro } from "../lib/settings";
+import { useSettings, fmtDate, euro, addDays } from "../lib/settings";
 import { fetchGuide } from "../lib/guide";
 import { SITE } from "../data";
 import { LangSwitch } from "./Chrome";
@@ -13,6 +13,7 @@ import { EASE } from "./ui";
 import { Handwrite, Countdown } from "./Fx";
 
 const KEY = "floris-guide";
+const romeToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome" }).format(new Date());
 const clean = (c) => String(c || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
 const pretty = (c) => (c.length > 4 ? `${c.slice(0, 4)}-${c.slice(4)}` : c);
 const fromHash = () => clean((window.location.hash.match(/^#guida\/(.+)$/) || [])[1]);
@@ -93,6 +94,8 @@ export default function Guide() {
   };
 
   const unlocked = state === "ok" && data;
+  // dall'ultimo giorno del soggiorno compare l'invito a lasciare una recensione
+  const reviewOpen = unlocked && data.to && romeToday() >= addDays(data.to, -1);
   const { lat, lng } = SITE.coords;
   const wa = `https://wa.me/${s.whatsapp}`;
   const L = (n) => fmtDate(n, { weekday: "long", day: "numeric", month: "long" });
@@ -193,6 +196,14 @@ export default function Guide() {
             <li><a href="tel:+390354519090"><CarTaxiFront size={16} /><span>{g.taxi}</span><b>035 451 9090</b></a></li>
           </ul>
         </Card>
+
+        {reviewOpen && (
+          <motion.a className="gd-card gd-review" href={`#recensione/${code}`} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <span className="gd-stars">★★★★★</span>
+            <div><h2>{g.reviewT}</h2><p>{g.reviewS}</p></div>
+            <span className="act-cta">{g.reviewCta} <ArrowUpRight size={16} /></span>
+          </motion.a>
+        )}
 
         {s.guideNotes && (
           <Card icon={Info} title={g.notes} tone="full">

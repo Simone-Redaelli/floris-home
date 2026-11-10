@@ -285,3 +285,97 @@ export function SkyDecor({ pathRef }) {
     </g>
   );
 }
+
+/* =================== TRANSFER: aereo che atterra e auto che arriva a casa =================== */
+const ROUTE = "M196 150 C 236 150, 250 128, 282 120 S 336 112, 352 96 S 392 70, 446 66";
+
+export function TransferMap() {
+  const { t } = useLang();
+  const k = t.book;
+  const reduce = useReducedMotion();
+  const route = useRef(null);
+  const car = useRef(null);
+  const [stage, setStage] = useState(reduce ? 3 : 0); // 0 volo · 1 atterrato · 2 in auto · 3 arrivato
+  const [cycle, setCycle] = useState(0);
+
+  useEffect(() => {
+    if (reduce) { placeCar(1); return; }
+    let raf;
+    let timers = [];
+    setStage(0);
+    placeCar(0);
+    timers.push(setTimeout(() => setStage(1), 2100));
+    timers.push(setTimeout(() => {
+      setStage(2);
+      const start = performance.now();
+      const dur = 2600;
+      const step = (now) => {
+        const p = Math.min(1, (now - start) / dur);
+        placeCar(p < 0.5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2);
+        if (p < 1) raf = requestAnimationFrame(step);
+        else setStage(3);
+      };
+      raf = requestAnimationFrame(step);
+    }, 2600));
+    timers.push(setTimeout(() => setCycle((c) => c + 1), 9000));
+    return () => { timers.forEach(clearTimeout); cancelAnimationFrame(raf); };
+  }, [cycle, reduce]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function placeCar(p) {
+    const path = route.current;
+    const el = car.current;
+    if (!path || !el) return;
+    const L = path.getTotalLength();
+    const a = path.getPointAtLength(L * p);
+    const b = path.getPointAtLength(Math.min(L, L * p + 1));
+    const ang = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+    el.setAttribute("transform", `translate(${a.x} ${a.y}) rotate(${p >= 1 ? -12 : ang})`);
+  }
+
+  return (
+    <div className="tmap" aria-label={`${k.tfMapFrom} → Flori's Home, ${k.tfMapEta}`}>
+      <svg viewBox="0 0 500 200" role="img">
+        <defs>
+          <pattern id="tm-grid" width="26" height="26" patternUnits="userSpaceOnUse"><path d="M26 0H0V26" fill="none" stroke="#e6dccd" strokeWidth="1" /></pattern>
+        </defs>
+        <rect width="500" height="200" rx="18" fill="#f6f0e6" />
+        <rect width="500" height="200" rx="18" fill="url(#tm-grid)" opacity=".7" />
+        <path d="M-10 40 C 120 70, 300 20, 520 46" className="tm-road big" />
+        <path d="M260 210 C 280 150, 330 60, 360 -10" className="tm-road" />
+        <ellipse cx="400" cy="150" rx="70" ry="30" className="tm-park" />
+        <ellipse cx="120" cy="40" rx="50" ry="18" className="tm-park" />
+        {/* aeroporto */}
+        <g className="tm-airport">
+          <rect x="40" y="139" width="170" height="22" rx="4" className="tm-runway" />
+          <path d="M52 150 H198" className="tm-centerline" />
+          <rect x="70" y="166" width="60" height="16" rx="4" className="tm-terminal" />
+          <text x="100" y="196" className="tm-label">{k.tfMapFrom}</text>
+        </g>
+        {/* percorso */}
+        <path ref={route} d={ROUTE} className="tm-route-bg" />
+        <motion.path d={ROUTE} className="tm-route" initial={false} animate={{ pathLength: stage >= 2 ? 1 : 0 }} transition={{ duration: stage >= 2 ? 2.6 : 0.2, ease: "easeInOut" }} />
+        {/* casa */}
+        <motion.g className="tm-home" animate={stage === 3 ? { y: [0, -8, 0] } : { y: 0 }} transition={{ duration: 0.6 }}>
+          <circle cx="446" cy="66" r="15" />
+          <text x="446" y="71" className="tm-home-f">F</text>
+          <text x="446" y="38" className="tm-label strong">Flori's Home</text>
+        </motion.g>
+        {/* auto */}
+        <g ref={car} className={`tm-car ${stage >= 2 ? "on" : ""}`}>
+          <rect x="-11" y="-6" width="22" height="12" rx="4" />
+          <rect x="-2" y="-4.5" width="7" height="9" rx="2" className="tm-glass" />
+        </g>
+        {/* aereo */}
+        <motion.g
+          className="tm-plane"
+          initial={{ x: -30, y: 24, opacity: 0 }}
+          animate={reduce ? { x: 180, y: 150, opacity: 0 } : stage === 0 ? { x: [-30, 40, 92, 176], y: [24, 104, 148, 150], rotate: [24, 22, 2, 0], opacity: [0, 1, 1, 1] } : { x: 176, y: 150, opacity: stage >= 2 ? 0 : 1 }}
+          transition={stage === 0 ? { duration: 2.1, times: [0, 0.45, 0.8, 1], ease: "easeOut" } : { duration: 0.4 }}
+        >
+          <path d="M14 0 L4 -2 L-4 -13 L-8 -13 L-3 -2 L-11 -2 L-14 -7 L-17 -7 L-15 0 L-17 7 L-14 7 L-11 2 L-3 2 L-8 13 L-4 13 L4 2 L14 0 Z" />
+        </motion.g>
+      </svg>
+      <motion.span className="tm-eta" animate={{ opacity: stage === 3 ? 1 : 0.35, scale: stage === 3 ? 1 : 0.94 }}>{k.tfMapEta}</motion.span>
+    </div>
+  );
+}

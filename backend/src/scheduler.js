@@ -25,7 +25,7 @@ export function dueMessages(bookings, s, now = DateTime.now().setZone(TZ)) {
     if (!b.preArrivalSentAt && ((b.from === tomorrow && hour >= 10) || (b.from === today && !confirmedToday))) {
       out.push({ kind: 'preArrival', b });
     }
-    if (!b.reviewSentAt && s.reviewUrl && b.to >= twoDaysAgo && (b.to < today || (b.to === today && hour >= 12))) {
+    if (!b.reviewSentAt && (b.guideCode || s.reviewUrl) && b.to >= twoDaysAgo && (b.to < today || (b.to === today && hour >= 12))) {
       out.push({ kind: 'review', b });
     }
   }
@@ -39,9 +39,11 @@ export async function runScheduler() {
     const mark = kind === 'preArrival' ? 'preArrivalSentAt' : 'reviewSentAt';
     // segno subito come inviato: meglio un messaggio perso che due uguali
     await store.update(b.id, { [mark]: new Date().toISOString() });
-    const mail = kind === 'preArrival' ? preArrivalEmail(b, s) : reviewEmail(b, s.reviewUrl);
+    // recensione: prima sul sito (con il codice del soggiorno), altrimenti su Google
+    const reviewLink = b.guideCode ? `${env.publicUrl}/#recensione/${b.guideCode}` : s.reviewUrl;
+    const mail = kind === 'preArrival' ? preArrivalEmail(b, s) : reviewEmail(b, reviewLink);
     const results = await Promise.allSettled([
-      kind === 'preArrival' ? notify.guestPreArrival(b, s) : notify.guestReview(b, s.reviewUrl),
+      kind === 'preArrival' ? notify.guestPreArrival(b, s) : notify.guestReview(b, reviewLink),
       b.email ? sendEmail({ to: [{ name: b.name, email: b.email }], ...mail }) : Promise.resolve(),
     ]);
     results.filter((r) => r.status === 'rejected').forEach((r) => console.error(`Messaggio ${kind} a ${b.id} fallito:`, r.reason?.message));

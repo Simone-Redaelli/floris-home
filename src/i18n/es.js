@@ -1,6 +1,7 @@
 const n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
 
 export default {
+  fxNote: "Cambio orientativo: el precio y el pago son en euros.", fxShort: "cambio orientativo, pagas en euros",
   nav: { links: ["La casa", "Recorrido", "Servicios", "Opiniones", "Bérgamo", "Actividades"], book: "Reservar", menu: "Menú", close: "Cerrar", lang: "Idioma" },
   door: {
     eyebrow: "Via San Pio X, 16 · Bérgamo", title1: "Bienvenidos a", title2: "casa", mat: "Bienvenidos",
@@ -60,6 +61,7 @@ export default {
     ],
   },
   rev: {
+    siteKicker: "En nuestra web", siteTitle1: "Escritas por quien", siteTitle2: "ya estuvo aquí",
     kicker: "Opiniones", superb: "Fantástico", avg: (c) => `Media de ${c} opiniones verificadas de huéspedes reales en Booking.com`,
     read: "Leer las opiniones", k2: "Lo que dicen los huéspedes", t1: "Limpieza y confort", t2: "con un 9,7",
     scores: ["Limpieza", "Confort", "Instalaciones", "Personal", "Calidad / precio", "Ubicación"], sticker: "HUÉSPEDES FELICES • OPINIONES REALES • ",
@@ -162,6 +164,7 @@ export default {
     }
   },
   book: {
+    tfMapFrom: "Aeropuerto de Orio al Serio", tfMapEta: "≈ 10 min del aeropuerto a casa",
     perPerson: "por persona", perNightEx: "al día", free: "Gratis",
     residence: "Ciudad de residencia", residencePh: "p. ej. Bérgamo",
     othersDue: (d) => `Si ahora no los tienes, envíanos los datos de los demás huéspedes antes del ${d}: por ley deben registrarse antes de la llegada, no en el check-in.`,
@@ -229,6 +232,7 @@ export default {
     cta: "Comprobar disponibilidad", contacts: "Contacto", explore: "Explorar", copy: "Apartamento turístico", photos: "Fotos de la ciudad: Unsplash",
   },
   guide: {
+    reviewT: "¿Qué tal la estancia?", reviewS: "Déjanos una reseña: son 30 segundos y ayuda a los próximos huéspedes a elegirnos.", reviewCta: "Dejar una reseña",
     cdDays: (n) => `días para tu llegada a Bérgamo`, cdTomorrow: "¡Mañana es el día! Te esperamos en Bérgamo.", cdToday: (ci) => `¡Es hoy! Te esperamos desde las ${String(ci).split(/[–-]/)[0].trim()}.`, cdStay: (d, n) => `Día ${d} de ${n}: ¡disfruta de Bérgamo!`, cdAfter: "Gracias por alojarte con nosotros: ¡vuelve pronto!",
     title: "Guía de la casa", welcome1: "Bienvenido", welcome2: "a casa",
     hello: (n) => `Hola ${n},`, helloEm: "¡bienvenido!",
@@ -253,6 +257,18 @@ export default {
     enjoy: "¡Disfruta de Bérgamo!", back: "Volver a la web",
   },
   wx: { today: "Hoy en Bérgamo", kinds: { clear: "despejado", cloudy: "nublado", fog: "niebla", rain: "lluvia", snow: "nieve", storm: "tormenta" } },
+  rw: {
+    kicker: "Reseña", title: "Deja una reseña", title1: "¿Qué tal fue tu", title2: "estancia?",
+    sub: "¡Gracias por alojarte con nosotros! Tu opinión ayuda a los próximos viajeros y a nosotros a mejorar.",
+    rating: "Valoración", tap: "Toca las estrellas", words: ["Mejorable", "Regular", "Bien", "Muy bien", "¡Perfecto!"],
+    name: "Tu nombre", namePh: "p. ej. Lucía", country: "De dónde eres (opcional)", countryPh: "p. ej. Madrid, España",
+    text: "Cuéntanos tu estancia", textPh: "Lo que te gustó de la casa, la zona, la acogida…",
+    code: "Código de la estancia", codeHint: "Lo encontrarás en el mensaje de confirmación o en la guía de la casa.",
+    send: "Enviar reseña", sending: "Enviando…", note: "La reseña aparece en la web tras una revisión rápida. Solo publicamos nombre y país.",
+    errExists: "Ya dejaste una reseña para esta estancia: ¡gracias!", errCode: "Código no válido o caducado: revísalo o escríbenos por WhatsApp.", errGeneric: "No se pudo enviar, inténtalo de nuevo en un momento.",
+    thanks: (n) => `¡Gracias${n ? `, ${n}` : ""}!`, thanksSub: "Tu reseña ha llegado: la publicaremos tras una revisión rápida.",
+    google: "Déjala también en Google", back: "Volver a la web",
+  },
   mbar: { perNight: "/ noche", superb: "Fantástico", cta: "Elegir fechas" },
   cal: { wd: ["L", "M", "X", "J", "V", "S", "D"], unavailable: "No disponible", perNight: "/ noche", prev: "Mes anterior", next: "Mes siguiente" },
 };
