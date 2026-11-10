@@ -25,7 +25,7 @@ export function useSmoothScroll() {
   }, []);
 }
 
-const HREFS = ["#casa", "#tour", "#servizi", "#recensioni", "#bergamo"];
+const HREFS = ["#casa", "#tour", "#servizi", "#recensioni", "#bergamo", "#attivita"];
 export const useLinks = () => {
   const { t } = useLang();
   return HREFS.map((h, i) => [t.nav.links[i], h]);

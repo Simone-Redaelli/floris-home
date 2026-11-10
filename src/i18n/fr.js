@@ -1,7 +1,7 @@
 const n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
 
 export default {
-  nav: { links: ["La maison", "Visite", "Services", "Avis", "Bergame"], book: "Réserver", menu: "Menu", close: "Fermer", lang: "Langue" },
+  nav: { links: ["La maison", "Visite", "Services", "Avis", "Bergame", "Activités"], book: "Réserver", menu: "Menu", close: "Fermer", lang: "Langue" },
   door: {
     eyebrow: "Via San Pio X, 16 · Bergame", title1: "Bienvenue", title2: "chez vous", mat: "Bienvenue",
     bell: "Sonnez à la porte", scroll: "ou faites défiler pour entrer", bellAria: "Sonner et ouvrir la porte",
@@ -69,6 +69,95 @@ export default {
     sub: "Un quartier résidentiel et calme. En quelques minutes vous êtes à l'aéroport, à la Foire ou au centre ; en un quart d'heure sur les remparts de la Ville Haute.",
     places: ["Aéroport d'Orio al Serio", "Foire de Bergame", "Accademia Carrara", "Théâtre Donizetti", "Gewiss Stadium", "Ville Haute (Città Alta)"],
     alta: "Ville Haute", porta: "Porta San Giacomo", directions: "Itinéraire", mapTitle: "Carte Flori's Home", skyPin: "Orio al Serio · 4 km",
+  },
+  act: {
+    "kicker": "À découvrir",
+    "title1": "Que faire",
+    "title2": "près de la maison",
+    "sub": "Les expériences que nous conseillons à nos hôtes, toutes réservables en ligne. Temps indiqués en voiture depuis la maison.",
+    "cats": {
+      "all": "Toutes",
+      "culture": "Culture",
+      "nature": "Lacs et nature",
+      "family": "Familles",
+      "relax": "Détente",
+      "food": "Gastronomie",
+      "sport": "Sport",
+      "shop": "Shopping"
+    },
+    "cta": {
+      "book": "Réserver",
+      "tickets": "Billets",
+      "info": "Découvrir"
+    },
+    "from": "dès",
+    "askT": "Vous hésitez ?",
+    "askS": "Écrivez-nous sur WhatsApp : on vous conseille le bon endroit et les restaurants où nous mangeons nous-mêmes.",
+    "askCta": "Nous demander",
+    "waText": "Bonjour ! Je viens bientôt à Flori's Home : que me conseillez-vous de faire dans le coin ?",
+    "note": "Les liens mènent aux sites officiels ou partenaires : prix et disponibilités sont gérés par eux.",
+    "items": {
+      "alta": {
+        "title": "La Ville Haute avec guide officiel",
+        "desc": "Remparts vénitiens classés UNESCO, Piazza Vecchia et chapelle Colleoni lors d'une visite à pied de 2 h. Dimanches et jours fériés à 10h30 (en italien).",
+        "where": "Torre del Gombito"
+      },
+      "funi": {
+        "title": "Funiculaires de la Ville Haute et San Vigilio",
+        "desc": "Montez jusqu'au bourg médiéval, puis encore plus haut jusqu'au château de San Vigilio : coucher de soleil sur la plaine.",
+        "where": "Viale Vittorio Emanuele"
+      },
+      "carrara": {
+        "title": "Accademia Carrara",
+        "desc": "L'une des plus belles pinacothèques d'Italie : Raphaël, Botticelli, Mantegna, Bellini, et des expositions toute l'année.",
+        "where": "Piazza Carrara"
+      },
+      "donizetti": {
+        "title": "Théâtre Donizetti",
+        "desc": "Opéra, théâtre, concerts et le Donizetti Opera Festival dans le théâtre historique de la Ville Basse.",
+        "where": "Ville Basse"
+      },
+      "atalanta": {
+        "title": "L'Atalanta au Gewiss Stadium",
+        "desc": "Vivez un match de l'Atalanta dans l'un des stades les plus chauds d'Italie, à quelques minutes de la maison.",
+        "where": "Gewiss Stadium"
+      },
+      "cooking": {
+        "title": "Cours de cuisine bergamasque",
+        "desc": "Casoncelli, polenta taragna et scarpinocc : cuisinez chez une Cesarina, puis on mange ensemble.",
+        "where": "Bergame et alentours"
+      },
+      "leolandia": {
+        "title": "Leolandia",
+        "desc": "Le parc d'attractions préféré des enfants : manèges, spectacles et personnages de dessins animés.",
+        "where": "Capriate San Gervasio"
+      },
+      "crespi": {
+        "title": "Village de Crespi d'Adda",
+        "desc": "Village ouvrier classé UNESCO, resté intact depuis la fin du XIXe siècle. Visites guidées et balades le long de l'Adda.",
+        "where": "Capriate San Gervasio"
+      },
+      "terme": {
+        "title": "QC Terme San Pellegrino",
+        "desc": "Une journée de détente dans le Val Brembana : bassins thermaux, saunas et parcours bien-être dans un bâtiment Art nouveau.",
+        "where": "San Pellegrino Terme"
+      },
+      "iseo": {
+        "title": "Lac d'Iseo et Monte Isola",
+        "desc": "En bateau vers Monte Isola, la plus grande île lacustre d'Europe : villages de pêcheurs, vélo et poisson du lac.",
+        "where": "Sarnico · Iseo"
+      },
+      "como": {
+        "title": "Lac de Côme",
+        "desc": "De Lecco en bateau vers Bellagio et Varenna : villas, jardins et les plus beaux panoramas du lac.",
+        "where": "Depuis Lecco"
+      },
+      "orio": {
+        "title": "Orio Center",
+        "desc": "L'un des plus grands centres commerciaux d'Italie, à côté de l'aéroport : boutiques, restaurants et cinéma.",
+        "where": "Orio al Serio"
+      }
+    }
   },
   book: {
     kicker: "Réservez en direct", title1: "Choisissez vos dates,", title2: "le reste est simple",

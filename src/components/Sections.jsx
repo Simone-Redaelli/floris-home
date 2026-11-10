@@ -16,7 +16,7 @@ import { useLinks } from "./Chrome";
 import { useLang } from "../i18n";
 import { Polaroids, Skyline, Trail, Sticker } from "./Wow";
 
-function Head({ kicker, title, sub, center }) {
+export function Head({ kicker, title, sub, center }) {
   return (
     <Reveal className={`head ${center ? "center" : ""}`}>
       <span className="kicker">{kicker}</span>

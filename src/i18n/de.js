@@ -1,7 +1,7 @@
 const n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
 
 export default {
-  nav: { links: ["Die Wohnung", "Rundgang", "Ausstattung", "Bewertungen", "Bergamo"], book: "Buchen", menu: "Menü", close: "Schließen", lang: "Sprache" },
+  nav: { links: ["Die Wohnung", "Rundgang", "Ausstattung", "Bewertungen", "Bergamo", "Erleben"], book: "Buchen", menu: "Menü", close: "Schließen", lang: "Sprache" },
   door: {
     eyebrow: "Via San Pio X, 16 · Bergamo", title1: "Willkommen", title2: "zu Hause", mat: "Willkommen",
     bell: "Klingeln", scroll: "oder scrollen, um einzutreten", bellAria: "Klingeln und die Tür öffnen",
@@ -69,6 +69,95 @@ export default {
     sub: "Ruhiges Wohngebiet. In wenigen Minuten bist du am Flughafen, auf der Messe oder im Zentrum; in einer Viertelstunde auf den Mauern der Oberstadt.",
     places: ["Flughafen Orio al Serio", "Messe Bergamo", "Accademia Carrara", "Teatro Donizetti", "Gewiss Stadium", "Oberstadt (Città Alta)"],
     alta: "Oberstadt", porta: "Porta San Giacomo", directions: "Route", mapTitle: "Karte Flori's Home", skyPin: "Orio al Serio · 4 km",
+  },
+  act: {
+    "kicker": "Entdecken",
+    "title1": "Was man",
+    "title2": "in der Nähe erleben kann",
+    "sub": "Die Erlebnisse, die wir unseren Gästen empfehlen – alle online buchbar. Fahrzeiten mit dem Auto ab der Wohnung.",
+    "cats": {
+      "all": "Alle",
+      "culture": "Kultur",
+      "nature": "Seen & Natur",
+      "family": "Familien",
+      "relax": "Entspannung",
+      "food": "Kulinarik",
+      "sport": "Sport",
+      "shop": "Shopping"
+    },
+    "cta": {
+      "book": "Buchen",
+      "tickets": "Tickets",
+      "info": "Entdecken"
+    },
+    "from": "ab",
+    "askT": "Unsicher, was du wählen sollst?",
+    "askS": "Schreib uns auf WhatsApp: Wir empfehlen dir den richtigen Ort und die Restaurants, in denen wir selbst essen.",
+    "askCta": "Frag uns",
+    "waText": "Hallo! Ich komme bald ins Flori's Home: Was empfehlt ihr in der Umgebung?",
+    "note": "Die Links führen zu offiziellen Websites oder Partnern: Preise und Verfügbarkeit liegen bei ihnen.",
+    "items": {
+      "alta": {
+        "title": "Oberstadt mit offiziellem Guide",
+        "desc": "Venezianische Mauern (UNESCO), Piazza Vecchia und Colleoni-Kapelle bei einer 2-stündigen Führung zu Fuß. Sonn- und feiertags um 10:30 Uhr (auf Italienisch).",
+        "where": "Torre del Gombito"
+      },
+      "funi": {
+        "title": "Standseilbahnen Oberstadt & San Vigilio",
+        "desc": "Mit der Standseilbahn in die mittelalterliche Altstadt und weiter hinauf zur Burg San Vigilio: Sonnenuntergang über der Ebene.",
+        "where": "Viale Vittorio Emanuele"
+      },
+      "carrara": {
+        "title": "Accademia Carrara",
+        "desc": "Eine der schönsten Gemäldegalerien Italiens: Raffael, Botticelli, Mantegna, Bellini – und Ausstellungen das ganze Jahr.",
+        "where": "Piazza Carrara"
+      },
+      "donizetti": {
+        "title": "Teatro Donizetti",
+        "desc": "Oper, Schauspiel, Konzerte und das Donizetti Opera Festival im historischen Theater der Unterstadt.",
+        "where": "Unterstadt"
+      },
+      "atalanta": {
+        "title": "Atalanta im Gewiss Stadium",
+        "desc": "Erlebe ein Spiel von Atalanta in einem der stimmungsvollsten Stadien Italiens, nur wenige Minuten entfernt.",
+        "where": "Gewiss Stadium"
+      },
+      "cooking": {
+        "title": "Bergamasker Kochkurs",
+        "desc": "Casoncelli, Polenta Taragna und Scarpinocc: Koche mit einer Cesarina bei ihr zu Hause und esst danach zusammen.",
+        "where": "Bergamo & Umgebung"
+      },
+      "leolandia": {
+        "title": "Leolandia",
+        "desc": "Der Lieblings-Freizeitpark der Kinder: Fahrgeschäfte, Shows und bekannte Zeichentrickfiguren.",
+        "where": "Capriate San Gervasio"
+      },
+      "crespi": {
+        "title": "Arbeiterdorf Crespi d'Adda",
+        "desc": "UNESCO-Welterbe: eine Arbeitersiedlung, unverändert seit dem späten 19. Jahrhundert. Führungen und Spaziergänge an der Adda.",
+        "where": "Capriate San Gervasio"
+      },
+      "terme": {
+        "title": "QC Terme San Pellegrino",
+        "desc": "Ein Wellness-Tag im Val Brembana: Thermalbecken, Saunen und Wellness-Parcours in einem Jugendstilgebäude.",
+        "where": "San Pellegrino Terme"
+      },
+      "iseo": {
+        "title": "Iseosee & Monte Isola",
+        "desc": "Mit dem Schiff nach Monte Isola, Europas größter Seeinsel: Fischerdörfer, Radtouren und Fisch aus dem See.",
+        "where": "Sarnico · Iseo"
+      },
+      "como": {
+        "title": "Comer See",
+        "desc": "Von Lecco mit dem Schiff nach Bellagio und Varenna: Villen, Gärten und die berühmtesten Ausblicke des Sees.",
+        "where": "Ab Lecco"
+      },
+      "orio": {
+        "title": "Orio Center",
+        "desc": "Eines der größten Einkaufszentren Italiens, direkt am Flughafen: Shops, Restaurants und Kino.",
+        "where": "Orio al Serio"
+      }
+    }
   },
   book: {
     kicker: "Direkt buchen", title1: "Wähle deine Daten,", title2: "der Rest ist einfach",

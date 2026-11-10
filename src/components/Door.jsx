@@ -41,7 +41,7 @@ export const shouldPlayIntro = () => {
   if (typeof window === "undefined") return false;
   const h = window.location.hash.replace("#", "");
   if (!h || h === "top" || h === "porta") return true;
-  return !["casa", "tour", "servizi", "recensioni", "bergamo", "prenota", "faq"].includes(h) && !h.startsWith("admin");
+  return !["casa", "tour", "servizi", "recensioni", "bergamo", "attivita", "prenota", "faq"].includes(h) && !h.startsWith("admin");
 };
 
 /*

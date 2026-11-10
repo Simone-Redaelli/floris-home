@@ -1,7 +1,7 @@
 const n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
 
 export default {
-  nav: { links: ["La casa", "Tour", "Servizi", "Recensioni", "Bergamo"], book: "Prenota", menu: "Menu", close: "Chiudi", lang: "Lingua" },
+  nav: { links: ["La casa", "Tour", "Servizi", "Recensioni", "Bergamo", "Attività"], book: "Prenota", menu: "Menu", close: "Chiudi", lang: "Lingua" },
   door: {
     eyebrow: "Via San Pio X, 16 · Bergamo", title1: "Benvenuti a", title2: "casa", mat: "Benvenuti",
     bell: "Suona il campanello", scroll: "oppure scorri per entrare", bellAria: "Suona il campanello e apri la porta",
@@ -69,6 +69,95 @@ export default {
     sub: "Zona residenziale e tranquilla. In pochi minuti sei in aeroporto, in Fiera o in centro; in un quarto d'ora sulle mura di Città Alta.",
     places: ["Aeroporto Orio al Serio", "Fiera di Bergamo", "Accademia Carrara", "Teatro Donizetti", "Gewiss Stadium", "Città Alta"],
     alta: "Città Alta", porta: "Porta San Giacomo", directions: "Indicazioni", mapTitle: "Mappa Flori's Home", skyPin: "Orio al Serio · 4 km",
+  },
+  act: {
+    "kicker": "Da scoprire",
+    "title1": "Cosa fare",
+    "title2": "vicino a casa",
+    "sub": "Le esperienze che consigliamo ai nostri ospiti, tutte prenotabili online. I tempi sono in auto da casa.",
+    "cats": {
+      "all": "Tutte",
+      "culture": "Cultura",
+      "nature": "Laghi e natura",
+      "family": "Famiglie",
+      "relax": "Relax",
+      "food": "Gusto",
+      "sport": "Sport",
+      "shop": "Shopping"
+    },
+    "cta": {
+      "book": "Prenota",
+      "tickets": "Biglietti",
+      "info": "Scopri"
+    },
+    "from": "da",
+    "askT": "Non sai cosa scegliere?",
+    "askS": "Scrivici su WhatsApp: ti consigliamo il posto giusto e i ristoranti dove mangiamo noi.",
+    "askCta": "Chiedi a noi",
+    "waText": "Ciao! Sto per venire a Flori's Home: cosa mi consigliate di fare in zona?",
+    "note": "I link portano ai siti ufficiali o ai partner: prezzi e disponibilità sono gestiti da loro.",
+    "items": {
+      "alta": {
+        "title": "Città Alta con guida ufficiale",
+        "desc": "Mura veneziane patrimonio UNESCO, Piazza Vecchia e Cappella Colleoni in un tour a piedi di 2 ore. Domenica e festivi alle 10:30.",
+        "where": "Torre del Gombito"
+      },
+      "funi": {
+        "title": "Funicolari di Città Alta e San Vigilio",
+        "desc": "Sali in funicolare fino al borgo medievale e poi ancora più su, al castello di San Vigilio: tramonto con vista sulla pianura.",
+        "where": "Viale Vittorio Emanuele"
+      },
+      "carrara": {
+        "title": "Accademia Carrara",
+        "desc": "Una delle pinacoteche più belle d'Italia: Raffaello, Botticelli, Mantegna, Bellini. E mostre temporanee tutto l'anno.",
+        "where": "Piazza Carrara"
+      },
+      "donizetti": {
+        "title": "Teatro Donizetti",
+        "desc": "Opera, prosa, concerti e il Donizetti Opera Festival nello storico teatro della Città Bassa.",
+        "where": "Città Bassa"
+      },
+      "atalanta": {
+        "title": "Atalanta al Gewiss Stadium",
+        "desc": "Vivi una partita della Dea in uno degli stadi più caldi d'Italia, a pochi minuti da casa.",
+        "where": "Gewiss Stadium"
+      },
+      "cooking": {
+        "title": "Corso di cucina bergamasca",
+        "desc": "Casoncelli, polenta taragna e scarpinocc: cucini con una Cesarina a casa sua e poi si mangia insieme.",
+        "where": "Bergamo e dintorni"
+      },
+      "leolandia": {
+        "title": "Leolandia",
+        "desc": "Il parco divertimenti preferito dai bambini: attrazioni, spettacoli e i personaggi dei cartoni.",
+        "where": "Capriate San Gervasio"
+      },
+      "crespi": {
+        "title": "Villaggio di Crespi d'Adda",
+        "desc": "Villaggio operaio patrimonio UNESCO, rimasto com'era a fine Ottocento. Visite guidate e passeggiate lungo l'Adda.",
+        "where": "Capriate San Gervasio"
+      },
+      "terme": {
+        "title": "QC Terme San Pellegrino",
+        "desc": "Una giornata di relax in Val Brembana: vasche termali, saune e percorso benessere in un edificio liberty.",
+        "where": "San Pellegrino Terme"
+      },
+      "iseo": {
+        "title": "Lago d'Iseo e Monte Isola",
+        "desc": "In battello a Monte Isola, la più grande isola lacustre d'Europa: borghi di pescatori, bici e pesce di lago.",
+        "where": "Sarnico · Iseo"
+      },
+      "como": {
+        "title": "Lago di Como",
+        "desc": "Da Lecco in battello verso Bellagio e Varenna: ville, giardini e i panorami più famosi del lago.",
+        "where": "Da Lecco"
+      },
+      "orio": {
+        "title": "Orio Center",
+        "desc": "Uno dei centri commerciali più grandi d'Italia, accanto all'aeroporto: shopping, ristoranti e cinema.",
+        "where": "Orio al Serio"
+      }
+    }
   },
   book: {
     kicker: "Prenota diretto", title1: "Scegli le date,", title2: "il resto è facile",

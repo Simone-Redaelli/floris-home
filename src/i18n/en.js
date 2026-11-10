@@ -1,7 +1,7 @@
 const n = (c, one, many) => `${c} ${c === 1 ? one : many}`;
 
 export default {
-  nav: { links: ["The home", "Tour", "Amenities", "Reviews", "Bergamo"], book: "Book", menu: "Menu", close: "Close", lang: "Language" },
+  nav: { links: ["The home", "Tour", "Amenities", "Reviews", "Bergamo", "Things to do"], book: "Book", menu: "Menu", close: "Close", lang: "Language" },
   door: {
     eyebrow: "Via San Pio X, 16 · Bergamo", title1: "Welcome", title2: "home", mat: "Welcome",
     bell: "Ring the bell", scroll: "or scroll to step inside", bellAria: "Ring the bell and open the door",
@@ -69,6 +69,95 @@ export default {
     sub: "A quiet residential area. Within minutes you're at the airport, the Fair or the city centre; in a quarter of an hour, on the walls of the Upper Town.",
     places: ["Orio al Serio Airport", "Bergamo Fair", "Accademia Carrara", "Teatro Donizetti", "Gewiss Stadium", "Upper Town (Città Alta)"],
     alta: "Upper Town", porta: "Porta San Giacomo", directions: "Directions", mapTitle: "Flori's Home map", skyPin: "Orio al Serio · 4 km",
+  },
+  act: {
+    "kicker": "Discover",
+    "title1": "Things to do",
+    "title2": "near the house",
+    "sub": "The experiences we recommend to our guests, all bookable online. Times are by car from the house.",
+    "cats": {
+      "all": "All",
+      "culture": "Culture",
+      "nature": "Lakes & nature",
+      "family": "Families",
+      "relax": "Relax",
+      "food": "Food",
+      "sport": "Sport",
+      "shop": "Shopping"
+    },
+    "cta": {
+      "book": "Book",
+      "tickets": "Tickets",
+      "info": "Discover"
+    },
+    "from": "from",
+    "askT": "Not sure what to pick?",
+    "askS": "Message us on WhatsApp: we'll suggest the right place and the restaurants where we eat ourselves.",
+    "askCta": "Ask us",
+    "waText": "Hi! I'm coming to Flori's Home soon: what do you recommend doing nearby?",
+    "note": "Links lead to official websites or partners: prices and availability are managed by them.",
+    "items": {
+      "alta": {
+        "title": "Upper Town with an official guide",
+        "desc": "UNESCO Venetian walls, Piazza Vecchia and the Colleoni Chapel on a 2-hour walking tour. Sundays and holidays at 10:30 (in Italian).",
+        "where": "Torre del Gombito"
+      },
+      "funi": {
+        "title": "Upper Town & San Vigilio funiculars",
+        "desc": "Ride up to the medieval town, then even higher to San Vigilio castle: sunset views over the plain.",
+        "where": "Viale Vittorio Emanuele"
+      },
+      "carrara": {
+        "title": "Accademia Carrara",
+        "desc": "One of Italy's finest art galleries: Raphael, Botticelli, Mantegna, Bellini, plus exhibitions all year round.",
+        "where": "Piazza Carrara"
+      },
+      "donizetti": {
+        "title": "Donizetti Theatre",
+        "desc": "Opera, drama, concerts and the Donizetti Opera Festival in the historic theatre of the Lower Town.",
+        "where": "Lower Town"
+      },
+      "atalanta": {
+        "title": "Atalanta at the Gewiss Stadium",
+        "desc": "Watch Atalanta play in one of Italy's liveliest stadiums, just minutes from the house.",
+        "where": "Gewiss Stadium"
+      },
+      "cooking": {
+        "title": "Bergamo cooking class",
+        "desc": "Casoncelli, polenta taragna and scarpinocc: cook with a local Cesarina in her home, then sit down and eat together.",
+        "where": "Bergamo area"
+      },
+      "leolandia": {
+        "title": "Leolandia",
+        "desc": "Kids' favourite theme park: rides, shows and their favourite cartoon characters.",
+        "where": "Capriate San Gervasio"
+      },
+      "crespi": {
+        "title": "Crespi d'Adda village",
+        "desc": "A UNESCO-listed company town, unchanged since the late 1800s. Guided tours and walks along the Adda river.",
+        "where": "Capriate San Gervasio"
+      },
+      "terme": {
+        "title": "QC Terme San Pellegrino",
+        "desc": "A day of relaxation in Val Brembana: thermal pools, saunas and a wellness circuit in an Art Nouveau building.",
+        "where": "San Pellegrino Terme"
+      },
+      "iseo": {
+        "title": "Lake Iseo & Monte Isola",
+        "desc": "Take the boat to Monte Isola, Europe's largest lake island: fishing villages, bikes and lake fish.",
+        "where": "Sarnico · Iseo"
+      },
+      "como": {
+        "title": "Lake Como",
+        "desc": "From Lecco by boat to Bellagio and Varenna: villas, gardens and the lake's most famous views.",
+        "where": "From Lecco"
+      },
+      "orio": {
+        "title": "Orio Center",
+        "desc": "One of Italy's largest shopping malls, next to the airport: shops, restaurants and a cinema.",
+        "where": "Orio al Serio"
+      }
+    }
   },
   book: {
     kicker: "Book direct", title1: "Pick your dates,", title2: "the rest is easy",

@@ -4,6 +4,7 @@ import { Nav, MobileBar, useSmoothScroll } from "./components/Chrome";
 import { Hero, Trust } from "./components/Hero";
 import Tour from "./components/Tour";
 import Door, { shouldPlayIntro } from "./components/Door";
+import Activities from "./components/Activities";
 import { Stack, Wave } from "./components/Wow";
 import { Bento, Amenities, Reviews, Bergamo, Booking, Faq, Footer } from "./components/Sections";
 import { SettingsProvider } from "./lib/settings";
@@ -45,6 +46,7 @@ function Site() {
           <Amenities />
           <Reviews />
           <Bergamo />
+          <Activities />
           <Booking />
           <Faq />
         </main>
