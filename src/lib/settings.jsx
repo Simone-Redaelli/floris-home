@@ -36,6 +36,7 @@ export const DEFAULTS = {
   guestsIncluded: 2,
   extraGuestPct: 5,
   cancelDays: 14, // cancellazione gratuita fino a N giorni prima dell'arrivo
+  petFee: 50,     // supplemento animale (massimo 1) a soggiorno
   // tassa di soggiorno del Comune di Bergamo: % del prezzo a notte per persona, con tetto e notti massime
   taxEnabled: true,
   taxRate: 7,
@@ -123,6 +124,7 @@ export function quote(from, to, s, opts = {}) {
   const adults = Math.min(guests, Math.max(0, opts.adults ?? guests));
   const cleaning = nights.length ? Number(s.cleaningFee || 0) : 0;
   const transferFee = nights.length && opts.transfer && s.transferEnabled ? Number(s.transferPrice || 0) : 0;
+  const petFee = nights.length && opts.pet ? Number(s.petFee || 0) : 0;
 
   // servizi extra scelti (solo quelli attivi)
   const ex = s.extras || DEFAULTS.extras;
@@ -147,7 +149,7 @@ export function quote(from, to, s, opts = {}) {
     tax = r2(tax);
   }
 
-  const total = nights.length ? r2(subtotal + cleaning + transferFee + extrasTotal + tax) : 0;
+  const total = nights.length ? r2(subtotal + cleaning + transferFee + petFee + extrasTotal + tax) : 0;
 
   // raggruppa le notti per prezzo per il riepilogo
   const groups = [];
@@ -161,7 +163,7 @@ export function quote(from, to, s, opts = {}) {
   else if (from < today()) status = "past";
   else if (conflicts.length) status = "unavailable";
   else if (nights.length < Number(s.minNights || 1)) status = "min";
-  return { nights, conflicts, groups, subtotal, factor, guests, cleaning, transferFee, extras, extrasTotal, tax, taxNights, adults, total, status };
+  return { nights, conflicts, groups, subtotal, factor, guests, cleaning, transferFee, petFee, extras, extrasTotal, tax, taxNights, adults, total, status };
 }
 
 /* ---------- lettura pubblica da Firestore (REST, senza SDK) ---------- */

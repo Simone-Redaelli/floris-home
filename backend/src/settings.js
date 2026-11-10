@@ -31,6 +31,7 @@ export const DEFAULTS = {
   guestsIncluded: 2,
   extraGuestPct: 5,
   cancelDays: 14,
+  petFee: 50,
   taxEnabled: true,
   taxRate: 7,
   taxCap: 5,
@@ -95,7 +96,7 @@ export function nightPrice(day, s) {
 
 const r2 = (n) => Math.round(n * 100) / 100;
 
-export function quote({ from, to, guests = 1, adults, transfer = false, extras = [] }, s) {
+export function quote({ from, to, guests = 1, adults, transfer = false, extras = [], pet = false }, s) {
   const nights = nightsBetween(from, to);
   const off = unavailableSet(s);
   const conflicts = nights.filter((d) => off.has(d));
@@ -106,6 +107,7 @@ export function quote({ from, to, guests = 1, adults, transfer = false, extras =
   const ad = Math.min(g, Math.max(0, adults ?? g));
   const cleaning = nights.length ? Number(s.cleaningFee || 0) : 0;
   const transferFee = nights.length && transfer && s.transferEnabled ? Number(s.transferPrice || 0) : 0;
+  const petFee = nights.length && pet ? Number(s.petFee || 0) : 0;
 
   const ex = s.extras || DEFAULTS.extras;
   const extraLines = nights.length
@@ -125,7 +127,7 @@ export function quote({ from, to, guests = 1, adults, transfer = false, extras =
     }
     tax = r2(tax);
   }
-  const total = nights.length ? r2(stay + cleaning + transferFee + extrasTotal + tax) : 0;
+  const total = nights.length ? r2(stay + cleaning + transferFee + petFee + extrasTotal + tax) : 0;
 
   let status = 'ok';
   if (!s.bookingOpen) status = 'closed';
@@ -134,7 +136,7 @@ export function quote({ from, to, guests = 1, adults, transfer = false, extras =
   else if (conflicts.length) status = 'unavailable';
   else if (nights.length < Number(s.minNights || 1)) status = 'min';
   else if (g > Number(s.maxGuests || 5)) status = 'guests';
-  return { nights, conflicts, stay, cleaning, transferFee, extras: extraLines, extrasTotal, tax, total, status };
+  return { nights, conflicts, stay, cleaning, transferFee, petFee, extras: extraLines, extrasTotal, tax, total, status };
 }
 
 /* ---------- blocco/sblocco notti (le vede subito il calendario del sito) ---------- */

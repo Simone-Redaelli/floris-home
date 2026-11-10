@@ -11,7 +11,7 @@ const L = (b) => (env.wa.langs.includes(b.lang) ? b.lang : env.wa.lang);
 export const ACCEPT = 'ACCEPT:';
 export const REJECT = 'REJECT:';
 
-const extras = (b) => [transferLine(b), extrasLine(b), b.pet && 'con animale', b.notes].filter(Boolean).join(' · ') || '-';
+const extras = (b) => [transferLine(b), extrasLine(b), b.pet && `con animale${b.petFee ? ` (${euro(b.petFee)})` : ''}`, b.notes].filter(Boolean).join(' · ') || '-';
 
 /** A te: nuova richiesta con bottoni Accetta / Rifiuta */
 export function adminNewBooking(b) {

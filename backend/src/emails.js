@@ -52,6 +52,7 @@ export function confirmedEmail(b, s) {
     ['Ospiti', guestsLabel(b.guests) + (b.pet ? ' + animale' : '')],
     ...(b.transfer ? [['Transfer', transferLine(b).replace('Transfer ', '')]] : []),
     ...(extrasLine(b) ? [['Servizi extra', extrasLine(b)]] : []),
+    ...(b.pet ? [['Animale', b.petFee ? `1 animale · ${euro(b.petFee)}` : '1 animale']] : []),
     ['Totale', euro(b.total)],
     ...(b.tax ? [['Tassa di soggiorno', `${euro(b.tax)} (inclusa nel totale, da pagare all'arrivo)`]] : []),
     ['Cauzione', `${euro(s.deposit)} in contanti, restituita al check-out`],

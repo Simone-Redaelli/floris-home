@@ -1234,3 +1234,4 @@ html.intro-on .nav, html.intro-on .progress, html.intro-on .mbar { opacity: 0; p
 .other input.need { border-color: #e2a39b; background: #fff7f6; }
 .adm-input:has(em.suf) input { padding-right: 112px; }
 .ex-free { justify-self: start; padding: 8px 14px; border-radius: 999px; background: #e3f1e6; color: #2f7a45; font-weight: 700; font-size: .85rem; }
+.bs-pet span { display: grid; gap: 1px; } .bs-pet small { font-size: .76rem; color: var(--dim); font-weight: 500; }

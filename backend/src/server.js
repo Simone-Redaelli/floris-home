@@ -130,7 +130,7 @@ app.post('/api/bookings', limiter, async (req, res) => {
   const minors = others.filter((o) => { const a = ageOf(o.birthDate); return a !== null && a < 18; }).length;
   const extras = (Array.isArray(body.extras) ? body.extras : []).map(String).filter((x) => EXTRAS.some((e) => e.id === x));
   const lang = ['it', 'en', 'fr', 'es', 'de', 'pl'].includes(body.lang) ? body.lang : 'it';
-  const q = quote({ from, to, guests, adults: guests - minors, transfer, extras }, s);
+  const q = quote({ from, to, guests, adults: guests - minors, transfer, extras, pet: !!body.pet }, s);
   if (q.status !== 'ok') return res.status(409).json({ error: STATUS_ERR[q.status] || 'Date non valide.' });
 
   const booking = {
@@ -147,6 +147,7 @@ app.post('/api/bookings', limiter, async (req, res) => {
     stay: q.stay,
     cleaning: q.cleaning,
     transferFee: q.transferFee,
+    petFee: q.petFee,
     extras: q.extras,
     extrasTotal: q.extrasTotal,
     tax: q.tax,

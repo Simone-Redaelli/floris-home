@@ -179,6 +179,7 @@ function Dashboard({ user }) {
         guestsIncluded: Math.max(1, Number(draft.guestsIncluded) || 2),
         extraGuestPct: Math.max(0, Number(draft.extraGuestPct) || 0),
         cancelDays: Math.max(0, Number(draft.cancelDays) || 0),
+        petFee: Math.max(0, Number(draft.petFee) || 0),
         seasons: (draft.seasons || []).map((x) => ({ ...x, price: Number(x.price) || 0 })),
         blocked: [...new Set(draft.blocked || [])].filter((d) => d >= addDays(today(), -400)).sort(), // tengo un anno di storico per le statistiche
         extras: Object.fromEntries(Object.entries(draft.extras || {}).map(([k, v]) => [k, { enabled: v.enabled !== false, price: Number(v.price) || 0 }])),
@@ -513,6 +514,7 @@ function Prices({ d, set }) {
           <Field label="Ospiti massimi" type="number" value={d.maxGuests} onChange={(v) => set({ maxGuests: v })} />
           <Field label="Ospiti inclusi nel prezzo" type="number" value={d.guestsIncluded} onChange={(v) => set({ guestsIncluded: v })} hint="oltre, si applica il supplemento" />
           <Field label="Supplemento per ogni ospite in più" suffix="%" type="number" value={d.extraGuestPct} onChange={(v) => set({ extraGuestPct: v })} hint={`es. 4 ospiti: ${euro(Math.round((Number(d.pricePerNight) || 0) * (1 + Math.max(0, 4 - (Number(d.guestsIncluded) || 2)) * (Number(d.extraGuestPct) || 0) / 100) * 100) / 100)} a notte`} />
+          <Field label="Supplemento animale (max 1)" prefix="€" suffix="a soggiorno" type="number" value={d.petFee} onChange={(v) => set({ petFee: v })} hint="0 = gratis" />
           <Field label="Cancellazione gratuita fino a" suffix="giorni prima" type="number" value={d.cancelDays} onChange={(v) => set({ cancelDays: v })} hint="dopo non è più cancellabile · 0 = non mostrare" />
         </div>
       </div>

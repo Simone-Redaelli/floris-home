@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import {
   ArrowUpRight, X, ChevronLeft, ChevronRight, Plus, Minus, MessageCircle, Mail, Navigation, Star,
   Maximize2, BedDouble, Users, Ruler, Check, Plane, Landmark, Theater, Trophy, Castle, Building2, Phone,
-  IdCard, BookOpen, Car, ShieldCheck, Baby, Utensils, Sunrise, Sunset, Snowflake, CalendarX2,
+  IdCard, BookOpen, Car, ShieldCheck, Baby, Utensils, Sunrise, Sunset, Snowflake, CalendarX2, PawPrint,
 } from "lucide-react";
 import { COUNTRIES, DOC_TYPES, ageOf } from "../lib/countries";
 import { P, CITY, SITE, GALLERY, AMENITIES, PLACES, SCORES, FAQ, AUDIENCE, TOUR } from "../data";
@@ -248,7 +248,7 @@ export function Booking() {
 
   // i minorenni non pagano la tassa di soggiorno: li contiamo appena l'ospite inserisce le date di nascita
   const minors = others.filter((o) => { const a = ageOf(o.birthDate); return a !== null && a < 18; }).length;
-  const q = quote(from, to, s, { transfer, extras, guests, adults: guests - minors });
+  const q = quote(from, to, s, { transfer, extras, guests, adults: guests - minors, pet: form.pet });
   const valid = q.status === "ok";
   const activeExtras = EXTRAS.filter((e) => s.extras?.[e.id]?.enabled);
   const exPrice = (e) => {
@@ -284,7 +284,7 @@ export function Booking() {
 
   const waMsg = from && to
     ? [
-        `Ciao! Sono ${fullName || "interessato/a"} e vorrei soggiornare a Flori's Home dal ${fmtDate(from)} al ${fmtDate(to)} (${q.nights.length} notti), ${guests} ospiti${form.pet ? " + un animale" : ""}.`,
+        `Ciao! Sono ${fullName || "interessato/a"} e vorrei soggiornare a Flori's Home dal ${fmtDate(from)} al ${fmtDate(to)} (${q.nights.length} notti), ${guests} ospiti${form.pet ? ` + un animale (${euro(q.petFee)})` : ""}.`,
         tfOn ? `Vorrei anche il transfer dall'aeroporto di Orio al Serio${form.arrivalTime ? ` (arrivo ${form.arrivalTime}${form.flight ? `, volo ${form.flight}` : ""})` : ""}.` : null,
         q.extras.length ? `Servizi extra: ${q.extras.map((e) => `${EXTRA_IT[e.id]}${e.qty > 1 ? ` ×${e.qty}` : ""} (${euro(e.amount)})`).join(", ")}.` : null,
         `Totale stimato ${euro(q.total)}${q.tax ? ` (di cui ${euro(q.tax)} di tassa di soggiorno)` : ""}. È disponibile?`,
@@ -476,7 +476,7 @@ export function Booking() {
                     <label className="full"><span>{k.notes}</span><textarea rows={3} value={form.notes} onChange={set("notes")} placeholder={k.notesPh} /></label>
                     <input className="hp" tabIndex={-1} autoComplete="off" value={form.website} onChange={set("website")} aria-hidden="true" />
                   </div>
-                  <label className="bs-pet"><input type="checkbox" checked={form.pet} onChange={set("pet")} /><i /> {k.pet}</label>
+                  <label className="bs-pet"><input type="checkbox" checked={form.pet} onChange={set("pet")} /><i /> <span>{k.pet} <small>{k.petFee(Number(s.petFee) ? `+${euro(s.petFee)}` : k.free)}</small></span></label>
                   <div className="law"><ShieldCheck size={18} /><span>{k.law}</span></div>
                   <label className="consent"><input type="checkbox" checked={form.consent} onChange={set("consent")} /> {k.consent}</label>
                   {error && <div className="status bad"><i /> {error}</div>}
@@ -544,6 +544,7 @@ export function Booking() {
                       </motion.div>
                     )}
                   </AnimatePresence>
+                  {q.petFee > 0 && <div className="ex-line"><span><PawPrint size={14} /> {k.petLine}</span><span>{euro(q.petFee)}</span></div>}
                   <AnimatePresence initial={false}>
                     {q.extras.map((e) => (
                       <motion.div key={e.id} className="ex-line" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
