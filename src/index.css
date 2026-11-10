@@ -1225,3 +1225,11 @@ html.intro-on .nav, html.intro-on .progress, html.intro-on .mbar { opacity: 0; p
 .act-zoom { position: absolute; z-index: 500; top: 14px; right: 14px; display: inline-flex; padding: 4px; gap: 4px; border-radius: 999px; background: rgba(255,255,255,.92); box-shadow: 0 10px 24px -14px rgba(0,0,0,.4); }
 .act-zoom button { padding: 7px 14px; border-radius: 999px; font-size: .82rem; font-weight: 700; color: var(--ink); }
 .act-zoom button:hover { background: var(--ink); color: #fff; }
+.adm-input em.suf { font-size: .8rem; white-space: nowrap; }
+.guest-note { display: block; font-size: .76rem; color: var(--dim); margin: -4px 0 2px; }
+.cancel-note { display: flex; gap: 8px; align-items: flex-start; margin-top: 8px; padding: 10px 12px; border-radius: 14px; background: var(--bg); font-size: .8rem; line-height: 1.45; color: var(--muted); }
+.cancel-note svg { flex-shrink: 0; color: var(--gold-d); margin-top: 1px; }
+.others-due { display: flex; gap: 8px; align-items: center; padding: 10px 12px; margin-bottom: 10px; border-radius: 12px; background: #fff6ec; color: var(--gold-d); font-size: .84rem; font-weight: 600; }
+.gf-grid.five.six { grid-template-columns: repeat(3, 1fr); }
+.other input.need { border-color: #e2a39b; background: #fff7f6; }
+.adm-input:has(em.suf) input { padding-right: 112px; }

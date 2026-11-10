@@ -22,12 +22,15 @@ export const DEFAULTS = {
   blocked: [],
   extBlocked: [],
   extras: {
-    crib: { enabled: true, price: 15 },
-    highchair: { enabled: true, price: 5 },
+    cot: { enabled: true, price: 0 },
+    highchair: { enabled: true, price: 0 },
     earlyIn: { enabled: true, price: 20 },
     lateOut: { enabled: true, price: 20 },
-    breakfast: { enabled: true, price: 8 },
+    ac: { enabled: true, price: 10 },
   },
+  guestsIncluded: 2,
+  extraGuestPct: 5,
+  cancelDays: 14,
   taxEnabled: true,
   taxRate: 7,
   taxCap: 5,
@@ -37,12 +40,15 @@ export const DEFAULTS = {
 
 /* Servizi extra (stesso elenco del sito) */
 export const EXTRAS = [
-  { id: 'crib', unit: 'stay', it: 'Culla' },
+  { id: 'cot', unit: 'stay', it: 'Lettino' },
   { id: 'highchair', unit: 'stay', it: 'Seggiolone' },
   { id: 'earlyIn', unit: 'stay', it: 'Check-in anticipato' },
   { id: 'lateOut', unit: 'stay', it: 'Check-out posticipato' },
-  { id: 'breakfast', unit: 'person', it: 'Kit colazione' },
+  { id: 'ac', unit: 'night', it: 'Aria condizionata' },
 ];
+
+export const guestFactor = (guests, s) =>
+  1 + (Math.max(0, (Number(guests) || 1) - (Number(s.guestsIncluded) || 2)) * (Number(s.extraGuestPct) || 0)) / 100;
 
 export function normalize(raw = {}) {
   const s = { ...DEFAULTS, ...raw };
@@ -93,9 +99,10 @@ export function quote({ from, to, guests = 1, adults, transfer = false, extras =
   const nights = nightsBetween(from, to);
   const off = unavailableSet(s);
   const conflicts = nights.filter((d) => off.has(d));
-  const lines = nights.map((d) => ({ day: d, ...nightPrice(d, s) }));
-  const stay = lines.reduce((a, l) => a + l.price, 0);
   const g = Math.max(1, Number(guests) || 1);
+  const factor = guestFactor(g, s);
+  const lines = nights.map((d) => { const np = nightPrice(d, s); return { day: d, ...np, price: r2(np.price * factor) }; });
+  const stay = r2(lines.reduce((a, l) => a + l.price, 0));
   const ad = Math.min(g, Math.max(0, adults ?? g));
   const cleaning = nights.length ? Number(s.cleaningFee || 0) : 0;
   const transferFee = nights.length && transfer && s.transferEnabled ? Number(s.transferPrice || 0) : 0;
@@ -104,7 +111,7 @@ export function quote({ from, to, guests = 1, adults, transfer = false, extras =
   const extraLines = nights.length
     ? EXTRAS.filter((e) => extras.includes(e.id) && ex[e.id]?.enabled).map((e) => {
         const price = Number(ex[e.id].price) || 0;
-        const qty = e.unit === 'person' ? g : 1;
+        const qty = e.unit === 'person' ? g : e.unit === 'night' ? nights.length : 1;
         return { id: e.id, name: e.it, qty, price, amount: price * qty };
       })
     : [];

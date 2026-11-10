@@ -176,6 +176,9 @@ function Dashboard({ user }) {
         transferPrice: Number(draft.transferPrice) || 0,
         transferEnabled: draft.transferEnabled !== false,
         maxGuests: Math.max(1, Number(draft.maxGuests) || 1),
+        guestsIncluded: Math.max(1, Number(draft.guestsIncluded) || 2),
+        extraGuestPct: Math.max(0, Number(draft.extraGuestPct) || 0),
+        cancelDays: Math.max(0, Number(draft.cancelDays) || 0),
         seasons: (draft.seasons || []).map((x) => ({ ...x, price: Number(x.price) || 0 })),
         blocked: [...new Set(draft.blocked || [])].filter((d) => d >= addDays(today(), -400)).sort(), // tengo un anno di storico per le statistiche
         extras: Object.fromEntries(Object.entries(draft.extras || {}).map(([k, v]) => [k, { enabled: v.enabled !== false, price: Number(v.price) || 0 }])),
@@ -352,12 +355,12 @@ function CheckinData({ c, flash }) {
   const birth = g.birthDate ? fmtDate(g.birthDate, { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
   const rows = [
     ["Nome", g.firstName], ["Cognome", g.lastName], ["Sesso", g.sex], ["Nato/a il", `${birth}${g.age != null ? ` (${g.age} anni)` : ""}`],
-    ["Luogo di nascita", g.birthPlace], ["Stato di nascita", g.birthCountry], ["Nazionalità", g.nationality],
+    ["Luogo di nascita", g.birthPlace], ["Stato di nascita", g.birthCountry], ["Nazionalità", g.nationality], ...(g.residence ? [["Residenza", g.residence]] : []),
     ["Documento", g.docType], ["Numero", g.docNumber], ["Rilasciato da", g.docIssuedBy],
   ];
   const text = [
     rows.map(([k, v]) => `${k}: ${v || "—"}`).join("\n"),
-    ...(c.others || []).map((o, i) => `Ospite ${i + 2}: ${o.firstName} ${o.lastName} · ${o.sex || "—"} · ${o.birthDate || "—"} · ${o.nationality || "—"}`),
+    ...(c.others || []).map((o, i) => `Ospite ${i + 2}: ${o.firstName} ${o.lastName} · ${o.sex || "—"} · ${o.birthDate || "—"} · ${o.nationality || "—"}${o.residence ? ` · res. ${o.residence}` : ""}`),
   ].join("\n");
   return (
     <details className="req-ci">
@@ -365,7 +368,7 @@ function CheckinData({ c, flash }) {
       <div className="ci-grid">{rows.map(([k, v]) => <div key={k}><span>{k}</span><b>{v || "—"}</b></div>)}</div>
       {c.others?.length > 0 && (
         <div className="ci-others">
-          {c.others.map((o, i) => <div key={i}><b>Ospite {i + 2}:</b> {o.firstName} {o.lastName} · {o.sex || "—"} · {o.birthDate ? fmtDate(o.birthDate, { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"} · {o.nationality || "—"}</div>)}
+          {c.others.map((o, i) => <div key={i}><b>Ospite {i + 2}:</b> {o.firstName} {o.lastName} · {o.sex || "—"} · {o.birthDate ? fmtDate(o.birthDate, { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"} · {o.nationality || "—"}{o.residence ? ` · res. ${o.residence}` : ""}</div>)}
         </div>
       )}
       <button className="adm-btn ghost sm ci-copy" onClick={() => navigator.clipboard?.writeText(text).then(() => flash("Dati copiati"))}>Copia i dati</button>
@@ -508,6 +511,9 @@ function Prices({ d, set }) {
           <Field label="Cauzione" prefix="€" type="number" value={d.deposit} onChange={(v) => set({ deposit: v })} />
           <Field label="Notti minime" type="number" value={d.minNights} onChange={(v) => set({ minNights: v })} />
           <Field label="Ospiti massimi" type="number" value={d.maxGuests} onChange={(v) => set({ maxGuests: v })} />
+          <Field label="Ospiti inclusi nel prezzo" type="number" value={d.guestsIncluded} onChange={(v) => set({ guestsIncluded: v })} hint="oltre, si applica il supplemento" />
+          <Field label="Supplemento per ogni ospite in più" suffix="%" type="number" value={d.extraGuestPct} onChange={(v) => set({ extraGuestPct: v })} hint={`es. 4 ospiti: ${euro(Math.round((Number(d.pricePerNight) || 0) * (1 + Math.max(0, 4 - (Number(d.guestsIncluded) || 2)) * (Number(d.extraGuestPct) || 0) / 100) * 100) / 100)} a notte`} />
+          <Field label="Cancellazione gratuita fino a" suffix="giorni prima" type="number" value={d.cancelDays} onChange={(v) => set({ cancelDays: v })} hint="dopo non è più cancellabile · 0 = non mostrare" />
         </div>
       </div>
       <div className="adm-box">

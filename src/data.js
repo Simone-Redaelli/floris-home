@@ -110,7 +110,7 @@ export const GALLERY = [
 
 export const AMENITIES = [
   { icon: "Wifi", label: "Wi-Fi gratuito", text: "Veloce, in tutta la casa" },
-  { icon: "Car", label: "Parcheggio", text: "Gratuito, sotto casa" },
+  { icon: "Car", label: "Parcheggio", text: "Gratuito, nelle vicinanze" },
   { icon: "Snowflake", label: "Aria condizionata", text: "In tutto l'appartamento" },
   { icon: "PawPrint", label: "Pet friendly", text: "Gli animali sono benvenuti" },
   { icon: "Tv", label: "Smart TV", text: "Con servizi di streaming" },
@@ -149,7 +149,7 @@ export const RULES = [
 export const FAQ = [
   { q: "Quanto dista dall'aeroporto di Orio al Serio?", a: "Circa 4 km: pochi minuti in auto o taxi. Ideale per voli all'alba o in tarda serata." },
   { q: "Come si raggiunge Città Alta?", a: "In auto in circa 15 minuti, oppure con i mezzi fino al centro e poi la funicolare." },
-  { q: "Il parcheggio è incluso?", a: "Sì, è gratuito per gli ospiti." },
+  { q: "Il parcheggio è incluso?", a: "Sì: c'è parcheggio gratuito nelle vicinanze della casa." },
   { q: "Posso portare il mio cane?", a: "Certo, Flori's Home è pet friendly. Avvisaci al momento della richiesta." },
   { q: "Va bene per lavorare da remoto?", a: "Sì: Wi-Fi gratuito, scrivania e ambienti silenziosi." },
 ];
@@ -163,7 +163,7 @@ export const AUDIENCE = [
   { title: "Con il tuo cane", text: "Gli amici a quattro zampe sono i benvenuti, e c'è un balcone sul verde.", photo: P.balcony, tag: "Pet friendly" },
 ];
 
-export const TRUST = ["9,1 Superbo su Booking", "Parcheggio gratuito", "4 km da Orio al Serio", "Animali ammessi", "Aria condizionata", "Appena ristrutturato", "Wi-Fi veloce", "Check-in flessibile"];
+export const TRUST = ["9,1 Superbo su Booking", "Parcheggio gratuito vicino", "4 km da Orio al Serio", "Animali ammessi", "Aria condizionata", "Appena ristrutturato", "Wi-Fi veloce", "Check-in flessibile"];
 
 /* ---------- ATTIVITÀ VICINO A CASA ----------
    km / min = in auto da Via San Pio X. I testi sono in src/i18n (act.items.<id>).

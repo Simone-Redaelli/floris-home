@@ -26,12 +26,16 @@ export const DEFAULTS = {
   extSyncedAt: "",
   // servizi extra che l'ospite può aggiungere (prezzo in €; unità fissa, vedi EXTRAS)
   extras: {
-    crib: { enabled: true, price: 15 },
-    highchair: { enabled: true, price: 5 },
+    cot: { enabled: true, price: 0 },
+    highchair: { enabled: true, price: 0 },
     earlyIn: { enabled: true, price: 20 },
     lateOut: { enabled: true, price: 20 },
-    breakfast: { enabled: true, price: 8 },
+    ac: { enabled: true, price: 10 },
   },
+  // prezzo per ospiti: fino a "guestsIncluded" persone vale il prezzo della notte, poi +extraGuestPct% per ogni persona in più
+  guestsIncluded: 2,
+  extraGuestPct: 5,
+  cancelDays: 14, // cancellazione gratuita fino a N giorni prima dell'arrivo
   // tassa di soggiorno del Comune di Bergamo: % del prezzo a notte per persona, con tetto e notti massime
   taxEnabled: true,
   taxRate: 7,
@@ -44,14 +48,21 @@ export const DEFAULTS = {
   guideNotes: "",
 };
 
-/* Servizi extra: unit "stay" = una volta a soggiorno, "person" = per ogni ospite */
+/* Servizi extra: unit "stay" = una volta a soggiorno, "night" = per ogni notte, "person" = per ogni ospite */
 export const EXTRAS = [
-  { id: "crib", unit: "stay" },
+  { id: "cot", unit: "stay" },
   { id: "highchair", unit: "stay" },
   { id: "earlyIn", unit: "stay" },
   { id: "lateOut", unit: "stay" },
-  { id: "breakfast", unit: "person" },
+  { id: "ac", unit: "night" },
 ];
+
+/* moltiplicatore del prezzo a notte in base agli ospiti (es. 4 ospiti, 2 inclusi, 5% → 1,10) */
+export const guestFactor = (guests, s) =>
+  1 + (Math.max(0, (Number(guests) || 1) - (Number(s.guestsIncluded) || 2)) * (Number(s.extraGuestPct) || 0)) / 100;
+
+/* ultimo giorno per cancellare gratis */
+export const cancelDeadline = (from, s) => (from ? addDays(from, -(Number(s.cancelDays) || 0)) : null);
 
 /* unisce i valori salvati con i predefiniti (anche dentro "extras") */
 export function normalize(raw = {}) {
@@ -105,9 +116,10 @@ export function quote(from, to, s, opts = {}) {
   const nights = nightsBetween(from, to);
   const off = unavailableSet(s);
   const conflicts = nights.filter((d) => off.has(d));
-  const lines = nights.map((d) => ({ day: d, ...nightPrice(d, s) }));
-  const subtotal = lines.reduce((a, l) => a + l.price, 0);
   const guests = Math.max(1, Number(opts.guests) || 1);
+  const factor = guestFactor(guests, s);
+  const lines = nights.map((d) => { const np = nightPrice(d, s); return { day: d, ...np, base: np.price, price: r2(np.price * factor) }; });
+  const subtotal = r2(lines.reduce((a, l) => a + l.price, 0));
   const adults = Math.min(guests, Math.max(0, opts.adults ?? guests));
   const cleaning = nights.length ? Number(s.cleaningFee || 0) : 0;
   const transferFee = nights.length && opts.transfer && s.transferEnabled ? Number(s.transferPrice || 0) : 0;
@@ -117,7 +129,7 @@ export function quote(from, to, s, opts = {}) {
   const extras = nights.length
     ? EXTRAS.filter((e) => (opts.extras || []).includes(e.id) && ex[e.id]?.enabled).map((e) => {
         const price = Number(ex[e.id].price) || 0;
-        const qty = e.unit === "person" ? guests : 1;
+        const qty = e.unit === "person" ? guests : e.unit === "night" ? nights.length : 1;
         return { id: e.id, unit: e.unit, price, qty, amount: price * qty };
       })
     : [];
@@ -149,7 +161,7 @@ export function quote(from, to, s, opts = {}) {
   else if (from < today()) status = "past";
   else if (conflicts.length) status = "unavailable";
   else if (nights.length < Number(s.minNights || 1)) status = "min";
-  return { nights, conflicts, groups, subtotal, cleaning, transferFee, extras, extrasTotal, tax, taxNights, adults, total, status };
+  return { nights, conflicts, groups, subtotal, factor, guests, cleaning, transferFee, extras, extrasTotal, tax, taxNights, adults, total, status };
 }
 
 /* ---------- lettura pubblica da Firestore (REST, senza SDK) ---------- */

@@ -132,11 +132,11 @@ export function IcalBox({ d, user, flash }) {
 
 /* ======================= SERVIZI EXTRA ======================= */
 const EXTRA_LABEL = {
-  crib: ["Culla", "a soggiorno"],
+  cot: ["Lettino", "a soggiorno"],
   highchair: ["Seggiolone", "a soggiorno"],
   earlyIn: ["Check-in anticipato", "a soggiorno"],
   lateOut: ["Check-out posticipato", "a soggiorno"],
-  breakfast: ["Kit colazione all'arrivo", "a persona"],
+  ac: ["Aria condizionata", "a notte"],
 };
 
 export function ExtrasBox({ d, set }) {
@@ -336,7 +336,7 @@ export function TodoToday({ d, bookings }) {
     const codes = new Set(out.map((a) => a.code));
     for (const b of bookings || []) {
       if (b.status !== "confirmed" || (b.guideCode && codes.has(b.guideCode))) continue;
-      out.push({ code: b.guideCode, name: b.name, first: b.name.split(" ")[0], phone: b.phone, from: b.from, to: b.to, lang: b.lang });
+      out.push({ code: b.guideCode, name: b.name, first: b.name.split(" ")[0], phone: b.phone, from: b.from, to: b.to, lang: b.lang, guests: b.guests });
     }
     return out;
   }, [acc, bookings]);
@@ -347,8 +347,8 @@ export function TodoToday({ d, bookings }) {
 
   const link = (p) => (p.code ? guideUrl(p.code) : `${SITE.url}/#guida`);
   const arriveMsg = (p) => p.lang && p.lang !== "it"
-    ? `Hi ${p.first}! We're looking forward to welcoming you ${p.from === t ? "today" : "tomorrow"} (check-in ${d.checkIn}). Everything you need — how to get in, Wi-Fi, parking — is here: ${link(p)}`
-    : `Ciao ${p.first}! Ti aspettiamo ${p.from === t ? "oggi" : "domani"} (check-in ${d.checkIn}). Qui trovi come entrare, il Wi-Fi, il parcheggio e i numeri utili: ${link(p)}`;
+    ? `Hi ${p.first}! We're looking forward to welcoming you ${p.from === t ? "today" : "tomorrow"} (check-in ${d.checkIn}). Everything you need — how to get in, Wi-Fi, parking — is here: ${link(p)}${(p.guests || 1) > 1 ? "\n\nIf you haven't yet, please send us today the details of the other guests (name, date of birth, nationality, ID document)." : ""}`
+    : `Ciao ${p.first}! Ti aspettiamo ${p.from === t ? "oggi" : "domani"} (check-in ${d.checkIn}). Qui trovi come entrare, il Wi-Fi, il parcheggio e i numeri utili: ${link(p)}${(p.guests || 1) > 1 ? "\n\nSe non l'hai già fatto, mandaci oggi i dati degli altri ospiti (nome, data di nascita, nazionalità, documento)." : ""}`;
   const reviewMsg = (p) => p.lang && p.lang !== "it"
     ? `Hi ${p.first}, thank you for staying at Flori's Home! If you enjoyed it, a Google review would mean a lot to us: ${d.reviewUrl}`
     : `Ciao ${p.first}, grazie di essere stato/a da noi a Flori's Home! Se ti sei trovato/a bene, ci lasci una recensione su Google? Ci aiuta tantissimo: ${d.reviewUrl}`;

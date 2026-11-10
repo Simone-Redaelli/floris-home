@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { env } from './env.js';
 import { guideLink, prettyCode } from './guide.js';
 import { fmtDayLong, euro, guestsLabel, transferLine, extrasLine, escapeHtml as h } from './format.js';
@@ -34,6 +35,14 @@ function layout({ title, intro, rows, button, footer }) {
 </body></html>`;
 }
 
+/** "gratuita fino al 1 dicembre, poi non più cancellabile" */
+export function cancelText(b, s) {
+  const last = DateTime.fromISO(b.from).minus({ days: Number(s.cancelDays) || 0 }).toISODate();
+  return last >= DateTime.now().setZone(env.timezone).toISODate()
+    ? `gratuita fino al ${fmtDayLong(last)}, poi non è più cancellabile`
+    : 'non cancellabile (mancano meno di ' + s.cancelDays + ' giorni all\'arrivo)';
+}
+
 export function confirmedEmail(b, s) {
   const subject = `✅ Soggiorno confermato – ${env.property.name}`;
   const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(env.property.address)}`;
@@ -48,6 +57,8 @@ export function confirmedEmail(b, s) {
     ['Cauzione', `${euro(s.deposit)} in contanti, restituita al check-out`],
     ['Indirizzo', env.property.address],
     ['Codice', b.id],
+    ...(Number(s.cancelDays) > 0 ? [['Cancellazione', cancelText(b, s)]] : []),
+    ...((b.guests || 1) > 1 ? [['Altri ospiti', 'mandaci i loro dati entro il giorno prima del check-in']] : []),
     ...(b.guideCode ? [['Guida della casa', `codice ${prettyCode(b.guideCode)}`]] : []),
   ];
   const html = layout({
@@ -97,7 +108,7 @@ export function preArrivalEmail(b, s) {
       ...(b.guideCode ? [['Codice guida', prettyCode(b.guideCode)]] : []),
     ],
     button: { href: link, label: '📘 Apri la guida della casa' },
-    footer: `Se arrivi più tardi del previsto scrivici su WhatsApp.<br><br>— ${h(env.admin.name)}`,
+    footer: `${(b.guests || 1) > 1 ? '<b>Se non l\'hai già fatto, mandaci oggi i dati degli altri ospiti</b> (nome, cognome, data di nascita, nazionalità e documento): per legge vanno registrati prima dell\'arrivo.<br><br>' : ''}Se arrivi più tardi del previsto scrivici su WhatsApp.<br><br>— ${h(env.admin.name)}`,
   });
   const text = `Ciao ${b.name}, ti aspettiamo domani (${fmtDayLong(b.from)}, check-in ${s.checkIn}).\nGuida della casa: ${link}\n\n— ${env.admin.name}`;
   return { subject, html, text };

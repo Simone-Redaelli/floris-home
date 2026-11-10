@@ -3,11 +3,11 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import {
   ArrowUpRight, X, ChevronLeft, ChevronRight, Plus, Minus, MessageCircle, Mail, Navigation, Star,
   Maximize2, BedDouble, Users, Ruler, Check, Plane, Landmark, Theater, Trophy, Castle, Building2, Phone,
-  IdCard, BookOpen, Car, ShieldCheck, Baby, Utensils, Sunrise, Sunset, Croissant,
+  IdCard, BookOpen, Car, ShieldCheck, Baby, Utensils, Sunrise, Sunset, Snowflake, CalendarX2,
 } from "lucide-react";
 import { COUNTRIES, DOC_TYPES, ageOf } from "../lib/countries";
 import { P, CITY, SITE, GALLERY, AMENITIES, PLACES, SCORES, FAQ, AUDIENCE, TOUR } from "../data";
-import { useSettings, quote, euro, fmtDate, EXTRAS } from "../lib/settings";
+import { useSettings, quote, euro, fmtDate, EXTRAS, cancelDeadline, today } from "../lib/settings";
 import { useBooking } from "../lib/booking";
 import { api, hasApi } from "../lib/api";
 import Calendar from "./Calendar";
@@ -222,9 +222,13 @@ export function Bergamo() {
 
 /* ---------------- PRENOTA ---------------- */
 
+const addDaysLocal = (iso, n) => { const d = new Date(`${iso}T12:00:00`); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+
 // nomi in italiano per il messaggio WhatsApp che arriva a te
-const EXTRA_IT = { crib: "culla", highchair: "seggiolone", earlyIn: "check-in anticipato", lateOut: "check-out posticipato", breakfast: "kit colazione" };
-const EXTRA_ICON = { crib: Baby, highchair: Utensils, earlyIn: Sunrise, lateOut: Sunset, breakfast: Croissant };
+const EXTRA_IT = { cot: "lettino", highchair: "seggiolone", earlyIn: "check-in anticipato", lateOut: "check-out posticipato", ac: "aria condizionata" };
+const EXTRA_ICON = { cot: Baby, highchair: Utensils, earlyIn: Sunrise, lateOut: Sunset, ac: Snowflake };
+// nazionalità italiana (anche scritta in altre lingue): serve la città di residenza
+const isItalian = (n) => /^(italia|italy|italie|italien|italiana?|italiano|italienisch|włochy|wlochy)$/i.test(String(n || "").trim());
 
 export function Booking() {
   const { t, lang } = useLang();
@@ -233,7 +237,7 @@ export function Booking() {
   const { from, to, guests, transfer, extras, setFrom, setTo, setGuests, setTransfer, setExtras, toggleExtra } = useBooking();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({ email: "", phone: "", notes: "", pet: false, arrivalTime: "", flight: "", consent: false, website: "" });
-  const [main, setMain] = useState({ firstName: "", lastName: "", sex: "", birthDate: "", birthPlace: "", birthCountry: "Italia", nationality: "Italia", docType: "Carta d'identità", docNumber: "", docIssuedBy: "" });
+  const [main, setMain] = useState({ firstName: "", lastName: "", sex: "", birthDate: "", birthPlace: "", birthCountry: "Italia", nationality: "Italia", residence: "", docType: "Carta d'identità", docNumber: "", docIssuedBy: "" });
   const [others, setOthers] = useState([]);
   const setM = (k) => (e) => setMain((m) => ({ ...m, [k]: e.target.value }));
   const setO = (i, k) => (e) => setOthers((arr) => arr.map((o, j) => (j === i ? { ...o, [k]: e.target.value } : o)));
@@ -249,7 +253,7 @@ export function Booking() {
   const activeExtras = EXTRAS.filter((e) => s.extras?.[e.id]?.enabled);
   const exPrice = (e) => {
     const p = Number(s.extras[e.id].price) || 0;
-    return p ? `+${euro(p)}${e.unit === "person" ? ` ${k.perPerson}` : ""}` : k.free;
+    return p ? `+${euro(p)}${e.unit === "person" ? ` ${k.perPerson}` : e.unit === "night" ? ` ${k.perNightEx}` : ""}` : k.free;
   };
   const maxG = Number(s.maxGuests) || 5;
   const months = typeof window !== "undefined" && innerWidth > 980 ? 2 : 1;
@@ -266,14 +270,17 @@ export function Booking() {
 
   // una riga per ogni ospite oltre al principale
   useEffect(() => {
-    setOthers((arr) => Array.from({ length: Math.max(0, guests - 1) }, (_, i) => arr[i] || { firstName: "", lastName: "", sex: "", birthDate: "", nationality: "Italia" }));
+    setOthers((arr) => Array.from({ length: Math.max(0, guests - 1) }, (_, i) => arr[i] || { firstName: "", lastName: "", sex: "", birthDate: "", nationality: "Italia", residence: "" }));
   }, [guests]);
 
   const mainAge = ageOf(main.birthDate);
   const fullName = `${main.firstName} ${main.lastName}`.trim();
   const mainOk = main.firstName.trim() && main.lastName.trim() && main.sex && mainAge !== null && mainAge >= 18 &&
-    main.birthPlace.trim() && main.birthCountry.trim() && main.nationality.trim() && main.docType && main.docNumber.trim().length >= 5 && main.docIssuedBy.trim();
-  const formOk = mainOk && /\S+@\S+\.\S+/.test(form.email) && form.phone.replace(/\D/g, "").length >= 8 && form.consent;
+    main.birthPlace.trim() && main.birthCountry.trim() && main.nationality.trim() && (!isItalian(main.nationality) || main.residence.trim()) &&
+    main.docType && main.docNumber.trim().length >= 5 && main.docIssuedBy.trim();
+  // altri ospiti: si possono mandare fino al giorno prima, ma chi è compilato da italiano deve avere la residenza
+  const othersOk = others.every((o) => !o.firstName.trim() || !isItalian(o.nationality) || o.residence?.trim());
+  const formOk = mainOk && othersOk && /\S+@\S+\.\S+/.test(form.email) && form.phone.replace(/\D/g, "").length >= 8 && form.consent;
 
   const waMsg = from && to
     ? [
@@ -281,13 +288,15 @@ export function Booking() {
         tfOn ? `Vorrei anche il transfer dall'aeroporto di Orio al Serio${form.arrivalTime ? ` (arrivo ${form.arrivalTime}${form.flight ? `, volo ${form.flight}` : ""})` : ""}.` : null,
         q.extras.length ? `Servizi extra: ${q.extras.map((e) => `${EXTRA_IT[e.id]}${e.qty > 1 ? ` ×${e.qty}` : ""} (${euro(e.amount)})`).join(", ")}.` : null,
         `Totale stimato ${euro(q.total)}${q.tax ? ` (di cui ${euro(q.tax)} di tassa di soggiorno)` : ""}. È disponibile?`,
+        Number(s.cancelDays) > 0 ? `Ho letto che la cancellazione è gratuita fino a ${s.cancelDays} giorni prima dell'arrivo.` : null,
         form.email ? `Email: ${form.email}` : null,
         form.notes ? `Note: ${form.notes}` : null,
         "",
         "Dati per il check-in:",
-        `${fullName} · ${main.sex} · nato/a il ${main.birthDate ? fmtDate(main.birthDate, { day: "numeric", month: "numeric", year: "numeric" }) : "-"} a ${main.birthPlace} (${main.birthCountry}) · nazionalità ${main.nationality}`,
+        `${fullName} · ${main.sex} · nato/a il ${main.birthDate ? fmtDate(main.birthDate, { day: "numeric", month: "numeric", year: "numeric" }) : "-"} a ${main.birthPlace} (${main.birthCountry}) · nazionalità ${main.nationality}${main.residence ? ` · residente a ${main.residence}` : ""}`,
         `${main.docType} n. ${main.docNumber} rilasciato da ${main.docIssuedBy}`,
-        ...others.filter((o) => o.firstName).map((o, i) => `Ospite ${i + 2}: ${o.firstName} ${o.lastName} · ${o.sex || "-"} · ${o.birthDate || "-"} · ${o.nationality}`),
+        ...others.filter((o) => o.firstName).map((o, i) => `Ospite ${i + 2}: ${o.firstName} ${o.lastName} · ${o.sex || "-"} · ${o.birthDate || "-"} · ${o.nationality}${o.residence ? ` · residente a ${o.residence}` : ""}`),
+        others.some((o) => !o.firstName) ? "I dati degli altri ospiti li mando entro il giorno prima del check-in." : null,
       ].filter((l) => l !== null && l !== undefined).join("\n")
     : "";
 
@@ -416,7 +425,10 @@ export function Booking() {
                       </label>
                       <label><span>{k.birthPlace}</span><input value={main.birthPlace} onChange={setM("birthPlace")} placeholder={k.cityPh} /></label>
                       <label><span>{k.birthCountry}</span><input list="countries" value={main.birthCountry} onChange={setM("birthCountry")} /></label>
-                      <label className="full"><span>{k.nationality}</span><input list="countries" value={main.nationality} onChange={setM("nationality")} /></label>
+                      <label className={isItalian(main.nationality) ? "" : "full"}><span>{k.nationality}</span><input list="countries" value={main.nationality} onChange={setM("nationality")} /></label>
+                      {isItalian(main.nationality) && (
+                        <label><span>{k.residence}</span><input value={main.residence} onChange={setM("residence")} placeholder={k.residencePh} autoComplete="address-level2" /></label>
+                      )}
                     </div>
                     {mainAge !== null && mainAge < 18 && <div className="status bad"><i /> {k.minor}</div>}
                   </div>
@@ -439,15 +451,19 @@ export function Booking() {
                   {others.length > 0 && (
                     <div className="gf-block">
                       <span className="gf-title"><i>4</i> {k.others} <small>{k.othersNote}</small></span>
+                      {from && <div className="others-due"><CalendarX2 size={15} /> {k.othersDue(fmtDate(addDaysLocal(from, -1), { weekday: "long", day: "numeric", month: "long" }))}</div>}
                       {others.map((o, i) => (
                         <div className="other" key={i}>
                           <b>{k.guestN(i + 2)} {ageOf(o.birthDate) !== null && <em className="age">{ageOf(o.birthDate)} {k.years}</em>}</b>
-                          <div className="gf-grid five">
+                          <div className={`gf-grid five ${isItalian(o.nationality) ? "six" : ""}`}>
                             <input placeholder={k.firstName} value={o.firstName} onChange={setO(i, "firstName")} />
                             <input placeholder={k.lastName} value={o.lastName} onChange={setO(i, "lastName")} />
                             <select value={o.sex} onChange={setO(i, "sex")}><option value="">{k.sex}</option><option>M</option><option>F</option></select>
                             <input type="date" value={o.birthDate} onChange={setO(i, "birthDate")} max={new Date().toISOString().slice(0, 10)} aria-label={k.birth} />
                             <input list="countries" placeholder={k.nationality} value={o.nationality} onChange={setO(i, "nationality")} />
+                            {isItalian(o.nationality) && (
+                              <input className={o.firstName.trim() && !o.residence?.trim() ? "need" : ""} placeholder={k.residence} value={o.residence || ""} onChange={setO(i, "residence")} />
+                            )}
                           </div>
                         </div>
                       ))}
@@ -519,6 +535,7 @@ export function Booking() {
                       <span>{euro(g.price * g.count)}</span>
                     </div>
                   ))}
+                  {q.factor > 1 && <small className="guest-note">{k.extraGuest(guests, Number(s.guestsIncluded) || 2, Number(s.extraGuestPct) || 0)}</small>}
                   {Number(s.cleaningFee) > 0 && <div><span>{k.cleaning}</span><span>{euro(s.cleaningFee)}</span></div>}
                   <AnimatePresence>
                     {tfOn && (
@@ -542,6 +559,14 @@ export function Booking() {
                   )}
                   <div className="tot"><span>{k.total}</span><motion.b key={q.total} initial={{ scale: 1.15 }} animate={{ scale: 1 }}>{euro(q.total)}</motion.b></div>
                   {q.tax > 0 && <small className="tax-pay">{k.taxPay(euro(q.tax))}</small>}
+                  {Number(s.cancelDays) > 0 && (
+                    <div className="cancel-note">
+                      <CalendarX2 size={15} />
+                      <span>{cancelDeadline(from, s) >= today()
+                        ? k.cancelUntil(fmtDate(cancelDeadline(from, s), { day: "numeric", month: "long" }), s.cancelDays)
+                        : k.cancelNo(s.cancelDays)}</span>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

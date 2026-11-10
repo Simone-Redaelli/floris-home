@@ -4,6 +4,7 @@ import en from "./en";
 import fr from "./fr";
 import es from "./es";
 import de from "./de";
+import pl from "./pl";
 
 export const LANGS = [
   { code: "it", label: "Italiano", flag: "🇮🇹", locale: "it-IT" },
@@ -11,8 +12,9 @@ export const LANGS = [
   { code: "fr", label: "Français", flag: "🇫🇷", locale: "fr-FR" },
   { code: "es", label: "Español", flag: "🇪🇸", locale: "es-ES" },
   { code: "de", label: "Deutsch", flag: "🇩🇪", locale: "de-DE" },
+  { code: "pl", label: "Polski", flag: "🇵🇱", locale: "pl-PL" },
 ];
-const DICTS = { it, en, fr, es, de };
+const DICTS = { it, en, fr, es, de, pl };
 
 // lingua corrente anche fuori da React (per le date)
 let current = "it";

@@ -68,7 +68,7 @@ export function guestPreArrival(b, s) {
   if (T) return sendTemplate(b.phone, 'istruzioni_arrivo', [b.name, fmtDayLong(b.from), s.checkIn, env.property.address, link], [], L(b));
   return sendText(
     b.phone,
-    `Ciao ${b.name}! 🗝️ Ti aspettiamo domani, ${fmtDayLong(b.from)} (check-in ${s.checkIn}).\n📍 ${env.property.address}\n\nNella guida trovi come entrare, il Wi-Fi, il parcheggio e i numeri utili:\n${link}\n\nBuon viaggio!`,
+    `Ciao ${b.name}! 🗝️ Ti aspettiamo domani, ${fmtDayLong(b.from)} (check-in ${s.checkIn}).\n📍 ${env.property.address}\n\nNella guida trovi come entrare, il Wi-Fi, il parcheggio e i numeri utili:\n${link}${(b.guests || 1) > 1 ? '\n\n📝 Se non l\'hai già fatto, mandaci oggi i dati degli altri ospiti (nome, data di nascita, nazionalità, documento).' : ''}\n\nBuon viaggio!`,
   );
 }
 

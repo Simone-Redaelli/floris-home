@@ -86,6 +86,7 @@ app.post('/api/bookings', limiter, async (req, res) => {
     birthPlace: str(g.birthPlace, 80),
     birthCountry: str(g.birthCountry, 60),
     nationality: str(g.nationality, 60),
+    residence: str(g.residence, 80),
     docType: DOCS.includes(g.docType) ? g.docType : '',
     docNumber: str(g.docNumber, 30).toUpperCase().replace(/\s/g, ''),
     docIssuedBy: str(g.docIssuedBy, 80),
@@ -96,6 +97,7 @@ app.post('/api/bookings', limiter, async (req, res) => {
     sex: ['M', 'F'].includes(o?.sex) ? o.sex : '',
     birthDate: isBirth(o?.birthDate) ? o.birthDate : '',
     nationality: str(o?.nationality, 60),
+    residence: str(o?.residence, 80),
   })).filter((o) => o.firstName || o.lastName);
 
   const errors = [];
@@ -106,6 +108,10 @@ app.post('/api/bookings', limiter, async (req, res) => {
   else if (age < 18) errors.push("età (l'ospite principale deve essere maggiorenne)");
   if (!guest.birthPlace || !guest.birthCountry) errors.push('luogo di nascita');
   if (!guest.nationality) errors.push('nazionalità');
+  // per gli italiani serve la città di residenza (anche per gli altri ospiti già inseriti)
+  const IT = /^(italia|italy|italie|italien|italiana?|italiano|włochy|wlochy)$/i;
+  if (IT.test(guest.nationality) && !guest.residence) errors.push('città di residenza');
+  if (others.some((o) => o.firstName && IT.test(o.nationality || '') && !o.residence)) errors.push('città di residenza degli altri ospiti');
   if (!guest.docType || guest.docNumber.length < 5 || !guest.docIssuedBy) errors.push('documento');
   if (!EMAIL_RE.test(email)) errors.push('email');
   if (!phone) errors.push('numero WhatsApp');
@@ -123,7 +129,7 @@ app.post('/api/bookings', limiter, async (req, res) => {
   // minorenni esenti dalla tassa di soggiorno
   const minors = others.filter((o) => { const a = ageOf(o.birthDate); return a !== null && a < 18; }).length;
   const extras = (Array.isArray(body.extras) ? body.extras : []).map(String).filter((x) => EXTRAS.some((e) => e.id === x));
-  const lang = ['it', 'en', 'fr', 'es', 'de'].includes(body.lang) ? body.lang : 'it';
+  const lang = ['it', 'en', 'fr', 'es', 'de', 'pl'].includes(body.lang) ? body.lang : 'it';
   const q = quote({ from, to, guests, adults: guests - minors, transfer, extras }, s);
   if (q.status !== 'ok') return res.status(409).json({ error: STATUS_ERR[q.status] || 'Date non valide.' });
 
