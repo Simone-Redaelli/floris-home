@@ -33,15 +33,15 @@ export function WeatherFx() {
   if (reduce) return null;
   const sky = kind === "clear" || kind === "cloudy";
   return (
-    <div className={`wx-fx k-${kind}`} aria-hidden="true">
+    <div className={`wx-fx k-${kind} p-${phase}`} aria-hidden="true">
       {sky && phase === "night" && stars.map((s, i) => <i key={i} className="wx-star" style={{ left: `${s.l}%`, top: `${s.t}%`, width: s.s, height: s.s, animationDelay: `${s.del}s` }} />)}
       {kind === "clear" && phase !== "night" && <span className={`wx-sun p-${phase}`}><i /></span>}
-      {(kind === "cloudy" || kind === "rain" || kind === "storm" || kind === "fog") && (
+      {(kind === "cloudy" || kind === "rain" || kind === "storm") && (
         <>
           <span className="wx-cloud c1" /><span className="wx-cloud c2" /><span className="wx-cloud c3" />
         </>
       )}
-      {kind === "fog" && <><span className="wx-fog f1" /><span className="wx-fog f2" /></>}
+      {kind === "fog" && <><span className="wx-mist m1" /><span className="wx-mist m2" /><span className="wx-mist m3" /><span className="wx-haze" /></>}
       {(kind === "rain" || kind === "storm") && drops.map((d, i) => <i key={i} className="wx-drop" style={{ left: `${d.l}%`, height: d.h, animationDuration: `${d.d}s`, animationDelay: `${d.del}s` }} />)}
       {kind === "storm" && <span className="wx-flash" />}
       {kind === "snow" && flakes.map((f, i) => (
